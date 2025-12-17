@@ -1,0 +1,188 @@
+{
+  "file_hash": "140e54451690affc30dbad5e2784c0c00b8f8e1379e28dbd9a2470640bacdbcc",
+  "cached_at": "2025-12-09T16:30:31.004618",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "",
+    "party_names": {
+      "vendor": "Zylker Hotels",
+      "vendor_address": "14B , Northern Street Greater South Avenue, New York 10001, U.S.A",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Aaron Brown",
+      "customer_address": "Greater South Avenue, 10001 New York, U.S.A",
+      "customer_gstin": "",
+      "party_1": "Zylker Hotels",
+      "party_2": "Aaron Brown",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "INV - 000001",
+      "invoice_number": "INV - 000001",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2024-08-05",
+      "due_date": "2024-08-05",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2024-08-05",
+    "due_date": "2024-08-05",
+    "amounts": {
+      "subtotal": "1190.00",
+      "discount": "",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "59.50",
+      "total": "1249.50",
+      "amount_due": "",
+      "amount_paid": "",
+      "balance_due": "1249.50"
+    },
+    "amount": "1249.50",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Standard room Charge",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "600.00",
+        "amount": "600.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Room cleaning",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "300.00",
+        "amount": "300.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Laundry Services",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "50.00",
+        "amount": "50.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Massage Service",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "500.00",
+        "amount": "500.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "All payments must be made in full before the commencement of any work.",
+      "payment_method": "",
+      "bank_name": "",
+      "account_number": "",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "Travel & Accommodation",
+    "notes": "",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 3,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "1190.00",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "59.50",
+      "discount": ""
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "line_items": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-09T16:30:30.995836"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges, a balance due, and tax details, which are all indicative of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpu3tj0dvg.pdf",
+    "file_name": "tmpu3tj0dvg.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Z\nBill To\nAaron Brown\nGreater South Avenue\n10001 New York\nU.S.A\n1\nITEM & DESCRIPTION\nZylker Hotels\n14B , Northern Street Greater South Avenue\nNew York 10001\nU.S.A\nBALANCE DUE $ 1,249.50\nInvoice Invoice date\nInvoice due date\nINV - 000001\n05 Aug 2024\n05 Aug 2024\nStandard room Charge $\n2.00\n2\nRoom cleaning\n3\nLaundry Services\n4\nMassage Service\nThanks for your business .\nSub Total\nTax rate ( 5 % )\n1.00\nAMOUNT\n600.00\nx 300.00\n50.00\nx 50.00\n40.00\n2.00\nx 20.00\n500.00\n1.00\nx 500.00\n1,190.00\n59.5\nTotal\n$ 1,249.50\nBalance Due\n$ 1,249.50\nTerms & Conditions\nAll payments must be made in full before the commencement of any work .",
+    "page_map": {
+      "1": "Z\nBill To\nAaron Brown\nGreater South Avenue\n10001 New York\nU.S.A\n1\nITEM & DESCRIPTION\nZylker Hotels\n14B , Northern Street Greater South Avenue\nNew York 10001\nU.S.A\nBALANCE DUE $ 1,249.50\nInvoice Invoice date\nInvoice due date\nINV - 000001\n05 Aug 2024\n05 Aug 2024\nStandard room Charge $\n2.00\n2\nRoom cleaning\n3\nLaundry Services\n4\nMassage Service\nThanks for your business .\nSub Total\nTax rate ( 5 % )\n1.00\nAMOUNT\n600.00\nx 300.00\n50.00\nx 50.00\n40.00\n2.00\nx 20.00\n500.00\n1.00\nx 500.00\n1,190.00\n59.5\nTotal\n$ 1,249.50\nBalance Due\n$ 1,249.50\nTerms & Conditions\nAll payments must be made in full before the commencement of any work ."
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Z\nBill To\nAaron Brown\nGreater South Avenue\n10001 New York\nU.S.A\n1\nITEM & DESCRIPTION\nZylker Hotels\n14B , Northern Street Greater South Avenue\nNew York 10001\nU.S.A\nBALANCE DUE $ 1,249.50\nInvoice Invoice date\nInvoice due date\nINV - 000001\n05 Aug 2024\n05 Aug 2024\nStandard room Charge $\n2.00\n2\nRoom cleaning\n3\nLaundry Services\n4\nMassage Service\nThanks for your business .\nSub Total\nTax rate ( 5 % )\n1.00\nAMOUNT\n600.00\nx 300.00\n50.00\nx 50.00\n40.00\n2.00\nx 20.00\n500.00\n1.00\nx 500.00\n1,190.00\n59.5\nTotal\n$ 1,249.50\nBalance Due\n$ 1,249.50\nTerms & Conditions\nAll payments must be made in full before the commencement of any work ."
+}

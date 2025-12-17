@@ -1,0 +1,185 @@
+{
+  "file_hash": "45e051dad7969cad34b8af99b462797df3dc7815dc0cbd364b1cccfe0da8dec6",
+  "cached_at": "2025-12-15T16:11:05.848184",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "Service",
+    "party_names": {
+      "vendor": "Zylker Heathcare",
+      "vendor_address": "14B , Northern Street , Greater South Avenue , New York 10001 U.S.A",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Aaron Brown",
+      "customer_address": "Greater South Avenue 10001 New York U.S.A",
+      "customer_gstin": "",
+      "party_1": "Zylker Heathcare",
+      "party_2": "Aaron Brown",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "INV - 000006",
+      "invoice_number": "INV - 000006",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2024-08-05",
+      "due_date": "2024-09-05",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2024-08-05",
+    "due_date": "2024-09-05",
+    "amounts": {
+      "subtotal": "13900.00",
+      "discount": "",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "695.00",
+      "vat": "",
+      "tax_amount": "",
+      "total": "14595.00",
+      "amount_due": "",
+      "amount_paid": "",
+      "balance_due": ""
+    },
+    "amount": "14595.00",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Ambulance service",
+        "hsn_sac_code": "",
+        "quantity": "",
+        "unit": "",
+        "rate": "",
+        "amount": "900.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Emergency ward charges",
+        "hsn_sac_code": "",
+        "quantity": "",
+        "unit": "",
+        "rate": "",
+        "amount": "10000.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Behavioural therapy",
+        "hsn_sac_code": "",
+        "quantity": "",
+        "unit": "",
+        "rate": "",
+        "amount": "3000.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "Due on Receipt",
+      "payment_method": "",
+      "bank_name": "",
+      "account_number": "",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "General Expense",
+    "notes": "we wish you a speedy recovery .",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 3,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "13900.00",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "695.00",
+      "vat": "",
+      "tax_amount": "",
+      "discount": ""
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "invoice_type": {
+        "page": 1
+      },
+      "payment_terms": {
+        "page": 1
+      },
+      "line_items": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-15T16:11:05.845625"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges, tax details, and payment due information, which are all indicators of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpt33l61bk.pdf",
+    "file_name": "tmpt33l61bk.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "2\nتب\n3\nInvoice #\nINV - 000006\nZylker Heathcare\n14B , Northern Street , Greater South Avenue , New York 10001 U.S.A\nINVOICE\nItem & Description\n1\nAmbulance service\nNotes\nBill To\nAaron Brown\nGreater South Avenue 10001 New York U.S.A\nInvoice Date\nTerms\n05 Aug 2024\nDue on Receipt\nDue Date 05 Sep 2024\nEmergency ward charges\nBehavioural therapy\nwe wish you a speedy recovery .\nAmount\n900.00\n10,000.00\n3000.00\nSub Total\n13,900.00\nTax Rate ( 5 % )\n695\nTotal\n$ 14,595.00",
+    "page_map": {
+      "1": "2\nتب\n3\nInvoice #\nINV - 000006\nZylker Heathcare\n14B , Northern Street , Greater South Avenue , New York 10001 U.S.A\nINVOICE\nItem & Description\n1\nAmbulance service\nNotes\nBill To\nAaron Brown\nGreater South Avenue 10001 New York U.S.A\nInvoice Date\nTerms\n05 Aug 2024\nDue on Receipt\nDue Date 05 Sep 2024\nEmergency ward charges\nBehavioural therapy\nwe wish you a speedy recovery .\nAmount\n900.00\n10,000.00\n3000.00\nSub Total\n13,900.00\nTax Rate ( 5 % )\n695\nTotal\n$ 14,595.00"
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "2\nتب\n3\nInvoice #\nINV - 000006\nZylker Heathcare\n14B , Northern Street , Greater South Avenue , New York 10001 U.S.A\nINVOICE\nItem & Description\n1\nAmbulance service\nNotes\nBill To\nAaron Brown\nGreater South Avenue 10001 New York U.S.A\nInvoice Date\nTerms\n05 Aug 2024\nDue on Receipt\nDue Date 05 Sep 2024\nEmergency ward charges\nBehavioural therapy\nwe wish you a speedy recovery .\nAmount\n900.00\n10,000.00\n3000.00\nSub Total\n13,900.00\nTax Rate ( 5 % )\n695\nTotal\n$ 14,595.00"
+}

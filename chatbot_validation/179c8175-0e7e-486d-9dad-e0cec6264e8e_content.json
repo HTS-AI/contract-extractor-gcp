@@ -1,0 +1,66 @@
+{
+  "session_id": "179c8175-0e7e-486d-9dad-e0cec6264e8e",
+  "file_name": "construction-invoice-template-1x-5-compressed.pdf",
+  "file_path": "construction-invoice-template-1x-5-compressed.pdf",
+  "created_at": "2025-12-09T16:09:24.165237",
+  "metadata": {
+    "is_scanned": false,
+    "used_ocr": false,
+    "document_length": 852,
+    "total_pages": 0,
+    "total_chunks": 1,
+    "total_tables": 1
+  },
+  "document_text": "Zylker Electronics Hub\n14B , Northern Street\nGreater South Avenue\nNew York New York 10001\nU.S.A\nInvoice #\nINV - 000001\nInvoice Date\n05 Aug 2024\nTerms\nDue on Receipt\nDue Date\n05 Aug 2024\nBill To\nShip To\nMs. Mary D. Dunton\n1324 Hinkle Lake Road\nNeedham\n02192 Maine\n1\nItem & Description\nCamera\nDSLR camera with advanced shooting capabilities\n1324 Hinkle Lake Road Needham\n02192 Maine\nINVOICE\nQty\nRate\nAmount\n1.00\n$ 899.00\n899.00\n2\nFitness Tracker\n1.00\n$ 129.00\n$ 129.00\nActivity tracker with heart rate monitoring\n3\nLaptop\nLightweight laptop with a powerful processor\nThanks for shopping with us .\nTerms & Conditions\nFull payment is due upon receipt of this invoice . Late payments may incur additional charges or interest as per the applicable laws .\n1.00\n$ 1,199.00\n$ 1,199.00\nSub Total\n$ 2,227.00\nTax Rate Total\n5.00 %\n$ 2,338.35\nBalance Due\n$ 2,338.35",
+  "page_map": {},
+  "chunks": [
+    "Zylker Electronics Hub\n14B , Northern Street\nGreater South Avenue\nNew York New York 10001\nU.S.A\nInvoice #\nINV - 000001\nInvoice Date\n05 Aug 2024\nTerms\nDue on Receipt\nDue Date\n05 Aug 2024\nBill To\nShip To\nMs. Mary D. Dunton\n1324 Hinkle Lake Road\nNeedham\n02192 Maine\n1\nItem & Description\nCamera\nDSLR camera with advanced shooting capabilities\n1324 Hinkle Lake Road Needham\n02192 Maine\nINVOICE\nQty\nRate\nAmount\n1.00\n$ 899.00\n899.00\n2\nFitness Tracker\n1.00\n$ 129.00\n$ 129.00\nActivity tracker with heart rate monitoring\n3\nLaptop\nLightweight laptop with a powerful processor\nThanks for shopping with us .\nTerms & Conditions\nFull payment is due upon receipt of this invoice . Late payments may incur additional charges or interest as per the applicable laws .\n1.00\n$ 1,199.00\n$ 1,199.00\nSub Total\n$ 2,227.00\nTax Rate Total\n5.00 %\n$ 2,338.35\nBalance Due\n$ 2,338.35"
+  ],
+  "tables": [
+    {
+      "page": 1,
+      "headers": [
+        "description",
+        "hsn_sac_code",
+        "quantity",
+        "unit",
+        "rate",
+        "amount",
+        "tax_rate"
+      ],
+      "rows": [
+        [
+          "DSLR camera with advanced shooting capabilities",
+          "",
+          "1.00",
+          "",
+          "899.00",
+          "899.00",
+          ""
+        ],
+        [
+          "Activity tracker with heart rate monitoring",
+          "",
+          "1.00",
+          "",
+          "129.00",
+          "129.00",
+          ""
+        ],
+        [
+          "Lightweight laptop with a powerful processor",
+          "",
+          "1.00",
+          "",
+          "1199.00",
+          "1199.00",
+          ""
+        ]
+      ],
+      "row_count": 3,
+      "column_count": 7,
+      "extraction_method": "from_extracted_data",
+      "table_type": "line_items"
+    }
+  ]
+}

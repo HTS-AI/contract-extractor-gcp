@@ -1,0 +1,66 @@
+{
+  "session_id": "cf972028-38c0-45e9-8dcd-b983dc9032b2",
+  "file_name": "construction-invoice-template-1x-8-compressed.pdf",
+  "file_path": "construction-invoice-template-1x-8-compressed.pdf",
+  "created_at": "2025-12-15T16:00:24.830095",
+  "metadata": {
+    "is_scanned": false,
+    "used_ocr": false,
+    "document_length": 992,
+    "total_pages": 0,
+    "total_chunks": 1,
+    "total_tables": 1
+  },
+  "document_text": "Zylker WordCraft\n14B , Northern Street\nGreater South Avenue New York 10001 U.S.A\nBill To\nINVOICE\n# INV - 000011\nBalance Due\n$ 7,073.00\nJack Little\n3242 Chandler Hollow Road\nPittsburgh\nInvoice Date :\n05 Aug 2024\n15222 Pennsylvania\nTerms :\nDue on Receipt\nItem & Description\nQty\nRate\nAmount\n1\nSocial Media Content\n65.00\n30.00\n1,950.00\nEngaging and share - worthy social media posts that captivate your audience and drive engagement\nPosts\n2\nEmail Newsletter Writing\n20.00\n99.00\n1,980.00\nEngaging and informative email newsletters that keep your subscribers informed and connected .\nEmail\n3\nPress Release Writing\n1.00\n2,500.00\n2,500.00\nProfessionally written press releases that effectively communicate your news and attract media attention .\nPackage\nNotes\nThanks for your business .\nSub Total\n6,430.00\nTax Rate ( 10 % )\n643.00\nTotal\n$ 7,073.00\nBalance Due\n$ 7,073.00\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the agreement or engagement letter .",
+  "page_map": {},
+  "chunks": [
+    "Zylker WordCraft\n14B , Northern Street\nGreater South Avenue New York 10001 U.S.A\nBill To\nINVOICE\n# INV - 000011\nBalance Due\n$ 7,073.00\nJack Little\n3242 Chandler Hollow Road\nPittsburgh\nInvoice Date :\n05 Aug 2024\n15222 Pennsylvania\nTerms :\nDue on Receipt\nItem & Description\nQty\nRate\nAmount\n1\nSocial Media Content\n65.00\n30.00\n1,950.00\nEngaging and share - worthy social media posts that captivate your audience and drive engagement\nPosts\n2\nEmail Newsletter Writing\n20.00\n99.00\n1,980.00\nEngaging and informative email newsletters that keep your subscribers informed and connected .\nEmail\n3\nPress Release Writing\n1.00\n2,500.00\n2,500.00\nProfessionally written press releases that effectively communicate your news and attract media attention .\nPackage\nNotes\nThanks for your business .\nSub Total\n6,430.00\nTax Rate ( 10 % )\n643.00\nTotal\n$ 7,073.00\nBalance Due\n$ 7,073.00\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the agreement or engagement letter ."
+  ],
+  "tables": [
+    {
+      "page": 1,
+      "headers": [
+        "description",
+        "hsn_sac_code",
+        "quantity",
+        "unit",
+        "rate",
+        "amount",
+        "tax_rate"
+      ],
+      "rows": [
+        [
+          "Social Media Content",
+          "",
+          "65.00",
+          "Posts",
+          "30.00",
+          "1950.00",
+          ""
+        ],
+        [
+          "Email Newsletter Writing",
+          "",
+          "20.00",
+          "Email",
+          "99.00",
+          "1980.00",
+          ""
+        ],
+        [
+          "Press Release Writing",
+          "",
+          "1.00",
+          "Package",
+          "2500.00",
+          "2500.00",
+          ""
+        ]
+      ],
+      "row_count": 3,
+      "column_count": 7,
+      "extraction_method": "from_extracted_data",
+      "table_type": "line_items"
+    }
+  ]
+}

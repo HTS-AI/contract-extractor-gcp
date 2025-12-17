@@ -1,0 +1,170 @@
+{
+  "file_hash": "e5e66fdac65f3c8cb38bf77ea95fbb5a4e38c0f21f3ba95ace2c0f47276f9905",
+  "cached_at": "2025-12-15T15:26:09.318608",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "",
+    "party_names": {
+      "vendor": "OptiConnect Telecom",
+      "vendor_address": "",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Zeta Broadband Services",
+      "customer_address": "",
+      "customer_gstin": "",
+      "party_1": "OptiConnect Telecom",
+      "party_2": "Zeta Broadband Services",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "OC-2025-448",
+      "invoice_number": "OC-2025-448",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2025-01-09",
+      "due_date": "2025-02-05",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2025-01-09",
+    "due_date": "2025-02-05",
+    "amounts": {
+      "subtotal": "",
+      "discount": "",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "total": "",
+      "amount_due": "9000.00",
+      "amount_paid": "",
+      "balance_due": ""
+    },
+    "amount": "9000.00",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Core Router & Optical Node Monitoring",
+        "hsn_sac_code": "",
+        "quantity": "",
+        "unit": "",
+        "rate": "7800.00",
+        "amount": "7800.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Night-Shift Operational Support",
+        "hsn_sac_code": "",
+        "quantity": "",
+        "unit": "",
+        "rate": "1200.00",
+        "amount": "1200.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "",
+      "payment_method": "",
+      "bank_name": "Global Commerce Bank",
+      "account_number": "5578001234",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "IT & Technical Services",
+    "notes": "",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 3,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "discount": ""
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "line_items": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-15T15:26:09.316281"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges for services, and payment due information, which are all indicative of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpfsr7prqe.pdf",
+    "file_name": "tmpfsr7prqe.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Field\nValue\nInvoice No\nOC-2025-448\nInvoice Date\n09-Jan-2025\nService Provider\nOptiConnect Telecom\nClient\nZeta Broadband Services\nAccount Head\nOptical Core Network Operations\nStart Date\n05-Jan-2025\nDue Date\n05-Feb-2025\nDescription\nAmount\nCore Router & Optical Node Monitoring\n$7,800.00\nNight-Shift Operational Support\n$1,200.00\nTotal Amount Due\n$9,000.00\nPayment Field\nDetails\nBank Name\nGlobal Commerce Bank\nAccount No\n5578001234\nSWIFT\nGCBINT88\n",
+    "page_map": {
+      "1": "Field\nValue\nInvoice No\nOC-2025-448\nInvoice Date\n09-Jan-2025\nService Provider\nOptiConnect Telecom\nClient\nZeta Broadband Services\nAccount Head\nOptical Core Network Operations\nStart Date\n05-Jan-2025\nDue Date\n05-Feb-2025\nDescription\nAmount\nCore Router & Optical Node Monitoring\n$7,800.00\nNight-Shift Operational Support\n$1,200.00\nTotal Amount Due\n$9,000.00\nPayment Field\nDetails\nBank Name\nGlobal Commerce Bank\nAccount No\n5578001234\nSWIFT\nGCBINT88\n"
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Field\nValue\nInvoice No\nOC-2025-448\nInvoice Date\n09-Jan-2025\nService Provider\nOptiConnect Telecom\nClient\nZeta Broadband Services\nAccount Head\nOptical Core Network Operations\nStart Date\n05-Jan-2025\nDue Date\n05-Feb-2025\nDescription\nAmount\nCore Router & Optical Node Monitoring\n$7,800.00\nNight-Shift Operational Support\n$1,200.00\nTotal Amount Due\n$9,000.00\nPayment Field\nDetails\nBank Name\nGlobal Commerce Bank\nAccount No\n5578001234\nSWIFT\nGCBINT88\n"
+}

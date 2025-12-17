@@ -1,0 +1,182 @@
+{
+  "file_hash": "da181aebf5f54e591aa9f93fb29dd97c65547cf7d32ebc204a389463a674dc6d",
+  "cached_at": "2025-12-15T16:03:09.542010",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "",
+    "party_names": {
+      "vendor": "Zylker Electronics Hub",
+      "vendor_address": "14B , Northern Street, Greater South Avenue, New York New York 10001, U.S.A",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Ms. Mary D. Dunton",
+      "customer_address": "1324 Hinkle Lake Road, Needham, 02192 Maine",
+      "customer_gstin": "",
+      "party_1": "Zylker Electronics Hub",
+      "party_2": "Ms. Mary D. Dunton",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "INV - 000001",
+      "invoice_number": "INV - 000001",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2024-08-05",
+      "due_date": "2024-08-05",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2024-08-05",
+    "due_date": "2024-08-05",
+    "amounts": {
+      "subtotal": "2227.00",
+      "discount": "",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "total": "2338.35",
+      "amount_due": "",
+      "amount_paid": "",
+      "balance_due": "2338.35"
+    },
+    "amount": "2338.35",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "DSLR camera with advanced shooting capabilities",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "899.00",
+        "amount": "899.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Activity tracker with heart rate monitoring",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "129.00",
+        "amount": "129.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Lightweight laptop with a powerful processor",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "1199.00",
+        "amount": "1199.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "Due on Receipt",
+      "payment_method": "",
+      "bank_name": "",
+      "account_number": "",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "IT Equipment & Hardware",
+    "notes": "Thanks for shopping with us.",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 3,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "2227.00",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "discount": ""
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "payment_terms": {
+        "page": 1
+      },
+      "line_items": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-15T16:03:09.522717"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges, tax details, and payment due information, which are all indicators of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp3053pj_j.pdf",
+    "file_name": "tmp3053pj_j.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Zylker Electronics Hub\n14B , Northern Street\nGreater South Avenue\nNew York New York 10001\nU.S.A\nInvoice #\nINV - 000001\nInvoice Date\n05 Aug 2024\nTerms\nDue on Receipt\nDue Date\n05 Aug 2024\nBill To\nShip To\nMs. Mary D. Dunton\n1324 Hinkle Lake Road\nNeedham\n02192 Maine\n1\nItem & Description\nCamera\nDSLR camera with advanced shooting capabilities\n1324 Hinkle Lake Road Needham\n02192 Maine\nINVOICE\nQty\nRate\nAmount\n1.00\n$ 899.00\n899.00\n2\nFitness Tracker\n1.00\n$ 129.00\n$ 129.00\nActivity tracker with heart rate monitoring\n3\nLaptop\nLightweight laptop with a powerful processor\nThanks for shopping with us .\nTerms & Conditions\nFull payment is due upon receipt of this invoice . Late payments may incur additional charges or interest as per the applicable laws .\n1.00\n$ 1,199.00\n$ 1,199.00\nSub Total\n$ 2,227.00\nTax Rate Total\n5.00 %\n$ 2,338.35\nBalance Due\n$ 2,338.35",
+    "page_map": {
+      "1": "Zylker Electronics Hub\n14B , Northern Street\nGreater South Avenue\nNew York New York 10001\nU.S.A\nInvoice #\nINV - 000001\nInvoice Date\n05 Aug 2024\nTerms\nDue on Receipt\nDue Date\n05 Aug 2024\nBill To\nShip To\nMs. Mary D. Dunton\n1324 Hinkle Lake Road\nNeedham\n02192 Maine\n1\nItem & Description\nCamera\nDSLR camera with advanced shooting capabilities\n1324 Hinkle Lake Road Needham\n02192 Maine\nINVOICE\nQty\nRate\nAmount\n1.00\n$ 899.00\n899.00\n2\nFitness Tracker\n1.00\n$ 129.00\n$ 129.00\nActivity tracker with heart rate monitoring\n3\nLaptop\nLightweight laptop with a powerful processor\nThanks for shopping with us .\nTerms & Conditions\nFull payment is due upon receipt of this invoice . Late payments may incur additional charges or interest as per the applicable laws .\n1.00\n$ 1,199.00\n$ 1,199.00\nSub Total\n$ 2,227.00\nTax Rate Total\n5.00 %\n$ 2,338.35\nBalance Due\n$ 2,338.35"
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Zylker Electronics Hub\n14B , Northern Street\nGreater South Avenue\nNew York New York 10001\nU.S.A\nInvoice #\nINV - 000001\nInvoice Date\n05 Aug 2024\nTerms\nDue on Receipt\nDue Date\n05 Aug 2024\nBill To\nShip To\nMs. Mary D. Dunton\n1324 Hinkle Lake Road\nNeedham\n02192 Maine\n1\nItem & Description\nCamera\nDSLR camera with advanced shooting capabilities\n1324 Hinkle Lake Road Needham\n02192 Maine\nINVOICE\nQty\nRate\nAmount\n1.00\n$ 899.00\n899.00\n2\nFitness Tracker\n1.00\n$ 129.00\n$ 129.00\nActivity tracker with heart rate monitoring\n3\nLaptop\nLightweight laptop with a powerful processor\nThanks for shopping with us .\nTerms & Conditions\nFull payment is due upon receipt of this invoice . Late payments may incur additional charges or interest as per the applicable laws .\n1.00\n$ 1,199.00\n$ 1,199.00\nSub Total\n$ 2,227.00\nTax Rate Total\n5.00 %\n$ 2,338.35\nBalance Due\n$ 2,338.35"
+}

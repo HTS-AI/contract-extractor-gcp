@@ -1,0 +1,182 @@
+{
+  "file_hash": "0b8b91b43c740070b2a260e68549a7c5775bd5d5e812e2557859d48ea9687652",
+  "cached_at": "2025-12-15T15:13:49.253808",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "Service",
+    "party_names": {
+      "vendor": "Zylker Greenscape",
+      "vendor_address": "14B , Northern Street Greater South Avenue New York 10001",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Jessica Brown",
+      "customer_address": "321 Pine Rd, Houston, 77001 TX, United States",
+      "customer_gstin": "",
+      "party_1": "Zylker Greenscape",
+      "party_2": "Jessica Brown",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "INV - 000001",
+      "invoice_number": "INV - 000001",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2024-08-05",
+      "due_date": "2024-08-31",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2024-08-05",
+    "due_date": "2024-08-31",
+    "amounts": {
+      "subtotal": "16140.00",
+      "discount": "968.40",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "total": "12688.76",
+      "amount_due": "",
+      "amount_paid": "",
+      "balance_due": "12688.76"
+    },
+    "amount": "12688.76",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Landscaping ( Design & Installation )",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "4590.00",
+        "amount": "4590.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Lawn maintenance",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "1800.00",
+        "amount": "1800.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Hardscaping ( patios , walkways , retaining walls )",
+        "hsn_sac_code": "",
+        "quantity": "15.00",
+        "unit": "Square foot",
+        "rate": "650.00",
+        "amount": "9750.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "Due end of the month",
+      "payment_method": "",
+      "bank_name": "",
+      "account_number": "",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "Construction Expense",
+    "notes": "Thanks for your business.",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 3,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "16140.00",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "discount": "968.40"
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "invoice_type": {
+        "page": 1
+      },
+      "payment_terms": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-15T15:13:49.253808"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges, payment due information, and terms related to billing, which are all indicative of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpegy9ql02.pdf",
+    "file_name": "tmpegy9ql02.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Bill To\nJessica Brown\n321 Pine Rd\nHouston\n77001 TX\nUnited States\n#\nItem\n1\nLandscaping\nDescription\n( Design & Installation )\nINVOICE\nZylker Greenscape\n14B , Northern Street Greater South Avenue New York 10001\nU.S.A\nInvoice #\nInvoice Date\nTerms\nINV - 000001\n05 Aug 2024\nDue end of the month\nDue Date\n31 Aug 2024\nQty\nRate\nAmount\n1.00\n4,590.00\n4,590.00\n2\nLawn maintenance\n1.00\n1,800.00\n1,800.00\nIrrigation system installation & Weeding\n3\nHardscaping\n( patios , walkways , retaining walls )\n650.00 Square foot\n15.00\n9,750.00\nThanks for your business .\nSub Total\n16,140.00\nDiscount ( 6.00 % )\n( - ) 968.40\nShipping charge\n1,000.00\nAdvance paid\n( - ) 5,000.00\nTotal\n$ 12,688.76\nBalance Due\n$ 12,688.76\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the contract agreement or engagement letter .",
+    "page_map": {
+      "1": "Bill To\nJessica Brown\n321 Pine Rd\nHouston\n77001 TX\nUnited States\n#\nItem\n1\nLandscaping\nDescription\n( Design & Installation )\nINVOICE\nZylker Greenscape\n14B , Northern Street Greater South Avenue New York 10001\nU.S.A\nInvoice #\nInvoice Date\nTerms\nINV - 000001\n05 Aug 2024\nDue end of the month\nDue Date\n31 Aug 2024\nQty\nRate\nAmount\n1.00\n4,590.00\n4,590.00\n2\nLawn maintenance\n1.00\n1,800.00\n1,800.00\nIrrigation system installation & Weeding\n3\nHardscaping\n( patios , walkways , retaining walls )\n650.00 Square foot\n15.00\n9,750.00\nThanks for your business .\nSub Total\n16,140.00\nDiscount ( 6.00 % )\n( - ) 968.40\nShipping charge\n1,000.00\nAdvance paid\n( - ) 5,000.00\nTotal\n$ 12,688.76\nBalance Due\n$ 12,688.76\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the contract agreement or engagement letter ."
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Bill To\nJessica Brown\n321 Pine Rd\nHouston\n77001 TX\nUnited States\n#\nItem\n1\nLandscaping\nDescription\n( Design & Installation )\nINVOICE\nZylker Greenscape\n14B , Northern Street Greater South Avenue New York 10001\nU.S.A\nInvoice #\nInvoice Date\nTerms\nINV - 000001\n05 Aug 2024\nDue end of the month\nDue Date\n31 Aug 2024\nQty\nRate\nAmount\n1.00\n4,590.00\n4,590.00\n2\nLawn maintenance\n1.00\n1,800.00\n1,800.00\nIrrigation system installation & Weeding\n3\nHardscaping\n( patios , walkways , retaining walls )\n650.00 Square foot\n15.00\n9,750.00\nThanks for your business .\nSub Total\n16,140.00\nDiscount ( 6.00 % )\n( - ) 968.40\nShipping charge\n1,000.00\nAdvance paid\n( - ) 5,000.00\nTotal\n$ 12,688.76\nBalance Due\n$ 12,688.76\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the contract agreement or engagement letter ."
+}

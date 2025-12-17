@@ -1,0 +1,66 @@
+{
+  "session_id": "793f12d3-4225-4955-b709-dae8e554b729",
+  "file_name": "construction-invoice-template-1x-14-compressed.pdf",
+  "file_path": "construction-invoice-template-1x-14-compressed.pdf",
+  "created_at": "2025-12-15T15:43:07.659408",
+  "metadata": {
+    "is_scanned": false,
+    "used_ocr": false,
+    "document_length": 890,
+    "total_pages": 0,
+    "total_chunks": 1,
+    "total_tables": 1
+  },
+  "document_text": "Z\nZylker Design Labs\n14B , Northern Street\nGreater South Avenue\nNew York 10001\nU.S.A\nINVOICE\n# INV - 000001\nBalance Due\n$ 18,400.00\nBill To\nJack Little\n3242 Chandler Hollow Road\nPittsburgh\n15222 Pennsylvania\nShip To\n3242 Chandler Hollow Road\nInvoice Date :\nPittsburgh\n05 Aug 2024\n15222 Pennsylvania\nTerms :\nDue on Receipt\nItem & Description\nQty\nRate\nAmount\n1\nBrochure Design\n1.00\n900.00\n900.00\nBrochure design - Single sided ( Color )\n2\nWeb Design packages ( Simple )\n1.00\n10,000.00 10,000.00\n10 Pages , Slider , Free Logo , Dynamic Website , Free Domain , Hosting Free for 1st year ,\n3\nPrint Ad - Newspaper\n1.00\n7,500.00\n7,500.00\nA full - page ad , Nationwide Circulation ( Colour )\nNotes\nThanks for your business .\nSub Total\n18,400.00\nTax Rate\n5.00 %\nTotal\n$ 19320.00\nBalance Due\n$ 19320.00\nTerms & Conditions\nAll payments must be made in full before the commencement of any design work .",
+  "page_map": {},
+  "chunks": [
+    "Z\nZylker Design Labs\n14B , Northern Street\nGreater South Avenue\nNew York 10001\nU.S.A\nINVOICE\n# INV - 000001\nBalance Due\n$ 18,400.00\nBill To\nJack Little\n3242 Chandler Hollow Road\nPittsburgh\n15222 Pennsylvania\nShip To\n3242 Chandler Hollow Road\nInvoice Date :\nPittsburgh\n05 Aug 2024\n15222 Pennsylvania\nTerms :\nDue on Receipt\nItem & Description\nQty\nRate\nAmount\n1\nBrochure Design\n1.00\n900.00\n900.00\nBrochure design - Single sided ( Color )\n2\nWeb Design packages ( Simple )\n1.00\n10,000.00 10,000.00\n10 Pages , Slider , Free Logo , Dynamic Website , Free Domain , Hosting Free for 1st year ,\n3\nPrint Ad - Newspaper\n1.00\n7,500.00\n7,500.00\nA full - page ad , Nationwide Circulation ( Colour )\nNotes\nThanks for your business .\nSub Total\n18,400.00\nTax Rate\n5.00 %\nTotal\n$ 19320.00\nBalance Due\n$ 19320.00\nTerms & Conditions\nAll payments must be made in full before the commencement of any design work ."
+  ],
+  "tables": [
+    {
+      "page": 1,
+      "headers": [
+        "description",
+        "hsn_sac_code",
+        "quantity",
+        "unit",
+        "rate",
+        "amount",
+        "tax_rate"
+      ],
+      "rows": [
+        [
+          "Brochure Design",
+          "",
+          "1.00",
+          "",
+          "900.00",
+          "900.00",
+          ""
+        ],
+        [
+          "Web Design packages ( Simple )",
+          "",
+          "1.00",
+          "",
+          "10000.00",
+          "10000.00",
+          ""
+        ],
+        [
+          "Print Ad - Newspaper",
+          "",
+          "1.00",
+          "",
+          "7500.00",
+          "7500.00",
+          ""
+        ]
+      ],
+      "row_count": 3,
+      "column_count": 7,
+      "extraction_method": "from_extracted_data",
+      "table_type": "line_items"
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "file_hash": "6d0baa19b8b91984a43f00f2ef1d2220242ba0d1acd19e9988d5cb4e0e4ac569",
+  "cached_at": "2025-12-09T16:16:53.100201",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "",
+    "party_names": {
+      "vendor": "Zylker Design Labs",
+      "vendor_address": "14B , Northern Street, Greater South Avenue, New York 10001, U.S.A",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Jack Little",
+      "customer_address": "3242 Chandler Hollow Road, Pittsburgh, 15222 Pennsylvania",
+      "customer_gstin": "",
+      "party_1": "Zylker Design Labs",
+      "party_2": "Jack Little",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "INV - 000001",
+      "invoice_number": "INV - 000001",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2024-08-05",
+      "due_date": "",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2024-08-05",
+    "due_date": "",
+    "amounts": {
+      "subtotal": "18400.00",
+      "discount": "",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "total": "19320.00",
+      "amount_due": "",
+      "amount_paid": "",
+      "balance_due": "19320.00"
+    },
+    "amount": "19320.00",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Brochure Design",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "900.00",
+        "amount": "900.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Web Design packages ( Simple )",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "10000.00",
+        "amount": "10000.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Print Ad - Newspaper",
+        "hsn_sac_code": "",
+        "quantity": "1.00",
+        "unit": "",
+        "rate": "7500.00",
+        "amount": "7500.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "Due on Receipt",
+      "payment_method": "",
+      "bank_name": "",
+      "account_number": "",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "Advertising & Marketing",
+    "notes": "Thanks for your business .",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 18,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment due date",
+          "severity": "High",
+          "impact": 15
+        },
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "18400.00",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "discount": ""
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "payment_terms": {
+        "page": 1
+      },
+      "line_items": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-09T16:16:53.088474"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges, tax details, and payment due information, which are all indicative of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp2yin874t.pdf",
+    "file_name": "tmp2yin874t.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Z\nZylker Design Labs\n14B , Northern Street\nGreater South Avenue\nNew York 10001\nU.S.A\nINVOICE\n# INV - 000001\nBalance Due\n$ 18,400.00\nBill To\nJack Little\n3242 Chandler Hollow Road\nPittsburgh\n15222 Pennsylvania\nShip To\n3242 Chandler Hollow Road\nInvoice Date :\nPittsburgh\n05 Aug 2024\n15222 Pennsylvania\nTerms :\nDue on Receipt\nItem & Description\nQty\nRate\nAmount\n1\nBrochure Design\n1.00\n900.00\n900.00\nBrochure design - Single sided ( Color )\n2\nWeb Design packages ( Simple )\n1.00\n10,000.00 10,000.00\n10 Pages , Slider , Free Logo , Dynamic Website , Free Domain , Hosting Free for 1st year ,\n3\nPrint Ad - Newspaper\n1.00\n7,500.00\n7,500.00\nA full - page ad , Nationwide Circulation ( Colour )\nNotes\nThanks for your business .\nSub Total\n18,400.00\nTax Rate\n5.00 %\nTotal\n$ 19320.00\nBalance Due\n$ 19320.00\nTerms & Conditions\nAll payments must be made in full before the commencement of any design work .",
+    "page_map": {
+      "1": "Z\nZylker Design Labs\n14B , Northern Street\nGreater South Avenue\nNew York 10001\nU.S.A\nINVOICE\n# INV - 000001\nBalance Due\n$ 18,400.00\nBill To\nJack Little\n3242 Chandler Hollow Road\nPittsburgh\n15222 Pennsylvania\nShip To\n3242 Chandler Hollow Road\nInvoice Date :\nPittsburgh\n05 Aug 2024\n15222 Pennsylvania\nTerms :\nDue on Receipt\nItem & Description\nQty\nRate\nAmount\n1\nBrochure Design\n1.00\n900.00\n900.00\nBrochure design - Single sided ( Color )\n2\nWeb Design packages ( Simple )\n1.00\n10,000.00 10,000.00\n10 Pages , Slider , Free Logo , Dynamic Website , Free Domain , Hosting Free for 1st year ,\n3\nPrint Ad - Newspaper\n1.00\n7,500.00\n7,500.00\nA full - page ad , Nationwide Circulation ( Colour )\nNotes\nThanks for your business .\nSub Total\n18,400.00\nTax Rate\n5.00 %\nTotal\n$ 19320.00\nBalance Due\n$ 19320.00\nTerms & Conditions\nAll payments must be made in full before the commencement of any design work ."
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Z\nZylker Design Labs\n14B , Northern Street\nGreater South Avenue\nNew York 10001\nU.S.A\nINVOICE\n# INV - 000001\nBalance Due\n$ 18,400.00\nBill To\nJack Little\n3242 Chandler Hollow Road\nPittsburgh\n15222 Pennsylvania\nShip To\n3242 Chandler Hollow Road\nInvoice Date :\nPittsburgh\n05 Aug 2024\n15222 Pennsylvania\nTerms :\nDue on Receipt\nItem & Description\nQty\nRate\nAmount\n1\nBrochure Design\n1.00\n900.00\n900.00\nBrochure design - Single sided ( Color )\n2\nWeb Design packages ( Simple )\n1.00\n10,000.00 10,000.00\n10 Pages , Slider , Free Logo , Dynamic Website , Free Domain , Hosting Free for 1st year ,\n3\nPrint Ad - Newspaper\n1.00\n7,500.00\n7,500.00\nA full - page ad , Nationwide Circulation ( Colour )\nNotes\nThanks for your business .\nSub Total\n18,400.00\nTax Rate\n5.00 %\nTotal\n$ 19320.00\nBalance Due\n$ 19320.00\nTerms & Conditions\nAll payments must be made in full before the commencement of any design work ."
+}

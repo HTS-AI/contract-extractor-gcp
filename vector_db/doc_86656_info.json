@@ -1,0 +1,6 @@
+{
+  "document_id": "doc_86656",
+  "embedding_model": "text-embedding-3-small",
+  "embedding_dim": 1536,
+  "num_chunks": 2
+}

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Invoice to Account Payable Application</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/chatbot.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-icon-wrapper">
+                    <span class="login-icon">🔐</span>
+                </div>
+                <h1>Invoice to Account Payable Application</h1>
+                <p>AI-Powered Document Extraction</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">👤 Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">🔑 Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+                <div id="loginError" class="login-error" style="display: none;"></div>
+                <button type="submit" class="login-btn">
+                    <span>🚀 Sign In</span>
+                </button>
+            </form>
+            <div class="login-footer">
+                <p>🔒 Secure authentication required</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (Hidden until login) -->
+    <div id="mainApp" class="main-app" style="display: none;">
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h1><span class="icon">📄</span> Invoice to Account Payable Application</h1>
+                        <p>Extract structured information from Invoice</p>
+                    </div>
+                    <div class="header-buttons">
+                        <a href="/dashboard" class="header-btn dashboard-header-btn">
+                            <span class="btn-icon">📊</span>
+                            <span>View JSON Dashboard</span>
+                        </a>
+                        <a href="/selected-factors" class="header-btn factors-header-btn">
+                            <span class="btn-icon">📋</span>
+                            <span>Selected Factors</span>
+                        </a>
+                        <a href="/excel-table" class="header-btn excel-table-btn">
+                            <span class="btn-icon">📊</span>
+                            <span>Data Table</span>
+                        </a>
+                        <button id="logoutBtn" class="header-btn logout-btn">
+                            <span class="btn-icon">🚪</span>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Content Layout: Results Left, Upload & Dashboard Right -->
+            <div class="content-layout">
+                <!-- Results Section - Left Side (Always Visible) -->
+                <section id="resultsSection" class="results-section">
+                <div class="section-header">
+                    <h2>📋 Extracted Information</h2>
+                </div>
+                
+                <div class="results-container" id="resultsContainer">
+                    <!-- Extracted Information Cards (Hidden by default) -->
+                    <div id="extractedContent" class="extracted-content" style="display: none;">
+                    <!-- Basic Info -->
+                    <div class="info-card">
+                        <div class="card-header">
+                            <h3>📊 Basic Information</h3>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Document Title</label>
+                                <span id="contractTitle" class="info-value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Document Type</label>
+                                <span id="contractType" class="badge">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Execution Date</label>
+                                <span id="executionDate" class="info-value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Risk Score</label>
+                                <span id="riskScore" class="risk-badge">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parties -->
+                    <div class="info-card">
+                        <div class="card-header">
+                            <h3>👥 Parties</h3>
+                        </div>
+                        <div class="parties-grid">
+                            <div class="party-box">
+                                <div class="party-header">
+                                    <span class="party-icon">🏢</span>
+                                    <h4>Party 1</h4>
+                                </div>
+                                <div class="party-content">
+                                    <div class="party-field">
+                                        <label>Name:</label>
+                                        <span id="party1Name">-</span>
+                                    </div>
+                                    <div class="party-field">
+                                        <label>Address:</label>
+                                        <span id="party1Address">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="party-box">
+                                <div class="party-header">
+                                    <span class="party-icon">🤝</span>
+                                    <h4>Party 2</h4>
+                                </div>
+                                <div class="party-content">
+                                    <div class="party-field">
+                                        <label>Name:</label>
+                                        <span id="party2Name">-</span>
+                                    </div>
+                                    <div class="party-field">
+                                        <label>Address:</label>
+                                        <span id="party2Address">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Terms -->
+                    <div class="info-card">
+                        <div class="card-header">
+                            <h3>💰 Payment Terms</h3>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Amount</label>
+                                <span id="paymentAmount" class="info-value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Currency</label>
+                                <span id="paymentCurrency" class="info-value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Frequency</label>
+                                <span id="paymentFrequency" class="info-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clauses -->
+                    <div class="info-card">
+                        <div class="card-header">
+                            <h3>⚖️ Legal Clauses</h3>
+                        </div>
+                        <div class="clauses-grid">
+                            <div class="clause-item">
+                                <label>Termination Clause</label>
+                                <div id="terminationClause" class="clause-text">-</div>
+                            </div>
+                            <div class="clause-item">
+                                <label>Confidentiality</label>
+                                <div id="confidentialityClause" class="clause-text">-</div>
+                            </div>
+                            <div class="clause-item">
+                                <label>Liability</label>
+                                <div id="liabilityClause" class="clause-text">-</div>
+                            </div>
+                            <div class="clause-item">
+                                <label>Governing Law</label>
+                                <div id="governingLaw" class="clause-text">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deliverables -->
+                    <div class="info-card">
+                        <div class="card-header">
+                            <h3>✅ Deliverables</h3>
+                        </div>
+                        <ul id="deliverablesList" class="deliverables-list"></ul>
+                    </div>
+
+                    <!-- Missing Clauses -->
+                    <div class="info-card warning-card" id="missingClausesCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>⚠️ Missing Clauses</h3>
+                        </div>
+                        <ul id="missingClausesList" class="missing-list"></ul>
+                    </div>
+                    </div>
+                </div>
+                </section>
+
+                <!-- Right Side: Upload & Dashboard -->
+                <div class="right-side-panel">
+                    <!-- Upload Section - Right Side, Above Dashboard -->
+                    <section class="upload-section">
+                        <div class="section-header">
+                            <h2>📤 Upload Document</h2>
+                        </div>
+                        
+                        <!-- Document Selector -->
+                        <div class="document-selector-container" id="documentSelectorContainer" style="display: none;">
+                            <label for="documentSelector" class="selector-label">
+                                <span class="selector-icon">📁</span>
+                                <span>Or load previous extraction:</span>
+                            </label>
+                            <select id="documentSelector" class="document-selector">
+                                <option value="">Select a document...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="upload-container">
+                            <div class="upload-left">
+                                <input type="file" id="fileInput" accept=".pdf,.docx,.doc" style="display: none;">
+                                <label for="fileInput" class="upload-label">
+                                    <span class="upload-icon">📎</span>
+                                    <span class="upload-text">
+                                        <span id="fileName">Choose file</span>
+                                        <small id="fileInfo">PDF or DOCX</small>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="upload-right">
+                                <button id="extractBtn" class="btn btn-primary" disabled>
+                                    <span class="btn-icon">⚡</span>
+                                    <span>Extract</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="uploadStatus" class="status-message"></div>
+                    </section>
+
+                    <!-- Dashboard Section - Right Side, Below Upload -->
+                    <section class="dashboard-section">
+                <div class="section-header">
+                    <h2>📊 Dashboard</h2>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📄</div>
+                        <div class="stat-value" id="totalDocuments">0</div>
+                        <div class="stat-label">Total Documents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-value" id="avgRiskScore">0</div>
+                        <div class="stat-label">Avg Risk Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-value" id="missingClauses">0</div>
+                        <div class="stat-label">Missing Clauses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-value" id="contractTypes">0</div>
+                        <div class="stat-label">Document Types</div>
+                    </div>
+                </div>
+
+                <!-- Document Types Chart -->
+                <div class="chart-card">
+                    <h3>Document Types Distribution</h3>
+                    <div id="contractTypesChart" class="chart-container"></div>
+                </div>
+                </section>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- End Main App -->
+
+    <!-- Chatbot Button -->
+    <button id="chatbot-button" class="chatbot-button" title="Ask questions about your documents">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- Chatbot Popup -->
+    <div id="chatbot-popup" class="chatbot-popup">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <h3>📄 Document Q&A Assistant</h3>
+            <button id="chatbot-close" class="chatbot-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="chatbot-body">
+            <!-- Upload Section -->
+            <div id="upload-section" class="chatbot-upload">
+                <div class="upload-icon">📁</div>
+                <h4>Upload a Document</h4>
+                <p>Ask questions about any PDF, DOCX, or TXT file</p>
+                <button id="upload-doc-button" class="upload-button">
+                    <i class="fas fa-upload"></i> Choose File
+                </button>
+                <input type="file" id="chat-file-input" class="file-input-hidden" accept=".pdf,.docx,.txt">
+            </div>
+
+            <!-- Loading Section -->
+            <div id="loading-section" class="chatbot-loading" style="display: none;">
+                <div class="spinner"></div>
+                <p class="loading-text">Processing your document...</p>
+            </div>
+
+            <!-- Chat Section -->
+            <div id="chat-section" style="display: none; flex-direction: column; height: 100%;">
+                <!-- Document Info -->
+                <div id="document-info" class="document-info">
+                    <div class="document-info-title">📄 Current Document:</div>
+                    <div id="document-filename" class="document-info-filename">-</div>
+                    <button id="change-document" class="change-document-btn">
+                        <i class="fas fa-sync-alt"></i> Change Document
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <div id="chat-messages" class="chat-messages"></div>
+            </div>
+        </div>
+
+        <!-- Footer (Input) -->
+        <div class="chatbot-footer">
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="chat-input" 
+                    class="chat-input" 
+                    placeholder="Ask a question about the document..."
+                    disabled
+                >
+                <button id="send-button" class="send-button" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+    <script src="/static/chatbot.js"></script>
+</body>
+</html>

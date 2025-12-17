@@ -1,0 +1,89 @@
+{
+  "file_hash": "0c68eb8006e7f9d014e4d877b3e66d6b5164f51437909abf4cf9b266767c3b01",
+  "cached_at": "2025-12-15T16:16:38.006521",
+  "extracted_data": {
+    "document_type": "LEASE",
+    "party_names": {
+      "party_1": "UrbanTower Networks",
+      "party_2": "Epsilon Broadband",
+      "additional_parties": []
+    },
+    "start_date": "2025-01-01",
+    "due_date": "2025-02-01",
+    "amount": "10320.00",
+    "frequency": "Monthly",
+    "account_type": "Rent & Lease Expense",
+    "document_ids": {
+      "invoice_id": "LS-2025-204",
+      "contract_id": null,
+      "agreement_id": null,
+      "reference_id": null,
+      "document_number": null,
+      "lease_id": null,
+      "nda_id": null,
+      "po_number": null,
+      "project_id": null,
+      "other_ids": []
+    },
+    "rules_and_compliance_violation": "No violation of rules and compliance",
+    "risk_score": {
+      "score": 0,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": []
+    },
+    "currency": "USD",
+    "per_period_amount": "860.00",
+    "per_month_amount": "860.00",
+    "period_name": "month",
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "frequency": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "LEASE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-15T16:16:38.006521"
+    }
+  },
+  "metadata": {
+    "document_type": "LEASE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document discusses rental terms, including lessor and lessee information, and specifies a lease agreement for an indoor tower, which aligns with the characteristics of a lease.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp7i7a2tft.pdf",
+    "file_name": "tmp7i7a2tft.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Field\nValue\nInvoice ID\nLS-2025-204\nInvoice Date\n09-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nMonthly\nLessor\nUrbanTower Networks\nLessee\nEpsilon Broadband\nAccount Head\nIndoor Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Feb-2025\nDescription\nAmount\nIndoor Tower Lease (Mall ES-05)\n$9,500.00\nDG Power Backup\n$820.00\nTotal Amount Due\n$10,320.00\nPayment Field\nDetails\nBank Name\nGlobal City Bank\nAccount No\n9988776655\nSWIFT/UPI\nGCBINT11\n",
+    "page_map": {
+      "1": "Field\nValue\nInvoice ID\nLS-2025-204\nInvoice Date\n09-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nMonthly\nLessor\nUrbanTower Networks\nLessee\nEpsilon Broadband\nAccount Head\nIndoor Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Feb-2025\nDescription\nAmount\nIndoor Tower Lease (Mall ES-05)\n$9,500.00\nDG Power Backup\n$820.00\nTotal Amount Due\n$10,320.00\nPayment Field\nDetails\nBank Name\nGlobal City Bank\nAccount No\n9988776655\nSWIFT/UPI\nGCBINT11\n"
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Field\nValue\nInvoice ID\nLS-2025-204\nInvoice Date\n09-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nMonthly\nLessor\nUrbanTower Networks\nLessee\nEpsilon Broadband\nAccount Head\nIndoor Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Feb-2025\nDescription\nAmount\nIndoor Tower Lease (Mall ES-05)\n$9,500.00\nDG Power Backup\n$820.00\nTotal Amount Due\n$10,320.00\nPayment Field\nDetails\nBank Name\nGlobal City Bank\nAccount No\n9988776655\nSWIFT/UPI\nGCBINT11\n"
+}

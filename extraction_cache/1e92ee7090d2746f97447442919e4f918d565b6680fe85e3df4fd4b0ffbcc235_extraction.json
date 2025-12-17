@@ -1,0 +1,170 @@
+{
+  "file_hash": "1e92ee7090d2746f97447442919e4f918d565b6680fe85e3df4fd4b0ffbcc235",
+  "cached_at": "2025-12-09T16:37:27.135608",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "",
+    "party_names": {
+      "vendor": "LinkTrack Solutions",
+      "vendor_address": "",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Epsilon Networks Pvt. Ltd.",
+      "customer_address": "",
+      "customer_gstin": "",
+      "party_1": "LinkTrack Solutions",
+      "party_2": "Epsilon Networks Pvt. Ltd.",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "LT-2025-902",
+      "invoice_number": "LT-2025-902",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2025-01-08",
+      "due_date": "2025-02-04",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2025-01-08",
+    "due_date": "2025-02-04",
+    "amounts": {
+      "subtotal": "",
+      "discount": "",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "total": "3400.00",
+      "amount_due": "3400.00",
+      "amount_paid": "",
+      "balance_due": ""
+    },
+    "amount": "3400.00",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Last-Mile Fiber Inspection",
+        "hsn_sac_code": "",
+        "quantity": "",
+        "unit": "",
+        "rate": "2900.00",
+        "amount": "2900.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Customer Site Visit Support",
+        "hsn_sac_code": "",
+        "quantity": "",
+        "unit": "",
+        "rate": "500.00",
+        "amount": "500.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "",
+      "payment_method": "",
+      "bank_name": "Secure National Bank",
+      "account_number": "6612300451",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "IT & Technical Services",
+    "notes": "",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 3,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "discount": ""
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "line_items": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-09T16:37:27.134888"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges for services, and payment due information, which are all indicative of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpxddgjurc.pdf",
+    "file_name": "tmpxddgjurc.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Field\nValue\nInvoice No\nLT-2025-902\nInvoice Date\n08-Jan-2025\nService Provider\nLinkTrack Solutions\nClient\nEpsilon Networks Pvt. Ltd.\nAccount Head\nLast-Mile Fiber Management\nStart Date\n04-Jan-2025\nDue Date\n04-Feb-2025\nDescription\nAmount\nLast-Mile Fiber Inspection\n$2,900.00\nCustomer Site Visit Support\n$500.00\nTotal Amount Due\n$3,400.00\nPayment Field\nDetails\nBank Name\nSecure National Bank\nAccount No\n6612300451\nSWIFT\nSNBSAFE77\n",
+    "page_map": {
+      "1": "Field\nValue\nInvoice No\nLT-2025-902\nInvoice Date\n08-Jan-2025\nService Provider\nLinkTrack Solutions\nClient\nEpsilon Networks Pvt. Ltd.\nAccount Head\nLast-Mile Fiber Management\nStart Date\n04-Jan-2025\nDue Date\n04-Feb-2025\nDescription\nAmount\nLast-Mile Fiber Inspection\n$2,900.00\nCustomer Site Visit Support\n$500.00\nTotal Amount Due\n$3,400.00\nPayment Field\nDetails\nBank Name\nSecure National Bank\nAccount No\n6612300451\nSWIFT\nSNBSAFE77\n"
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Field\nValue\nInvoice No\nLT-2025-902\nInvoice Date\n08-Jan-2025\nService Provider\nLinkTrack Solutions\nClient\nEpsilon Networks Pvt. Ltd.\nAccount Head\nLast-Mile Fiber Management\nStart Date\n04-Jan-2025\nDue Date\n04-Feb-2025\nDescription\nAmount\nLast-Mile Fiber Inspection\n$2,900.00\nCustomer Site Visit Support\n$500.00\nTotal Amount Due\n$3,400.00\nPayment Field\nDetails\nBank Name\nSecure National Bank\nAccount No\n6612300451\nSWIFT\nSNBSAFE77\n"
+}
