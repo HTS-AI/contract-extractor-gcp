@@ -391,7 +391,7 @@ async def extract_document(extraction_id: str):
         print(f"   - Extracting key information...")
         print(f"   - Analyzing risk factors...")
         
-        extracted_data, metadata = orchestrator.extract_from_file(file_path, use_ocr=False)
+        extracted_data, metadata = orchestrator.extract_from_file(file_path, use_ocr=True)
         
         doc_type = extracted_data.get("document_type", "UNKNOWN")
         print(f"   [OK] Extraction completed!")
