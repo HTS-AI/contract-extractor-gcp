@@ -54,20 +54,7 @@ except Exception as e:
     upload_file_to_gcs = None
     read_text_from_gcs = None
 
-# Image enhancement for blurry documents
-try:
-    from image_enhancement import (
-        pdf_to_enhanced_images,
-        assess_image_quality,
-        check_dependencies as check_enhancement_deps
-    )
-    ENHANCEMENT_AVAILABLE = True
-except ImportError as e:
-    import sys
-    print(f"Warning: Image enhancement not available: {e}", file=sys.stderr)
-    ENHANCEMENT_AVAILABLE = False
-    pdf_to_enhanced_images = None
-    assess_image_quality = None
+# Image enhancement removed - only using OCR and regular PDF parsing
 
 
 class DocumentParser:
@@ -75,13 +62,11 @@ class DocumentParser:
     
     def __init__(
         self, 
-        use_gcs_vision: bool = False,
+        use_gcs_vision: bool = True,
         gcs_input_path: str = "gs://data-pdf-extractor/input-docs/",
         gcs_output_path: str = "gs://data-pdf-extractor/processed-documents/",
         gcs_extracted_text_path: str = "gs://data-pdf-extractor/extracted-text/",
-        service_account_file: Optional[str] = None,
-        enable_image_enhancement: bool = True,
-        blur_threshold: float = 100.0
+        service_account_file: Optional[str] = None
     ):
         """
         Initialize the document parser.
@@ -91,9 +76,7 @@ class DocumentParser:
             gcs_input_path: GCS path for input files
             gcs_output_path: GCS path for Vision API JSON outputs
             gcs_extracted_text_path: GCS path for extracted text files
-            service_account_file: Path to GCP service account JSON key file
-            enable_image_enhancement: If True, detect and enhance blurry documents
-            blur_threshold: Threshold for blur detection (lower = more sensitive)
+            service_account_file: DEPRECATED - Credentials are loaded from GCP_CREDENTIALS_JSON environment variable
         """
         # Re-check Vision API availability at runtime (in case modules were loaded after document_parser)
         runtime_vision_available = VISION_API_AVAILABLE
@@ -121,26 +104,30 @@ class DocumentParser:
                 UserWarning
             )
         
-        # Image enhancement settings
-        self.enable_image_enhancement = enable_image_enhancement and ENHANCEMENT_AVAILABLE
-        self.blur_threshold = blur_threshold
-        self._last_enhancement_metadata = {}  # Store metadata from last enhancement
-        
-        if enable_image_enhancement and not ENHANCEMENT_AVAILABLE:
-            import warnings
-            try:
-                is_available, error_msg = check_enhancement_deps()
-                if not is_available:
-                    warnings.warn(
-                        f"Image enhancement requested but not available: {error_msg}",
-                        UserWarning
-                    )
-            except:
-                pass
         self.gcs_input_path = gcs_input_path.rstrip('/') + '/'
         self.gcs_output_path = gcs_output_path.rstrip('/') + '/'
         self.gcs_extracted_text_path = gcs_extracted_text_path.rstrip('/') + '/'
-        self.service_account_file = service_account_file or "gcp-creds.json"
+        
+        # Credentials are now loaded from GCP_CREDENTIALS_JSON environment variable
+        # Verify the environment variable is set
+        if service_account_file:
+            import warnings
+            warnings.warn(
+                "service_account_file parameter is deprecated. "
+                "Using GCP_CREDENTIALS_JSON from environment instead.",
+                DeprecationWarning
+            )
+        
+        # Verify GCP_CREDENTIALS_JSON is available (but don't parse/print its value)
+        credentials_json = os.getenv('GCP_CREDENTIALS_JSON')
+        if not credentials_json:
+            print("[WARNING] GCP_CREDENTIALS_JSON environment variable is not set")
+            print("[WARNING] OCR will fail if credentials are not available via environment variables")
+        elif not credentials_json.strip():
+            print("[WARNING] GCP_CREDENTIALS_JSON environment variable is empty")
+            print("[WARNING] OCR will fail if credentials are not available via environment variables")
+        else:
+            print("[INFO] GCP_CREDENTIALS_JSON is available (credentials loaded from environment)")
     
     def parse(self, file_path: str, use_ocr: bool = False) -> str:
         """
@@ -413,6 +400,7 @@ class DocumentParser:
     def _is_scanned_pdf(self, file_path: str) -> bool:
         """
         Detect if a PDF is scanned (image-based) by checking text extraction.
+        Improved detection with multiple checks.
         
         Args:
             file_path: Path to PDF file
@@ -421,33 +409,79 @@ class DocumentParser:
             bool: True if PDF appears to be scanned (little/no text extracted)
         """
         if PyPDF2 is None:
+            # If PyPDF2 is not available, try using pymupdf as fallback
+            if pymupdf is not None:
+                try:
+                    doc = pymupdf.open(file_path)
+                    total_text_length = 0
+                    pages_to_check = min(3, len(doc))
+                    
+                    for page_num in range(pages_to_check):
+                        page = doc[page_num]
+                        text = page.get_text()
+                        if text:
+                            total_text_length += len(text.strip())
+                    
+                    doc.close()
+                    avg_text_per_page = total_text_length / pages_to_check if pages_to_check > 0 else 0
+                    is_scanned = avg_text_per_page < 100
+                    
+                    if is_scanned:
+                        print(f"[SCAN_DETECTION] Detected scanned PDF (avg {avg_text_per_page:.0f} chars/page)")
+                    return is_scanned
+                except Exception as e:
+                    print(f"[SCAN_DETECTION] Error checking with pymupdf: {e}")
+                    return False
             return False
         
         try:
             with open(file_path, 'rb') as file:
                 pdf_reader = PyPDF2.PdfReader(file)
                 total_text_length = 0
+                pages_with_text = 0
                 
-                # Check first few pages for text
-                pages_to_check = min(3, len(pdf_reader.pages))
+                # Check first few pages for text (up to 5 pages for better detection)
+                pages_to_check = min(5, len(pdf_reader.pages))
+                if pages_to_check == 0:
+                    return False
+                
                 for page_num in range(pages_to_check):
-                    page = pdf_reader.pages[page_num]
-                    text = page.extract_text()
-                    if text:
-                        total_text_length += len(text.strip())
+                    try:
+                        page = pdf_reader.pages[page_num]
+                        text = page.extract_text()
+                        if text and text.strip():
+                            text_length = len(text.strip())
+                            total_text_length += text_length
+                            pages_with_text += 1
+                    except Exception as e:
+                        # If we can't extract from a page, it might be scanned
+                        print(f"[SCAN_DETECTION] Warning: Could not extract text from page {page_num + 1}: {e}")
                 
-                # If very little text extracted, likely scanned
-                # Threshold: less than 100 characters per page on average
+                # Multiple criteria for scanned PDF detection:
+                # 1. Average text per page is very low (< 100 chars)
+                # 2. Less than 50% of pages have extractable text
                 avg_text_per_page = total_text_length / pages_to_check if pages_to_check > 0 else 0
-                return avg_text_per_page < 100
-        except Exception:
-            # If we can't determine, assume it's not scanned
+                text_pages_ratio = pages_with_text / pages_to_check if pages_to_check > 0 else 0
+                
+                is_scanned = avg_text_per_page < 100 or text_pages_ratio < 0.5
+                
+                if is_scanned:
+                    print(f"[SCAN_DETECTION] Detected scanned PDF:")
+                    print(f"   - Average text per page: {avg_text_per_page:.0f} characters")
+                    print(f"   - Pages with text: {pages_with_text}/{pages_to_check}")
+                    print(f"   - Text pages ratio: {text_pages_ratio:.1%}")
+                else:
+                    print(f"[SCAN_DETECTION] PDF appears to have extractable text (avg {avg_text_per_page:.0f} chars/page)")
+                
+                return is_scanned
+        except Exception as e:
+            print(f"[SCAN_DETECTION] Error detecting scanned PDF: {e}")
+            # If we can't determine, assume it's not scanned (safer default)
             return False
     
     def _parse_pdf_with_vision_api(self, file_path: str) -> str:
         """
         Parse scanned PDF using Google Cloud Vision API.
-        Includes blur detection and image enhancement for blurry documents.
         
         Args:
             file_path: Path to local PDF file
@@ -466,87 +500,15 @@ class DocumentParser:
                 "and all required dependencies (google-cloud-vision, google-cloud-storage) are installed."
             )
         
-        import tempfile
         from pathlib import Path
         
         # Get filename
         filename = Path(file_path).name
         
-        # Check if image enhancement is enabled and available
-        file_to_upload = file_path
-        enhancement_metadata = {}
-        
-        if self.enable_image_enhancement and ENHANCEMENT_AVAILABLE:
-            try:
-                print(f"[BLUR_DETECTION] Checking document quality: {filename}")
-                
-                # Convert PDF to images and detect/enhance blur
-                enhanced_images, metadata = pdf_to_enhanced_images(
-                    pdf_path=file_path,
-                    dpi=400,  # Higher DPI for better quality
-                    detect_blur=True,
-                    enhance_if_blurry=True,
-                    blur_threshold=self.blur_threshold
-                )
-                
-                enhancement_metadata = metadata
-                
-                # If blurry pages were detected and enhanced
-                if metadata.get("blurry_pages"):
-                    print(f"[BLUR_DETECTION] Detected {len(metadata['blurry_pages'])} blurry page(s): {metadata['blurry_pages']}")
-                    print(f"[IMAGE_ENHANCEMENT] Enhanced images created, converting back to PDF...")
-                    
-                    # Convert enhanced images back to PDF
-                    try:
-                        from PIL import Image
-                        import img2pdf
-                        import cv2
-                        import numpy as np
-                        
-                        # Convert numpy arrays back to PIL Images
-                        pil_images = []
-                        for img_array in enhanced_images:
-                            # Convert BGR to RGB if needed
-                            if len(img_array.shape) == 3:
-                                img_rgb = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
-                            else:
-                                img_rgb = img_array
-                            pil_img = Image.fromarray(img_rgb.astype(np.uint8))
-                            pil_images.append(pil_img)
-                        
-                        # Create temporary PDF from enhanced images
-                        temp_pdf_path = tempfile.mktemp(suffix='_enhanced.pdf')
-                        # Convert PIL images to bytes for img2pdf
-                        image_bytes = []
-                        for pil_img in pil_images:
-                            import io
-                            img_bytes = io.BytesIO()
-                            pil_img.save(img_bytes, format='PNG')
-                            image_bytes.append(img_bytes.getvalue())
-                        
-                        with open(temp_pdf_path, 'wb') as f:
-                            f.write(img2pdf.convert(image_bytes))
-                        
-                        file_to_upload = temp_pdf_path
-                        print(f"[IMAGE_ENHANCEMENT] Enhanced PDF created: {temp_pdf_path}")
-                        
-                    except ImportError as e:
-                        print(f"[IMAGE_ENHANCEMENT] Warning: img2pdf not available ({e}), using original PDF")
-                        print(f"[IMAGE_ENHANCEMENT] Install with: pip install img2pdf")
-                    except Exception as e:
-                        print(f"[IMAGE_ENHANCEMENT] Warning: Could not create enhanced PDF: {e}")
-                        print(f"[IMAGE_ENHANCEMENT] Using original PDF")
-                else:
-                    print(f"[BLUR_DETECTION] Document quality is good (no blur detected)")
-                    
-            except Exception as e:
-                print(f"[IMAGE_ENHANCEMENT] Warning: Enhancement failed: {e}")
-                print(f"[IMAGE_ENHANCEMENT] Continuing with original PDF")
-        
-        # Upload file to GCS input folder (enhanced or original)
+        # Upload file to GCS input folder
         gcs_input_uri = f"{self.gcs_input_path}{filename}"
-        print(f"Uploading {Path(file_to_upload).name} to {gcs_input_uri}...")
-        upload_file_to_gcs(file_to_upload, gcs_input_uri, self.service_account_file)
+        print(f"Uploading {filename} to {gcs_input_uri}...")
+        upload_file_to_gcs(file_path, gcs_input_uri, None)  # Uses GCP_CREDENTIALS_JSON from environment
         
         # Generate unique output folder for this document
         doc_id = Path(file_path).stem
@@ -554,62 +516,45 @@ class DocumentParser:
         
         # Process with Vision API
         print(f"Processing {filename} with Google Cloud Vision API...")
-        extracted_text = vision_ocr_pdf(
-            gcs_input_uri,
-            gcs_output_uri,
-            gcs_input_path=self.gcs_input_path,
-            service_account_file=self.service_account_file
-        )
-        
-        # Store enhancement metadata for quality assessment
-        if enhancement_metadata:
-            self._last_enhancement_metadata = enhancement_metadata
-            # Add quality warning if blurry pages were detected
-            if enhancement_metadata.get("blurry_pages"):
-                blurry_count = len(enhancement_metadata["blurry_pages"])
-                total_pages = enhancement_metadata.get("total_pages", 1)
-                print(f"[QUALITY_WARNING] {blurry_count}/{total_pages} page(s) were blurry and have been enhanced")
-        
-        # Clean up temporary enhanced PDF if created
-        if file_to_upload != file_path and os.path.exists(file_to_upload):
-            try:
-                os.remove(file_to_upload)
-            except:
-                pass
-        
-        return extracted_text
-    
-    def get_quality_metadata(self) -> Dict[str, Any]:
-        """
-        Get quality metadata from last enhancement process.
-        
-        Returns:
-            Dictionary with quality information
-        """
-        if not hasattr(self, '_last_enhancement_metadata'):
-            return {}
-        
-        metadata = self._last_enhancement_metadata.copy()
-        
-        # Calculate quality assessment
-        blurry_pages = metadata.get("blurry_pages", [])
-        total_pages = metadata.get("total_pages", 1)
-        
-        if total_pages > 0:
-            blurry_ratio = len(blurry_pages) / total_pages
-            metadata["blurry_ratio"] = blurry_ratio
-            metadata["quality_status"] = (
-                "excellent" if blurry_ratio == 0 else
-                "good" if blurry_ratio < 0.2 else
-                "fair" if blurry_ratio < 0.5 else
-                "poor"
+        try:
+            extracted_text = vision_ocr_pdf(
+                gcs_input_uri,
+                gcs_output_uri,
+                gcs_input_path=self.gcs_input_path,
+                service_account_file=None  # Uses GCP_CREDENTIALS_JSON from environment
             )
-            metadata["needs_attention"] = blurry_ratio >= 0.3
-        else:
-            metadata["quality_status"] = "unknown"
-            metadata["needs_attention"] = False
-        
-        return metadata
+            
+            if not extracted_text or len(extracted_text.strip()) == 0:
+                print(f"[OCR_WARNING] Vision API completed but no text was extracted")
+                print(f"[OCR_WARNING] This might indicate:")
+                print(f"   - The document is completely blank")
+                print(f"   - OCR processing failed silently")
+                print(f"   - The document format is not supported")
+                # Fall back to regular PDF extraction
+                print(f"[OCR_FALLBACK] Attempting fallback to regular PDF extraction...")
+                return self._parse_pdf(file_path)
+            else:
+                print(f"[OCR_SUCCESS] Extracted {len(extracted_text)} characters using Vision API OCR")
+                return extracted_text
+                
+        except Exception as e:
+            error_msg = str(e)
+            print(f"[OCR_ERROR] Vision API OCR failed: {error_msg}")
+            
+            # Check for specific error types
+            if "Invalid JWT Signature" in error_msg or "invalid_grant" in error_msg:
+                print(f"[OCR_ERROR] Authentication failed - GCP credentials are invalid")
+                print(f"[OCR_ERROR] Please check your GCP_CREDENTIALS_JSON environment variable")
+            elif "PermissionDenied" in error_msg or "permission" in error_msg.lower():
+                print(f"[OCR_ERROR] Permission denied - service account lacks required permissions")
+            elif "timeout" in error_msg.lower():
+                print(f"[OCR_ERROR] OCR processing timed out - document may be too large")
+            else:
+                print(f"[OCR_ERROR] Unexpected error during OCR processing")
+            
+            print(f"[OCR_FALLBACK] Falling back to regular PDF extraction...")
+            # Fall back to regular PDF extraction
+            return self._parse_pdf(file_path)
     
     def _parse_pdf_with_vision_api_with_pages(self, file_path: str) -> tuple[str, dict]:
         """
@@ -621,8 +566,13 @@ class DocumentParser:
         Returns:
             Tuple of (full_text, page_map)
         """
-        # Get full text
-        full_text = self._parse_pdf_with_vision_api(file_path)
+        # Get full text (with error handling)
+        try:
+            full_text = self._parse_pdf_with_vision_api(file_path)
+        except Exception as e:
+            # If OCR fails, fall back to regular PDF parsing
+            print(f"[OCR_FALLBACK] Vision API failed, using regular PDF extraction: {e}")
+            return self._parse_pdf_with_pages(file_path)
         
         # Estimate page breaks (Vision API doesn't provide exact page mapping in text)
         # Split text by double newlines or estimate based on length

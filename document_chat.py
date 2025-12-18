@@ -29,18 +29,65 @@ class DocumentChatbot:
         Args:
             api_key: OpenAI API key (optional, will use env var if not provided)
             use_gcs_vision: Enable Google Cloud Vision API for scanned PDFs
+            
+        Raises:
+            ValueError: If API key is missing or invalid
         """
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.api_key:
-            raise ValueError("OpenAI API key is required")
+            raise ValueError(
+                "OpenAI API key is required.\n"
+                "Please set the OPENAI_API_KEY environment variable or create a .env file.\n"
+                "\n"
+                "To fix this:\n"
+                "1. Get your API key from https://platform.openai.com/account/api-keys\n"
+                "2. Create a .env file in the project root with:\n"
+                "   OPENAI_API_KEY=sk-your-actual-api-key-here\n"
+                "\n"
+                "Or set it in your environment:\n"
+                "Windows PowerShell: $env:OPENAI_API_KEY=\"sk-your-key-here\"\n"
+                "Windows CMD: set OPENAI_API_KEY=sk-your-key-here\n"
+                "Linux/Mac: export OPENAI_API_KEY=\"sk-your-key-here\""
+            )
         
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0.2,
-            api_key=self.api_key
-        )
+        # Validate API key format (should start with sk-)
+        if not self.api_key.startswith('sk-'):
+            raise ValueError(
+                f"Invalid OpenAI API key format. API keys should start with 'sk-'.\n"
+                f"Your key appears to be: {self.api_key[:10]}...\n"
+                f"\n"
+                f"Please check your API key at https://platform.openai.com/account/api-keys\n"
+                f"Make sure you're using the correct key and it hasn't been revoked."
+            )
         
-        self.embeddings = OpenAIEmbeddings(api_key=self.api_key)
+        try:
+            self.llm = ChatOpenAI(
+                model="gpt-4o-mini",
+                temperature=0.2,
+                api_key=self.api_key
+            )
+            
+            self.embeddings = OpenAIEmbeddings(api_key=self.api_key)
+        except Exception as e:
+            error_msg = str(e)
+            if '401' in error_msg or 'invalid_api_key' in error_msg or 'Incorrect API key' in error_msg:
+                raise ValueError(
+                    f"Invalid OpenAI API key. The API key you provided is not valid.\n"
+                    f"\n"
+                    f"This usually means:\n"
+                    f"  1. The API key is incorrect or has been revoked\n"
+                    f"  2. The API key has expired\n"
+                    f"  3. You're using the wrong API key\n"
+                    f"\n"
+                    f"To fix this:\n"
+                    f"  1. Go to https://platform.openai.com/account/api-keys\n"
+                    f"  2. Create a new API key or verify your existing key\n"
+                    f"  3. Update your .env file or environment variable with the correct key\n"
+                    f"  4. Restart the application\n"
+                    f"\n"
+                    f"Current key (first 10 chars): {self.api_key[:10]}..."
+                ) from e
+            raise
         
         # Initialize parser with Vision API support for scanned PDFs
         self.parser = DocumentParser(use_gcs_vision=use_gcs_vision)

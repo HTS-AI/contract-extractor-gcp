@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+from pathlib import Path
 from urllib.parse import urlparse
 
 # Configure logging
@@ -26,13 +27,13 @@ logging.getLogger("google.auth.transport.grpc").setLevel(logging.WARNING)
 logging.getLogger("grpc").setLevel(logging.WARNING)
 
 
-def extract_text_from_vision_output(gcs_output_uri, credentials):
+def extract_text_from_vision_output(gcs_output_uri, credentials=None):
     """
     Extract text from Vision API output JSON files stored in GCS, page by page.
     
     Args:
         gcs_output_uri: GCS URI of the output folder (e.g., gs://bucket/prefix/)
-        credentials: Service account credentials
+        credentials: DEPRECATED - Credentials are loaded from GCP_CREDENTIALS_JSON environment variable
         
     Returns:
         list: List of dictionaries, each containing:
@@ -57,12 +58,28 @@ def extract_text_from_vision_output(gcs_output_uri, credentials):
     logger.info(f"Bucket: {bucket_name}")
     logger.info(f"Prefix: {prefix}")
     
-    # Create GCS client
+    # Create GCS client using our wrapper to prevent file-based fallback
     try:
-        storage_client = storage.Client(credentials=credentials)
-        bucket = storage_client.bucket(bucket_name)
-        logger.info("GCS client created successfully")
+        from gcs_utils import get_gcs_client
+        # Temporarily clear GOOGLE_APPLICATION_CREDENTIALS to prevent file-based fallback
+        old_creds_env = os.environ.pop('GOOGLE_APPLICATION_CREDENTIALS', None)
+        try:
+            storage_client = get_gcs_client()  # Uses GCP_CREDENTIALS_JSON from environment
+            bucket = storage_client.bucket(bucket_name)
+            logger.info("GCS client created successfully")
+        finally:
+            # Restore environment variable if it was set
+            if old_creds_env:
+                os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = old_creds_env
     except Exception as e:
+        error_msg = str(e)
+        # Check if error is related to file access (which should never happen)
+        if "was not found" in error_msg or "gcp-creds.json" in error_msg.lower() or "practice_testing" in error_msg.lower():
+            raise ValueError(
+                "GCP_CREDENTIALS_JSON environment variable is required. "
+                "File-based credentials are not supported. "
+                "Please set GCP_CREDENTIALS_JSON in your .env file."
+            ) from e
         logger.error(f"Failed to create GCS client: {e}")
         raise
     
@@ -368,6 +385,65 @@ def create_text_based_pdf(pages_data, output_file_path):
         raise
 
 
+def _get_gcp_credentials_for_vision():
+    """
+    Get GCP credentials from GCP_CREDENTIALS_JSON environment variable.
+    
+    Returns:
+        service_account.Credentials: GCP service account credentials
+        
+    Raises:
+        ValueError: If GCP_CREDENTIALS_JSON is not set
+        RefreshError: If credentials are invalid
+    """
+    # Get credentials from environment variable
+    credentials_json = os.getenv('GCP_CREDENTIALS_JSON')
+    
+    if not credentials_json:
+        raise ValueError(
+            "GCP_CREDENTIALS_JSON environment variable is not set. "
+            "Please set it in your .env file or environment."
+        )
+    
+    # Verify variable exists (but don't parse/print its value)
+    if not credentials_json.strip():
+        raise ValueError(
+            "GCP_CREDENTIALS_JSON environment variable is empty. "
+            "Please provide valid credentials JSON."
+        )
+    
+    try:
+        # Parse JSON and create credentials (internal operation, no logging of values)
+        sa_info = json.loads(credentials_json)
+        credentials = service_account.Credentials.from_service_account_info(sa_info)
+        return credentials
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            "GCP_CREDENTIALS_JSON contains invalid JSON. "
+            "Please verify the credentials format."
+        ) from e
+    except RefreshError as e:
+        error_msg = str(e)
+        if "Invalid JWT Signature" in error_msg or "invalid_grant" in error_msg:
+            logger.error("=" * 60)
+            logger.error("AUTHENTICATION ERROR: Invalid Credentials")
+            logger.error("=" * 60)
+            logger.error("The credentials in GCP_CREDENTIALS_JSON are invalid.")
+            logger.error("")
+            logger.error("This usually means:")
+            logger.error("  1. The service account key was regenerated/deleted in Google Cloud Console")
+            logger.error("  2. The credentials JSON is corrupted or modified")
+            logger.error("  3. The private key in the credentials is no longer valid")
+            logger.error("")
+            logger.error("SOLUTION: Update GCP_CREDENTIALS_JSON with a new service account key:")
+            logger.error("  1. Go to https://console.cloud.google.com/iam-admin/serviceaccounts")
+            logger.error("  2. Select your service account")
+            logger.error("  3. Go to 'Keys' tab > 'Add Key' > 'Create new key' > 'JSON'")
+            logger.error("  4. Update GCP_CREDENTIALS_JSON in your .env file with the new key")
+            logger.error("=" * 60)
+        raise
+
+
 def vision_ocr_pdf(gcs_input_uri, gcs_output_uri, gcs_input_path=None, service_account_file=None):
     """
     Process scanned PDF with Vision API OCR and create text-based PDF.
@@ -376,7 +452,7 @@ def vision_ocr_pdf(gcs_input_uri, gcs_output_uri, gcs_input_path=None, service_a
         gcs_input_uri: GCS URI of the input PDF file
         gcs_output_uri: GCS URI for JSON output folder
         gcs_input_path: GCS path where text-based PDF should be saved (e.g., gs://bucket/input-docs/)
-        service_account_file: Path to service account JSON key file
+        service_account_file: DEPRECATED - Credentials are loaded from GCP_CREDENTIALS_JSON environment variable
         
     Returns:
         str: Combined extracted text from all pages
@@ -387,32 +463,45 @@ def vision_ocr_pdf(gcs_input_uri, gcs_output_uri, gcs_input_path=None, service_a
     logger.info(f"Output URI: {gcs_output_uri}")
     logger.info("=" * 60)
     
-    service_account_file = service_account_file or "gcp-creds.json"
-    
-    # Create Vision API client with service account credentials
-    logger.info("Creating Vision API client...")
-    try:
-        credentials = service_account.Credentials.from_service_account_file(
-            service_account_file
+    if service_account_file:
+        logger.warning(
+            "service_account_file parameter is deprecated. "
+            "Using GCP_CREDENTIALS_JSON from environment instead."
         )
+    
+    # Create Vision API client with credentials from environment variable
+    logger.info("Creating Vision API client...")
+    
+    # Temporarily clear GOOGLE_APPLICATION_CREDENTIALS to prevent file-based fallback
+    old_creds_env = os.environ.pop('GOOGLE_APPLICATION_CREDENTIALS', None)
+    
+    try:
+        credentials = _get_gcp_credentials_for_vision()
+        # Explicitly pass credentials to prevent any fallback to default credentials
         client = vision.ImageAnnotatorClient(credentials=credentials)
         logger.info("Client created successfully")
-    except RefreshError as e:
+    except (ValueError, RefreshError) as e:
+        # Re-raise credential errors as-is
+        raise
+    except Exception as e:
+        error_msg = str(e)
+        # Check if error is related to file access (which should never happen)
+        if "was not found" in error_msg or "gcp-creds.json" in error_msg.lower() or "practice_testing" in error_msg.lower():
+            raise ValueError(
+                "GCP_CREDENTIALS_JSON environment variable is required. "
+                "File-based credentials are not supported. "
+                "Please set GCP_CREDENTIALS_JSON in your .env file."
+            ) from e
         logger.error("=" * 60)
-        logger.error("AUTHENTICATION ERROR: Failed to create client")
+        logger.error("FAILED TO CREATE VISION API CLIENT")
         logger.error("=" * 60)
         logger.error(f"Error: {str(e)}")
-        logger.error("")
-        logger.error("Your Google account appears to be restricted.")
-        logger.error("Please check the service account key file and permissions.")
         logger.error("=" * 60)
         raise
-    except Exception as e:
-        logger.error(f"Failed to create Vision API client: {e}")
-        raise
-    except Exception as e:
-        logger.error(f"Failed to create Vision API client: {e}")
-        raise
+    finally:
+        # Restore environment variable if it was set
+        if old_creds_env:
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = old_creds_env
 
     # Configure source PDF
     logger.info("Configuring input source...")
@@ -517,7 +606,7 @@ def vision_ocr_pdf(gcs_input_uri, gcs_output_uri, gcs_input_path=None, service_a
     
     # Extract text from output JSON files (page by page)
     try:
-        pages_data = extract_text_from_vision_output(gcs_output_uri, credentials)
+        pages_data = extract_text_from_vision_output(gcs_output_uri, credentials=None)  # Uses GCP_CREDENTIALS_JSON from environment
         
         if not pages_data:
             logger.warning("No pages extracted from OCR output")
@@ -549,7 +638,7 @@ def vision_ocr_pdf(gcs_input_uri, gcs_output_uri, gcs_input_path=None, service_a
                 # Upload text-based PDF to input folder
                 gcs_text_pdf_uri = f"{gcs_input_path.rstrip('/')}/{text_pdf_filename}"
                 logger.info(f"Uploading text-based PDF to {gcs_text_pdf_uri}...")
-                upload_file_to_gcs(temp_pdf_path, gcs_text_pdf_uri, service_account_file)
+                upload_file_to_gcs(temp_pdf_path, gcs_text_pdf_uri, None)  # Uses GCP_CREDENTIALS_JSON from environment
                 
                 # Clean up temporary file
                 try:

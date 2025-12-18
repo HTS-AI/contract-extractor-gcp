@@ -63,19 +63,27 @@ class ExtractionOrchestrator:
         Args:
             api_key: OpenAI API key. If None, will use OPENAI_API_KEY env var.
             use_gcs_vision: If True, use Google Cloud Vision API for scanned PDFs
-            service_account_file: Path to GCP service account JSON key file
+            service_account_file: DEPRECATED - Credentials are loaded from GCP_CREDENTIALS_JSON environment variable
             use_semantic_search: Whether to use semantic search for missing fields
             document_id: Unique identifier for the document (for vector DB)
         """
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         self.use_gcs_vision = use_gcs_vision
-        self.service_account_file = service_account_file or "gcp-creds.json"
+        # service_account_file is deprecated - credentials come from GCP_CREDENTIALS_JSON env var
+        if service_account_file:
+            import warnings
+            warnings.warn(
+                "service_account_file parameter is deprecated. "
+                "Using GCP_CREDENTIALS_JSON from environment instead.",
+                DeprecationWarning
+            )
+        self.service_account_file = None  # Not used anymore
         self.document_id = document_id
         
-        # Initialize document parser (compatible with vision_gcp.py)
+        # Initialize document parser (uses GCP_CREDENTIALS_JSON from environment)
         self.parser = DocumentParser(
             use_gcs_vision=use_gcs_vision,
-            service_account_file=self.service_account_file
+            service_account_file=None  # Uses GCP_CREDENTIALS_JSON from environment
         )
         
         # Initialize type-specific extractors
@@ -1613,7 +1621,7 @@ def get_orchestrator(
     Args:
         api_key: OpenAI API key (optional, will use env var if not provided)
         use_gcs_vision: Enable Google Cloud Vision API for scanned PDFs
-        service_account_file: Path to GCP service account JSON key file
+        service_account_file: DEPRECATED - Credentials are loaded from GCP_CREDENTIALS_JSON environment variable
         use_semantic_search: Whether to use semantic search for missing fields
         
     Returns:

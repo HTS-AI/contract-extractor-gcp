@@ -391,7 +391,13 @@ async def extract_document(extraction_id: str):
         print(f"   - Extracting key information...")
         print(f"   - Analyzing risk factors...")
         
-        extracted_data, metadata = orchestrator.extract_from_file(file_path, use_ocr=True)
+        # Auto-detect if OCR is needed (scanned PDF detection happens in document_parser)
+        # The parser will automatically use OCR if it detects a scanned PDF
+        extracted_data, metadata = orchestrator.extract_from_file(file_path, use_ocr=False)
+        
+        # Check if OCR was actually used (from metadata)
+        if metadata.get("extraction_method") == "vision_api" or metadata.get("used_ocr"):
+            print(f"   [OCR] Document processed with OCR (scanned PDF detected)")
         
         doc_type = extracted_data.get("document_type", "UNKNOWN")
         print(f"   [OK] Extraction completed!")
@@ -723,13 +729,13 @@ async def extract_from_text(request: TextExtractionRequest):
         if get_orchestrator:
             orchestrator = get_orchestrator(
                 api_key=api_key,
-                use_gcs_vision=False,
+                use_gcs_vision=True,  # Vision API enabled for OCR on image-based PDFs
                 use_semantic_search=request.use_semantic_search
             )
         else:
             orchestrator = ExtractionOrchestrator(
                 api_key=api_key,
-                use_gcs_vision=False,
+                use_gcs_vision=True,  # Vision API enabled for OCR on image-based PDFs
                 use_semantic_search=request.use_semantic_search
             )
         
@@ -1097,10 +1103,37 @@ async def load_chat_from_extraction(extraction_id: str):
         metadata = extraction.get("metadata", {})
         document_text = metadata.get("document_text")
         
+        # If document_text is not in metadata, try to load from extraction cache
+        page_map = metadata.get("page_map", {})
+        if not document_text:
+            file_hash = extraction.get("file_hash")
+            if file_hash:
+                print(f"[CHATBOT] Document text not in metadata, trying extraction cache...")
+                cache_manager = get_cache_manager()
+                cached_data = cache_manager.load_extraction_cache(file_hash)
+                if cached_data:
+                    document_text = cached_data.get("document_text", "")
+                    cached_metadata = cached_data.get("metadata", {})
+                    cached_page_map = cached_metadata.get("page_map", {})
+                    if document_text:
+                        print(f"[CHATBOT] ✓ Loaded document text from extraction cache")
+                        # Update metadata with document_text for future use
+                        metadata["document_text"] = document_text
+                        if cached_page_map:
+                            page_map = cached_page_map
+                            metadata["page_map"] = page_map
+                        extraction["metadata"] = metadata
+                        save_extractions_to_file()
+        
         if not document_text:
             return JSONResponse(
                 status_code=400,
-                content={"success": False, "error": "Document text not available in extraction"}
+                content={
+                    "success": False, 
+                    "error": "Document text not available in extraction. The extraction may have failed. Please re-extract the document.",
+                    "extraction_status": extraction.get("status"),
+                    "has_file_hash": bool(extraction.get("file_hash"))
+                }
             )
         
         # Generate session ID
@@ -1111,12 +1144,41 @@ async def load_chat_from_extraction(extraction_id: str):
         
         # Create chat session from text (reuses parsed text, no re-parsing needed!)
         chatbot = get_cached_chatbot()
-        result = chatbot.create_session_from_text(
-            session_id=session_id,
-            document_text=document_text,
-            filename=extraction.get("file_name", "document.pdf"),
-            extracted_data=extracted_data  # Pass extracted data for enhanced context
-        )
+        
+        # If we have page_map, use create_session_from_extraction_cache for better functionality
+        if page_map and len(page_map) > 0:
+            # Convert page_map keys to int if they're strings
+            try:
+                first_key = next(iter(page_map.keys()))
+                if isinstance(first_key, str):
+                    page_map = {int(k): v for k, v in page_map.items()}
+            except (StopIteration, ValueError):
+                page_map = {}
+            
+            if page_map:
+                result = chatbot.create_session_from_extraction_cache(
+                    session_id=session_id,
+                    document_text=document_text,
+                    page_map=page_map,
+                    filename=extraction.get("file_name", "document.pdf"),
+                    file_hash=extraction.get("file_hash")
+                )
+            else:
+                # Fallback to text-only session if page_map conversion failed
+                result = chatbot.create_session_from_text(
+                    session_id=session_id,
+                    document_text=document_text,
+                    filename=extraction.get("file_name", "document.pdf"),
+                    extracted_data=extracted_data
+                )
+        else:
+            # Fallback to text-only session
+            result = chatbot.create_session_from_text(
+                session_id=session_id,
+                document_text=document_text,
+                filename=extraction.get("file_name", "document.pdf"),
+                extracted_data=extracted_data  # Pass extracted data for enhanced context
+            )
         
         return JSONResponse(content=result)
         
