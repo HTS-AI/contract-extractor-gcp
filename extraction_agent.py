@@ -338,6 +338,32 @@ Return your response in JSON format:
             risk_score += 20
             risk_factors.append({"factor": "Compliance violations detected", "severity": "High", "impact": 20})
         
+        # PRIORITY CHECK: Due Date and Amount are critical attributes
+        # Check if due_date and amount are missing (handle both INVOICE and other document types)
+        due_date_missing = False
+        amount_missing = False
+        
+        if doc_type == "INVOICE":
+            dates = extracted_data.get("dates", {})
+            due_date_missing = not (dates.get("due_date") or extracted_data.get("due_date"))
+            amounts = extracted_data.get("amounts", {})
+            amount_missing = not (amounts.get("total") or amounts.get("amount_due") or extracted_data.get("amount"))
+        else:
+            due_date_missing = not extracted_data.get("due_date")
+            amount_missing = not extracted_data.get("amount")
+        
+        # Apply priority rules: Both missing = High risk (>=60), One missing = Medium risk (>=30)
+        if due_date_missing and amount_missing:
+            # Both critical attributes missing - ensure High risk minimum
+            if risk_score < 60:
+                risk_score = 60
+                risk_factors.append({"factor": "Priority: Both due date and amount missing - High risk enforced", "severity": "High", "impact": 0})
+        elif due_date_missing or amount_missing:
+            # One critical attribute missing - ensure Medium risk minimum
+            if risk_score < 30:
+                risk_score = 30
+                risk_factors.append({"factor": "Priority: One critical attribute (due date or amount) missing - Medium risk enforced", "severity": "Medium", "impact": 0})
+        
         # Cap risk score
         risk_score = min(risk_score, max_risk)
         

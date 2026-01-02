@@ -1576,6 +1576,31 @@ Return a JSON object with only the extracted fields. Use null for fields that ca
                 "impact": 20
             })
         
+        # PRIORITY CHECK: Due Date and Amount are critical attributes
+        # Check if due_date and amount are missing
+        due_date_missing = not extracted_data.get("due_date")
+        amount_missing = not extracted_data.get("amount")
+        
+        # Apply priority rules: Both missing = High risk (>=60), One missing = Medium risk (>=30)
+        if due_date_missing and amount_missing:
+            # Both critical attributes missing - ensure High risk minimum
+            if risk_score < 60:
+                risk_score = 60
+                risk_factors.append({
+                    "factor": "Priority: Both due date and amount missing - High risk enforced",
+                    "severity": "High",
+                    "impact": 0
+                })
+        elif due_date_missing or amount_missing:
+            # One critical attribute missing - ensure Medium risk minimum
+            if risk_score < 30:
+                risk_score = 30
+                risk_factors.append({
+                    "factor": "Priority: One critical attribute (due date or amount) missing - Medium risk enforced",
+                    "severity": "Medium",
+                    "impact": 0
+                })
+        
         # Cap risk score at max_risk
         risk_score = min(risk_score, max_risk)
         
