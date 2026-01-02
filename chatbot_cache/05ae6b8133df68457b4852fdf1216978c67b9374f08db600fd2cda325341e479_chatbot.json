@@ -1,0 +1,21 @@
+{
+  "file_hash": "05ae6b8133df68457b4852fdf1216978c67b9374f08db600fd2cda325341e479",
+  "filename": "invoice_CW-2025-517.pdf",
+  "cached_at": "2026-01-02T10:35:24.737665",
+  "document_text": "Field\nValue\nInvoice No\nCW-2025-517\nInvoice Date\n07-Jan-2025\nService Provider\nCityWave Communications\nClient\nDelta Mobile Networks\nAccount Head\nCity Fiber Ring – O&M Services\nStart Date\n03-Jan-2025\nDue Date\n03-Feb-2025\nDescription\nAmount\nFiber Ring Operation Support\n$6,200.00\nEmergency Fault Restoration\n$750.00\nTotal Amount Due\n$6,950.00\nPayment Field\nDetails\nBank Name\nFirst Global Bank\nAccount No\n9900124587\nSWIFT\nFGBLUS55\n",
+  "page_map": {
+    "1": "Field\nValue\nInvoice No\nCW-2025-517\nInvoice Date\n07-Jan-2025\nService Provider\nCityWave Communications\nClient\nDelta Mobile Networks\nAccount Head\nCity Fiber Ring – O&M Services\nStart Date\n03-Jan-2025\nDue Date\n03-Feb-2025\nDescription\nAmount\nFiber Ring Operation Support\n$6,200.00\nEmergency Fault Restoration\n$750.00\nTotal Amount Due\n$6,950.00\nPayment Field\nDetails\nBank Name\nFirst Global Bank\nAccount No\n9900124587\nSWIFT\nFGBLUS55\n"
+  },
+  "chunks": [
+    "Field\nValue\nInvoice No\nCW-2025-517\nInvoice Date\n07-Jan-2025\nService Provider\nCityWave Communications\nClient\nDelta Mobile Networks\nAccount Head\nCity Fiber Ring – O&M Services\nStart Date\n03-Jan-2025\nDue Date\n03-Feb-2025\nDescription\nAmount\nFiber Ring Operation Support\n$6,200.00\nEmergency Fault Restoration\n$750.00\nTotal Amount Due\n$6,950.00\nPayment Field\nDetails\nBank Name\nFirst Global Bank\nAccount No\n9900124587\nSWIFT\nFGBLUS55"
+  ],
+  "tables": [],
+  "is_scanned": false,
+  "used_ocr": false,
+  "metadata": {
+    "document_length": 426,
+    "total_pages": 1,
+    "total_chunks": 1,
+    "total_tables": 0
+  }
+}

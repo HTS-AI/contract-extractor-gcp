@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Table View - Contract Automation System</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    <style>
+        /* Override container styles for scrollable page */
+        .container {
+            overflow-y: auto !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+        
+        body {
+            overflow-y: auto !important;
+            height: auto !important;
+        }
+        
+        .main-content {
+            overflow: visible !important;
+            height: auto !important;
+        }
+        
+        .excel-table-container {
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            margin: 20px;
+        }
+        
+        .excel-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .excel-table-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .excel-table-title h2 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .table-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .table-info-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .info-card {
+            flex: 1;
+            min-width: 120px;
+            max-width: 200px;
+            padding: 15px 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .info-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        .info-card p {
+            margin: 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        table.dataTable {
+            width: 100% !important;
+            border-collapse: collapse;
+        }
+        
+        table.dataTable thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 8px;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+        }
+        
+        table.dataTable tbody td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        
+        table.dataTable tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .risk-low {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .risk-medium {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        .risk-high {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .risk-critical {
+            color: #c0392b;
+            font-weight: bold;
+        }
+        
+        .document-type-lease {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        
+        .document-type-nda {
+            background: #9b59b6;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        
+        .document-type-contract {
+            background: #27ae60;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3c3;
+        }
+        
+        .info-message {
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #0066cc;
+            font-size: 15px;
+        }
+        
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        /* Dashboard Modal */
+        .dashboard-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .dashboard-modal.active {
+            display: flex;
+        }
+        
+        .dashboard-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dashboard-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .dashboard-modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .close-modal-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .close-modal-btn:hover {
+            background: #c0392b;
+            transform: rotate(90deg);
+        }
+        
+        .dashboard-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .dashboard-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* DataTables Custom Styling */
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 15px;
+        }
+        
+        .dataTables_wrapper .dataTables_length select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+        
+        .dataTables_wrapper .dataTables_filter input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        
+        .dataTables_wrapper .dataTables_info {
+            padding: 15px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate {
+            padding: 15px 0;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 8px 16px;
+            margin: 0 2px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #667eea;
+            color: white !important;
+            border-color: #667eea;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #667eea;
+            color: white !important;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .dataTables_wrapper .dt-buttons {
+            margin-bottom: 15px;
+        }
+        
+        .dataTables_wrapper .dt-button {
+            padding: 8px 16px;
+            margin-right: 8px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .dataTables_wrapper .dt-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .excel-table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .table-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .table-btn {
+                flex: 1;
+            }
+            
+            .top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h1><span class="icon">📊</span>Data Table View</h1>
+                        <p>View all contract extractions in table format</p>
+                    </div>
+                    <div class="header-buttons">
+                        <a href="/" class="header-btn back-btn">
+                            <span class="btn-icon">🏠</span>
+                            <span>Back to Home</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="excel-table-container">
+                <!-- Header with Actions -->
+                <div class="excel-table-header">
+                    <div class="excel-table-title">
+                        <span style="font-size: 32px;">📋</span>
+                        <h2>Contract Extractions Data</h2>
+                    </div>
+                    <div class="table-actions">
+                        <button class="table-btn dashboard-btn" onclick="openDashboard()">
+                            <span>📊</span>
+                            <span>Dashboard</span>
+                        </button>
+                        <button class="table-btn refresh-btn" onclick="refreshTable()">
+                            <span>🔄</span>
+                            <span>Refresh</span>
+                        </button>
+                        <button class="table-btn download-btn" onclick="downloadExcel()">
+                            <span>📥</span>
+                            <span>Download Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div id="messageBox"></div>
+
+                <!-- Table -->
+                <div style="overflow-x: auto;">
+                    <table id="contractsTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Extracted At</th>
+                                <th>Document Name</th>
+                                <th>IDs</th>
+                                <th>Type</th>
+                                <th>Account Type</th>
+                                <th>Party Names</th>
+                                <th>Start Date</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Currency</th>
+                                <th>Frequency</th>
+                                <th>Risk Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data loaded via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Modal -->
+    <div id="dashboardModal" class="dashboard-modal">
+        <div class="dashboard-modal-content">
+            <div class="dashboard-modal-header">
+                <div class="dashboard-modal-title">
+                    <span>📊</span>
+                    <span>Statistics Dashboard</span>
+                </div>
+                <button class="close-modal-btn" onclick="closeDashboard()">×</button>
+            </div>
+            
+            <!-- Info Cards -->
+            <div class="table-info-box" id="infoBox">
+                <div class="info-card">
+                    <h3 id="totalCount">0</h3>
+                    <p>Total Extractions</p>
+                </div>
+                <div class="info-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h3 id="leaseCount">0</h3>
+                    <p>Lease Documents</p>
+                </div>
+                <div class="info-card" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+                    <h3 id="ndaCount">0</h3>
+                    <p>NDA Documents</p>
+                </div>
+                <div class="info-card" style="background: linear-gradient(135deg, #f7b733 0%, #fc4a1a 100%);">
+                    <h3 id="contractCount">0</h3>
+                    <p>Service Contracts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <!-- DataTables Buttons -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="/static/excel_table.js"></script>
+</body>
+</html>
+

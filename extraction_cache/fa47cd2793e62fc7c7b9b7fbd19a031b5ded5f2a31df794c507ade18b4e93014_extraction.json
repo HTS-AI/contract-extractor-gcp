@@ -1,0 +1,185 @@
+{
+  "file_hash": "fa47cd2793e62fc7c7b9b7fbd19a031b5ded5f2a31df794c507ade18b4e93014",
+  "cached_at": "2025-12-31T17:40:20.836825",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "Construction",
+    "party_names": {
+      "vendor": "Zylker Masterworks",
+      "vendor_address": "14B , Northern Street Greater South Avenue, New York 10001 U.S.A",
+      "vendor_gstin": "",
+      "vendor_pan": "",
+      "customer": "Michael Williams",
+      "customer_address": "789 Oak Ave, Chicago, 60601 IL, United States",
+      "customer_gstin": "",
+      "party_1": "Zylker Masterworks",
+      "party_2": "Michael Williams",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "INV - 000001",
+      "invoice_number": "INV - 000001",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2024-06-01",
+      "due_date": "2024-07-01",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2024-06-01",
+    "due_date": "2024-07-01",
+    "amounts": {
+      "subtotal": "6480.00",
+      "discount": "388.80",
+      "taxable_amount": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "total": "7200.32",
+      "amount_due": "",
+      "amount_paid": "",
+      "balance_due": "7200.32"
+    },
+    "amount": "7200.32",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Deck and patio construction",
+        "hsn_sac_code": "",
+        "quantity": "1",
+        "unit": "Square feet",
+        "rate": "80.00",
+        "amount": "1680.00",
+        "tax_rate": "10.00"
+      },
+      {
+        "description": "Fixture installation ( Sinks , toilets , showers )",
+        "hsn_sac_code": "",
+        "quantity": "7",
+        "unit": "Piece",
+        "rate": "150.00",
+        "amount": "1050.00",
+        "tax_rate": "10.00"
+      },
+      {
+        "description": "Air conditioning systems installation",
+        "hsn_sac_code": "",
+        "quantity": "1",
+        "unit": "",
+        "rate": "3750.00",
+        "amount": "3750.00",
+        "tax_rate": "10.00"
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "Net 30",
+      "payment_method": "",
+      "bank_name": "",
+      "account_number": "",
+      "ifsc_code": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "Construction Expense",
+    "notes": "Thanks for your business.",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 3,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": [
+        {
+          "factor": "Missing payment frequency",
+          "severity": "Low",
+          "impact": 3
+        }
+      ]
+    },
+    "tax_details": {
+      "subtotal": "6480.00",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "discount": "388.80"
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "invoice_type": {
+        "page": 1
+      },
+      "payment_terms": {
+        "page": 1
+      },
+      "line_items": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2025-12-31T17:40:20.822619"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges, tax details, and payment due information, which are all indicators of an invoice.",
+    "file_path": "C:\\Users\\hts\\AppData\\Local\\Temp\\tmp8wqjkp91.pdf",
+    "file_name": "tmp8wqjkp91.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "Bill To\nMichael Williams\n789 Oak Ave\nChicago\n60601 IL\nUnited States\nInvoice Date\nTerms\n01 Jun 2024\nItem & Description\nNet 30\nINVOICE\nDue Date\n01 Jul 2024\nZylker Masterworks\n14B , Northern Street Greater South Avenue\nNew York 10001 U.S.A\nInvoice #\nINV - 000001\nQty\nRate\nTax %\nAmount\n1\nDeck and patio construction\n80.00\n21.00\n10.00\n1,680.00\nPressure - treated composite decking\nSquare feet\n2\nFixture installation\n( Sinks , toilets , showers )\n7.00 Piece\n150.00\n10.00\n1,050.00\n3\nAir conditioning systems installation\n1.00\n3,750.00\n10.00\n3,750.00\nHeating , ventilation , and air conditioning installation\nThanks for your business .\nSub Total\n6,480.00\nDiscount ( 6.00 % )\n( - ) 388.80\nShipping charge\n500.00\nTotal\n$ 7,200.32\nBalance Due\n$ 7,200.32\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the contract agreement or engagement letter .",
+    "page_map": {
+      "1": "Bill To\nMichael Williams\n789 Oak Ave\nChicago\n60601 IL\nUnited States\nInvoice Date\nTerms\n01 Jun 2024\nItem & Description\nNet 30\nINVOICE\nDue Date\n01 Jul 2024\nZylker Masterworks\n14B , Northern Street Greater South Avenue\nNew York 10001 U.S.A\nInvoice #\nINV - 000001\nQty\nRate\nTax %\nAmount\n1\nDeck and patio construction\n80.00\n21.00\n10.00\n1,680.00\nPressure - treated composite decking\nSquare feet\n2\nFixture installation\n( Sinks , toilets , showers )\n7.00 Piece\n150.00\n10.00\n1,050.00\n3\nAir conditioning systems installation\n1.00\n3,750.00\n10.00\n3,750.00\nHeating , ventilation , and air conditioning installation\nThanks for your business .\nSub Total\n6,480.00\nDiscount ( 6.00 % )\n( - ) 388.80\nShipping charge\n500.00\nTotal\n$ 7,200.32\nBalance Due\n$ 7,200.32\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the contract agreement or engagement letter ."
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "Bill To\nMichael Williams\n789 Oak Ave\nChicago\n60601 IL\nUnited States\nInvoice Date\nTerms\n01 Jun 2024\nItem & Description\nNet 30\nINVOICE\nDue Date\n01 Jul 2024\nZylker Masterworks\n14B , Northern Street Greater South Avenue\nNew York 10001 U.S.A\nInvoice #\nINV - 000001\nQty\nRate\nTax %\nAmount\n1\nDeck and patio construction\n80.00\n21.00\n10.00\n1,680.00\nPressure - treated composite decking\nSquare feet\n2\nFixture installation\n( Sinks , toilets , showers )\n7.00 Piece\n150.00\n10.00\n1,050.00\n3\nAir conditioning systems installation\n1.00\n3,750.00\n10.00\n3,750.00\nHeating , ventilation , and air conditioning installation\nThanks for your business .\nSub Total\n6,480.00\nDiscount ( 6.00 % )\n( - ) 388.80\nShipping charge\n500.00\nTotal\n$ 7,200.32\nBalance Due\n$ 7,200.32\nTerms & Conditions\nAll services provided are subject to the terms and conditions outlined in the contract agreement or engagement letter ."
+}

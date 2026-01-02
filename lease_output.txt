@@ -1,0 +1,8 @@
+﻿python : C:\Users\Admin\anaconda3\python.exe: can't open file 
+'C:\\Users\\Admin\\Downloads\\contract-extra\\Contract-Extractor\\check_lease.py': [Errno 2] No such file or directory
+At C:\Users\Admin\AppData\Local\Temp\ps-script-ee1ac3d9-0d42-4273-b6ab-d33f6529b9c5.ps1:90 char:1
++ python check_lease.py 2>&1 | Out-File -Encoding utf8 lease_output.txt ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\Admin\...le or directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

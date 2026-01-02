@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Data Dashboard - Invoice to Account Payable Application</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        
+        .dashboard-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .controls-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95em;
+            cursor: pointer;
+        }
+        
+        .json-viewer {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .json-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .json-item-header:hover {
+            background: #f0f2ff;
+            transform: translateX(3px);
+        }
+        
+        .json-item-header.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .json-item-title {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .json-item-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+        
+        .json-content {
+            display: none;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 10px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .json-content.active {
+            display: block;
+        }
+        
+        .json-tree {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .json-key {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .json-string {
+            color: #28a745;
+            word-break: break-word;
+        }
+        
+        .json-number {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .json-boolean {
+            color: #007bff;
+            font-weight: 600;
+        }
+        
+        .json-null {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-nda {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-lease {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-contract {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1><span class="icon">📊</span> JSON Data Dashboard</h1>
+            <a href="/" class="back-button">← Back to Main</a>
+        </div>
+        
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-box">
+                <div class="stat-value" id="totalExtractions">0</div>
+                <div class="stat-label">Total Extractions</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalNDA">0</div>
+                <div class="stat-label">NDA Documents</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalLease">0</div>
+                <div class="stat-label">Lease Documents</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalContract">0</div>
+                <div class="stat-label">Contract Documents</div>
+            </div>
+        </div>
+        
+        <div class="controls-bar">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search in JSON data...">
+            <select id="typeFilter" class="filter-select">
+                <option value="all">All Types</option>
+                <option value="NDA">NDA</option>
+                <option value="LEASE">Lease</option>
+                <option value="CONTRACT">Contract</option>
+            </select>
+            <button id="expandAll" class="btn btn-primary">Expand All</button>
+            <button id="collapseAll" class="btn btn-secondary">Collapse All</button>
+        </div>
+        
+        <div id="loadingIndicator" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading JSON data...</p>
+        </div>
+        
+        <div id="jsonContainer" style="display: none;"></div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📄</div>
+            <h3>No JSON Data Available</h3>
+            <p>Extract some contracts to see JSON data here.</p>
+        </div>
+    </div>
+    
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
+

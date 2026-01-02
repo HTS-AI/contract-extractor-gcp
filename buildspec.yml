@@ -1,0 +1,187 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_TAG: latest
+    REGION: ap-south-1
+    EKS_CLUSTER: hts-usecase-cluster
+    NAMESPACE: contractextractor
+    DEPLOYMENT_NAME: contractextractor
+    CONTAINER_NAME: contractextractor
+    PORT: 8000
+    ECR_REPO_URI: 242880561312.dkr.ecr.ap-south-1.amazonaws.com/hts-ai/contractextractor
+    S3_BUCKET: hts-ai-usecase-links
+    HOSTNAME_DOMAIN: invoicetoap.knowerai.com
+    ACM_CERT_ARN: arn:aws:acm:ap-south-1:242880561312:certificate/4fb3265c-3ec2-4972-a660-1e57e18c9c2c
+
+phases:
+  pre_build:
+    commands:
+      - set -e
+      - echo "Logging in to ECR..."
+      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+
+      - echo "Setting REPO_IMAGE..."
+      - export REPO_IMAGE="$ECR_REPO_URI:$IMAGE_TAG"
+
+      - echo "Updating kubeconfig..."
+      - aws eks update-kubeconfig --region $REGION --name $EKS_CLUSTER --kubeconfig kubeconfig.yaml
+      - export KUBECONFIG=$PWD/kubeconfig.yaml
+
+      - echo "Verifying kubectl connectivity..."
+      - kubectl get nodes
+
+      - echo "Ensuring namespace exists..."
+      - kubectl get namespace $NAMESPACE || kubectl create namespace $NAMESPACE
+
+      - echo "=== Checking .dockerignore ==="
+      - if [ -f .dockerignore ]; then cat .dockerignore; else echo "No .dockerignore found"; fi
+
+  build:
+    commands:
+      - set -e
+      - echo "Building Docker image $REPO_IMAGE..."
+      - docker build -t $REPO_IMAGE .
+      - echo "Pushing Docker image..."
+      - docker push $REPO_IMAGE
+
+  post_build:
+    commands:
+      - set -e
+
+      # Create OpenAI secret
+      - echo "Creating Kubernetes Secret for OpenAI Key..."
+      - |
+        OPENAI_KEY=$(echo $OPENAI_KEY_SECRET | jq -r '.OPENAI_API_KEY')
+        kubectl create secret generic openai-key-secret \
+          --from-literal=OPENAI_API_KEY="$OPENAI_KEY" \
+          -n $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+
+      # Create GCP credentials secret
+      - echo "Creating Kubernetes Secret for GCP credentials..."
+      - |
+        echo $GCP_CREDS_JSON > gcp-creds.json
+        kubectl create secret generic gcp-creds-secret \
+          --from-file=gcp-creds.json \
+          -n $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+
+      # Create Deployment YAML
+      - echo "Creating Kubernetes Deployment YAML..."
+      - |
+        cat <<EOF > deployment.yaml
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: $DEPLOYMENT_NAME
+          namespace: $NAMESPACE
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: $DEPLOYMENT_NAME
+          template:
+            metadata:
+              labels:
+                app: $DEPLOYMENT_NAME
+            spec:
+              containers:
+                - name: $CONTAINER_NAME
+                  image: $REPO_IMAGE
+                  ports:
+                    - containerPort: $PORT
+                  imagePullPolicy: Always
+                  env:
+                    - name: OPENAI_API_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: openai-key-secret
+                          key: OPENAI_API_KEY
+                    - name: GOOGLE_APPLICATION_CREDENTIALS
+                      value: /app/gcp-creds.json
+                  volumeMounts:
+                    - name: gcp-creds
+                      mountPath: /app/gcp-creds.json
+                      subPath: gcp-creds.json
+              volumes:
+                - name: gcp-creds
+                  secret:
+                    secretName: gcp-creds-secret
+        EOF
+
+      - echo "Applying Deployment..."
+      - kubectl apply -f deployment.yaml
+
+      # Service YAML
+      - echo "Creating NodePort Service YAML..."
+      - |
+        cat <<EOF > service.yaml
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: $DEPLOYMENT_NAME-service
+          namespace: $NAMESPACE
+        spec:
+          type: NodePort
+          selector:
+            app: $DEPLOYMENT_NAME
+          ports:
+            - port: 80
+              targetPort: $PORT
+              protocol: TCP
+        EOF
+
+      - echo "Applying Service..."
+      - kubectl apply -f service.yaml
+
+      # Ingress YAML for ALB HTTPS
+      - echo "Creating ALB Ingress YAML for HTTPS..."
+      - |
+        cat <<EOF > ingress.yaml
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: $DEPLOYMENT_NAME-ingress
+          namespace: $NAMESPACE
+          annotations:
+            kubernetes.io/ingress.class: alb
+            alb.ingress.kubernetes.io/scheme: internet-facing
+            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+            alb.ingress.kubernetes.io/certificate-arn: $ACM_CERT_ARN
+        spec:
+          rules:
+            - host: $HOSTNAME_DOMAIN
+              http:
+                paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: $DEPLOYMENT_NAME-service
+                        port:
+                          number: 80
+        EOF
+
+      - echo "Applying Ingress..."
+      - kubectl apply -f ingress.yaml
+
+      # Wait for ALB hostname
+      - echo "Waiting for ALB hostname..."
+      - |
+        while true; do
+          HOSTNAME=$(kubectl get ingress $DEPLOYMENT_NAME-ingress -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          if [ ! -z "$HOSTNAME" ]; then
+            break
+          fi
+          echo "Waiting for ALB hostname..."
+          sleep 15
+        done
+
+      - echo "Deployment completed successfully!"
+      - echo "Application URL:https://$HOSTNAME"
+
+      # Upload URLs to S3
+      - echo "Uploading URL to S3..."
+      - echo "https://$HOSTNAME_DOMAIN" > app_url.txt
+      - echo "https://$HOSTNAME" > actual_domain.txt
+      - aws s3 cp app_url.txt s3://$S3_BUCKET/$DEPLOYMENT_NAME/app_url.txt
+      - aws s3 cp actual_domain.txt s3://$S3_BUCKET/$DEPLOYMENT_NAME/actual_domain.txt
