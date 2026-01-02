@@ -266,7 +266,7 @@ function displayFactorsFromExcel(doc) {
         {
             label: 'Frequency',
             icon: '🔄',
-            value: excelRow['Frequency'] || ''
+            value: excelRow['Frequency'] || '1'  // Default to "1" if empty
         },
         {
             label: 'Account Type (Head)',
@@ -366,7 +366,7 @@ function displayFactors(doc) {
         {
             label: 'Frequency',
             icon: '🔄',
-            value: getNestedValue(data, ['frequency', 'payment_terms.frequency']) || '',
+            value: getNestedValue(data, ['frequency', 'payment_terms.frequency']) || '1',  // Default to "1" if empty
             path: ['frequency', 'payment_terms.frequency'],
             refKey: 'frequency'
         },
@@ -676,18 +676,26 @@ function formatRiskScore(data) {
     return '';
 }
 
-// Format risk score value with badge
+// Format risk score value with badge - Show label instead of number
 function formatRiskScoreValue(score) {
     if (typeof score !== 'number') return String(score);
     
+    // Determine risk level and badge class
+    let riskLevel = 'Low';
     let badgeClass = 'risk-low';
-    if (score >= 60) {
+    
+    if (score >= 80) {
+        riskLevel = 'Critical';
+        badgeClass = 'risk-critical';
+    } else if (score >= 60) {
+        riskLevel = 'High';
         badgeClass = 'risk-high';
     } else if (score >= 30) {
+        riskLevel = 'Medium';
         badgeClass = 'risk-medium';
     }
     
-    return `<span class="risk-score-badge ${badgeClass}">${score}/100</span>`;
+    return `<span class="risk-score-badge ${badgeClass}">${riskLevel}</span>`;
 }
 
 // Calculation functions removed - only original data from documents is displayed

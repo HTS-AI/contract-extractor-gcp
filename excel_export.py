@@ -218,7 +218,7 @@ class ExcelExporter:
                 "Due Date": extracted_data.get("due_date", ""),
                 "Amount": extracted_data.get("amount", ""),
                 "Currency": extracted_data.get("currency", ""),
-                "Frequency": extracted_data.get("frequency", ""),
+                "Frequency": extracted_data.get("frequency") or "1",  # Default to "1" if empty
                 "Risk Score": self._format_risk_score(extracted_data.get("risk_score")),
             }
             

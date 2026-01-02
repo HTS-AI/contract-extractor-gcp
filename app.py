@@ -299,6 +299,57 @@ async def extract_document(extraction_id: str):
                 metadata = cached_result.get("metadata", {})
                 document_text = cached_result.get("document_text", "")
                 
+                # ============== DUPLICATE INVOICE ID CHECK (FOR INVOICES ONLY) ==============
+                doc_type = extracted_data.get("document_type", "UNKNOWN")
+                
+                if doc_type == "INVOICE":
+                    # Extract invoice ID from document_ids
+                    doc_ids = extracted_data.get("document_ids", {})
+                    invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number") or ""
+                    
+                    if invoice_id and invoice_id.strip():
+                        print(f"\n[DUPLICATE CHECK] Checking for duplicate invoice ID: {invoice_id}")
+                        
+                        # Check if this invoice ID already exists
+                        duplicate = check_duplicate_invoice_id(invoice_id, extraction_id)
+                        
+                        if duplicate:
+                            # Duplicate found! Don't save, return warning
+                            print(f"   [DUPLICATE FOUND] Invoice ID '{invoice_id}' already exists!")
+                            print(f"   - Existing file: {duplicate['file_name']}")
+                            print(f"   - Processed on: {duplicate['extracted_at']}")
+                            print(f"   [ACTION] Blocking save - returning warning to user")
+                            
+                            # Update extraction status to show duplicate
+                            extraction["status"] = "duplicate"
+                            
+                            # Clean up temp file if exists
+                            if os.path.exists(file_path):
+                                os.remove(file_path)
+                            
+                            # Return warning response (DON'T SAVE TO DATABASE)
+                            return {
+                                "status": "duplicate_invoice",
+                                "success": False,
+                                "warning": True,
+                                "message": f"⚠️ Invoice ID '{invoice_id}' already exists in the system.",
+                                "details": {
+                                    "invoice_id": invoice_id,
+                                    "existing_document": duplicate["file_name"],
+                                    "processed_date": duplicate["extracted_at"],
+                                    "extraction_id": duplicate["extraction_id"],
+                                    "vendor": duplicate.get("vendor", ""),
+                                    "amount": duplicate.get("amount", ""),
+                                    "currency": duplicate.get("currency", "")
+                                },
+                                "suggestion": "This invoice was previously processed. Please verify if you uploaded the correct document."
+                            }
+                        else:
+                            print(f"   [OK] Invoice ID is unique, proceeding with save")
+                    else:
+                        print(f"   [WARNING] No invoice ID found in extracted data, skipping duplicate check")
+                # ============== END DUPLICATE CHECK ==============
+                
                 # Store in extraction store
                 extraction["extracted_data"] = extracted_data
                 extraction["metadata"] = metadata
@@ -404,12 +455,70 @@ async def extract_document(extraction_id: str):
         print(f"   - Document Type: {doc_type}")
         print(f"   - Fields Extracted: {len(extracted_data)} fields")
         
+        # ============== DUPLICATE INVOICE ID CHECK (FOR INVOICES ONLY) ==============
+        if doc_type == "INVOICE":
+            # Extract invoice ID from document_ids
+            doc_ids = extracted_data.get("document_ids", {})
+            invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number") or ""
+            
+            if invoice_id and invoice_id.strip():
+                print(f"\n[STEP 3.5] Checking for duplicate invoice ID: {invoice_id}")
+                
+                # Check if this invoice ID already exists
+                duplicate = check_duplicate_invoice_id(invoice_id, extraction_id)
+                
+                if duplicate:
+                    # Duplicate found! Don't save, return warning
+                    print(f"   [DUPLICATE FOUND] Invoice ID '{invoice_id}' already exists!")
+                    print(f"   - Existing file: {duplicate['file_name']}")
+                    print(f"   - Processed on: {duplicate['extracted_at']}")
+                    print(f"   [ACTION] Blocking save - returning warning to user")
+                    
+                    # Update extraction status to show duplicate
+                    extraction["status"] = "duplicate"
+                    
+                    # Clean up temp file
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    
+                    print(f"\n" + "="*80)
+                    print(f"[DUPLICATE] INVOICE ALREADY EXISTS - EXTRACTION BLOCKED")
+                    print(f"="*80)
+                    print(f"  Invoice ID: {invoice_id}")
+                    print(f"  New Document: {extraction['file_name']}")
+                    print(f"  Existing Document: {duplicate['file_name']}")
+                    print(f"  Processed Date: {duplicate['extracted_at']}")
+                    print("="*80 + "\n")
+                    
+                    # Return warning response (DON'T SAVE TO DATABASE)
+                    return {
+                        "status": "duplicate_invoice",
+                        "success": False,
+                        "warning": True,
+                        "message": f"⚠️ Invoice ID '{invoice_id}' already exists in the system.",
+                        "details": {
+                            "invoice_id": invoice_id,
+                            "existing_document": duplicate["file_name"],
+                            "processed_date": duplicate["extracted_at"],
+                            "extraction_id": duplicate["extraction_id"],
+                            "vendor": duplicate.get("vendor", ""),
+                            "amount": duplicate.get("amount", ""),
+                            "currency": duplicate.get("currency", "")
+                        },
+                        "suggestion": "This invoice was previously processed. Please verify if you uploaded the correct document."
+                    }
+                else:
+                    print(f"   [OK] Invoice ID is unique, proceeding with save")
+            else:
+                print(f"   [WARNING] No invoice ID found in extracted data, skipping duplicate check")
+        # ============== END DUPLICATE CHECK ==============
+        
         # Get document text from metadata for caching
         document_text = metadata.get("document_text", "")
         
         # Save to cache for future use
         if file_hash:
-            print(f"\n[STEP 3.5] Saving extraction results to cache...")
+            print(f"\n[STEP 4] Saving extraction results to cache...")
             cache_manager.save_extraction_cache(file_hash, extracted_data, metadata, document_text)
             print(f"   [OK] Results cached for future use")
         
@@ -418,7 +527,7 @@ async def extract_document(extraction_id: str):
         extraction["metadata"] = metadata
         
         # Transform to frontend expected format
-        print(f"\n[STEP 4] Transforming data for frontend...")
+        print(f"\n[STEP 5] Transforming data for frontend...")
         results = transform_to_frontend_format(extracted_data, metadata)
         print(f"   [OK] Data transformation completed")
         
@@ -434,12 +543,12 @@ async def extract_document(extraction_id: str):
         extraction["extracted_at"] = datetime.now().isoformat()
         
         # Update dashboard data
-        print(f"\n[STEP 5] Updating dashboard statistics...")
+        print(f"\n[STEP 6] Updating dashboard statistics...")
         update_dashboard(results)
         print(f"   [OK] Dashboard updated")
         
         # Save to Excel file
-        print(f"\n[STEP 6] Saving to Excel file...")
+        print(f"\n[STEP 7] Saving to Excel file...")
         try:
             excel_path = Path(__file__).parent / "contract_extractions.xlsx"
             print(f"   - File: {excel_path.name}")
@@ -458,7 +567,7 @@ async def extract_document(extraction_id: str):
             print(f"   [ERROR] Excel export failed - {e}")
         
         # Clean up temp file
-        print(f"\n[STEP 7] Cleaning up temporary files...")
+        print(f"\n[STEP 8] Cleaning up temporary files...")
         if os.path.exists(file_path):
             os.remove(file_path)
             print(f"   [OK] Temporary files removed")
@@ -759,6 +868,63 @@ async def extract_from_text(request: TextExtractionRequest):
 
 # ============== Helper Functions ==============
 
+def check_duplicate_invoice_id(invoice_id: str, current_extraction_id: str = None) -> Optional[Dict[str, Any]]:
+    """
+    Check if an invoice ID already exists in the database.
+    
+    Args:
+        invoice_id: The invoice ID to check
+        current_extraction_id: Current extraction ID to exclude from check (for updates)
+        
+    Returns:
+        Dictionary with existing extraction info if duplicate found, None otherwise
+    """
+    if not invoice_id or not invoice_id.strip():
+        return None
+    
+    # Normalize invoice ID for comparison (case-insensitive, trim whitespace)
+    normalized_id = invoice_id.strip().lower()
+    
+    # Check in-memory store first (fast)
+    for extraction_id, extraction in extractions_store.items():
+        # Skip current extraction if provided
+        if current_extraction_id and extraction_id == current_extraction_id:
+            continue
+        
+        # Only check completed extractions
+        if extraction.get("status") == "completed":
+            extracted_data = extraction.get("extracted_data", {})
+            
+            # Only check INVOICE documents
+            if extracted_data.get("document_type") == "INVOICE":
+                doc_ids = extracted_data.get("document_ids", {})
+                
+                # Check both invoice_id and invoice_number fields
+                existing_invoice_id = (
+                    doc_ids.get("invoice_id") or 
+                    doc_ids.get("invoice_number") or
+                    ""
+                )
+                
+                # Normalize existing ID for comparison
+                if existing_invoice_id:
+                    normalized_existing = existing_invoice_id.strip().lower()
+                    
+                    if normalized_existing == normalized_id:
+                        # Found duplicate!
+                        return {
+                            "extraction_id": extraction_id,
+                            "invoice_id": existing_invoice_id,
+                            "file_name": extraction.get("file_name", "Unknown"),
+                            "extracted_at": extraction.get("extracted_at", ""),
+                            "vendor": extracted_data.get("party_names", {}).get("vendor", ""),
+                            "amount": extracted_data.get("amount", ""),
+                            "currency": extracted_data.get("currency", "")
+                        }
+    
+    return None
+
+
 def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
     """Transform extracted data to frontend expected format."""
     # Get party names
@@ -814,7 +980,7 @@ def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
         "payment_terms": {
             "amount": extracted_data.get("amount", ""),
             "currency": extracted_data.get("currency", ""),
-            "frequency": extracted_data.get("frequency", ""),
+            "frequency": extracted_data.get("frequency") or "1",  # Default to "1" if empty
             "due_date": extracted_data.get("due_date", "")
         },
         "termination_clause": "",

@@ -1005,6 +1005,12 @@ section h2 {
     color: #721c24;
 }
 
+.risk-badge.critical {
+    background: #dc3545;
+    color: #ffffff;
+    font-weight: 700;
+}
+
 /* Parties */
 .parties-grid {
     display: grid;
@@ -1771,5 +1777,312 @@ section h2 {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 4px;
+    }
+}
+
+/* ============================================================
+   DUPLICATE INVOICE WARNING MODAL STYLES
+   ============================================================ */
+
+.duplicate-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.duplicate-modal-container {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.duplicate-modal-header {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    padding: 24px 28px;
+    border-radius: 16px 16px 0 0;
+    position: relative;
+    text-align: center;
+}
+
+.duplicate-warning-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.duplicate-modal-title {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.duplicate-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.duplicate-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.duplicate-modal-body {
+    padding: 28px;
+}
+
+.duplicate-invoice-id {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border-left: 4px solid #ff6b6b;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.duplicate-invoice-id label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.duplicate-invoice-id .duplicate-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ff6b6b;
+    font-family: 'Courier New', monospace;
+}
+
+.duplicate-message {
+    margin-bottom: 20px;
+}
+
+.duplicate-message p {
+    color: #495057;
+    font-size: 15px;
+    margin: 0;
+}
+
+.duplicate-details {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.duplicate-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.duplicate-detail-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.duplicate-detail-item:first-child {
+    padding-top: 0;
+}
+
+.detail-icon {
+    font-size: 20px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.detail-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-content label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #212529;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.duplicate-alert-box {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 16px 18px;
+    color: #856404;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.duplicate-alert-box strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 15px;
+}
+
+.duplicate-modal-footer {
+    padding: 20px 28px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 0 0 16px 16px;
+}
+
+.duplicate-ok-btn {
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.duplicate-ok-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+    background: linear-gradient(135deg, #357abd 0%, #2868a8 100%);
+}
+
+.duplicate-ok-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+/* Mobile responsiveness for duplicate modal */
+@media (max-width: 768px) {
+    .duplicate-modal-container {
+        width: 95%;
+        max-height: 85vh;
+        border-radius: 12px;
+    }
+    
+    .duplicate-modal-header {
+        padding: 20px 24px;
+    }
+    
+    .duplicate-warning-icon {
+        font-size: 40px;
+    }
+    
+    .duplicate-modal-title {
+        font-size: 18px;
+    }
+    
+    .duplicate-modal-body {
+        padding: 20px;
+    }
+    
+    .duplicate-invoice-id {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .duplicate-invoice-id .duplicate-value {
+        font-size: 16px;
+    }
+    
+    .duplicate-details {
+        padding: 16px;
+    }
+    
+    .detail-value {
+        font-size: 13px;
+    }
+    
+    .duplicate-alert-box {
+        font-size: 13px;
+        padding: 14px;
+    }
+    
+    .duplicate-modal-footer {
+        padding: 16px 20px;
+    }
+    
+    .duplicate-ok-btn {
+        width: 100%;
+        padding: 12px 24px;
+        font-size: 15px;
     }
 }

@@ -365,6 +365,74 @@
         </div>
     </div>
 
+    <!-- Duplicate Invoice Warning Modal -->
+    <div id="duplicateWarningModal" class="duplicate-modal-overlay" style="display: none;">
+        <div class="duplicate-modal-container">
+            <div class="duplicate-modal-header">
+                <div class="duplicate-warning-icon">⚠️</div>
+                <h2 class="duplicate-modal-title">DUPLICATE INVOICE DETECTED</h2>
+                <button id="closeDuplicateModal" class="duplicate-modal-close">&times;</button>
+            </div>
+            
+            <div class="duplicate-modal-body">
+                <div class="duplicate-invoice-id">
+                    <label>Invoice ID:</label>
+                    <span id="duplicateInvoiceId" class="duplicate-value"></span>
+                </div>
+                
+                <div class="duplicate-message">
+                    <p><strong>This invoice already exists in the system:</strong></p>
+                </div>
+                
+                <div class="duplicate-details">
+                    <div class="duplicate-detail-item">
+                        <span class="detail-icon">📄</span>
+                        <div class="detail-content">
+                            <label>Existing File:</label>
+                            <span id="duplicateExistingFile" class="detail-value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="duplicate-detail-item" id="duplicateVendorItem" style="display: none;">
+                        <span class="detail-icon">🏢</span>
+                        <div class="detail-content">
+                            <label>Vendor:</label>
+                            <span id="duplicateVendor" class="detail-value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="duplicate-detail-item" id="duplicateAmountItem" style="display: none;">
+                        <span class="detail-icon">💰</span>
+                        <div class="detail-content">
+                            <label>Amount:</label>
+                            <span id="duplicateAmount" class="detail-value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="duplicate-detail-item">
+                        <span class="detail-icon">📅</span>
+                        <div class="detail-content">
+                            <label>Processed Date:</label>
+                            <span id="duplicateProcessedDate" class="detail-value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="duplicate-alert-box">
+                    <strong>⚠️ Important:</strong> The duplicate invoice was not saved to the database.
+                    <br>
+                    Please verify you uploaded the correct document.
+                </div>
+            </div>
+            
+            <div class="duplicate-modal-footer">
+                <button id="duplicateModalOkBtn" class="duplicate-ok-btn">
+                    <span>OK</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/script.js"></script>
     <script src="/static/chatbot.js"></script>
 </body>

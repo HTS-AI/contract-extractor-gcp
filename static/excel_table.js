@@ -5,9 +5,18 @@
 
 let dataTable = null;
 
+// Suppress DataTables error alerts - handle errors gracefully in UI instead
+$.fn.dataTable.ext.errMode = 'none';
+
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadExcelData();
+    
+    // Handle DataTables errors gracefully
+    $(document).on('error.dt', function(e, settings, techNote, message) {
+        console.error('DataTables error:', message);
+        showMessage('⚠️ Unable to display table. Please refresh the page or contact support.', 'error');
+    });
 });
 
 /**
@@ -33,8 +42,13 @@ async function loadExcelData() {
             setTimeout(hideMessage, 3000);
         } else {
             console.log('No data found in Excel file');
-            showMessage('No data found in Excel file. Extract some documents first!', 'error');
+            showMessage('📋 No data available yet. Upload and extract some documents to see them here!', 'info');
             displayEmptyTable();
+            // Set info cards to zero
+            document.getElementById('totalCount').textContent = '0';
+            document.getElementById('leaseCount').textContent = '0';
+            document.getElementById('ndaCount').textContent = '0';
+            document.getElementById('contractCount').textContent = '0';
         }
     } catch (error) {
         console.error('Error loading Excel data:', error);
@@ -80,7 +94,7 @@ function displayTable(data) {
             <td>${formatDate(row['Due Date'])}</td>
             <td>${formatAmount(row['Amount'], row['Currency'])}</td>
             <td>${escapeHtml(row['Currency'] || '-')}</td>
-            <td>${escapeHtml(row['Frequency'] || '-')}</td>
+            <td>${escapeHtml(row['Frequency'] || '1')}</td>
             <td>${formatRiskScore(row['Risk Score'])}</td>
         `;
         
@@ -91,63 +105,87 @@ function displayTable(data) {
     
     // Initialize DataTable with advanced features
     console.log('Initializing DataTable...');
-    dataTable = $('#contractsTable').DataTable({
-        order: [[0, 'desc']], // Sort by Extracted At (newest first)
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        dom: '<"top"Blf>rtip',  // B=buttons, l=length menu, f=filter, r=processing, t=table, i=info, p=pagination
-        buttons: [
-            {
-                extend: 'excel',
-                text: '📥 Export to Excel',
-                className: 'dt-button-excel'
-            },
-            {
-                extend: 'copy',
-                text: '📋 Copy',
-                className: 'dt-button-copy'
+    try {
+        dataTable = $('#contractsTable').DataTable({
+            order: [[0, 'desc']], // Sort by Extracted At (newest first)
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            dom: '<"top"Blf>rtip',  // B=buttons, l=length menu, f=filter, r=processing, t=table, i=info, p=pagination
+            buttons: [
+                {
+                    extend: 'excel',
+                    text: '📥 Export to Excel',
+                    className: 'dt-button-excel'
+                },
+                {
+                    extend: 'copy',
+                    text: '📋 Copy',
+                    className: 'dt-button-copy'
+                }
+            ],
+            responsive: true,
+            language: {
+                search: "🔍 Search:",
+                lengthMenu: "Show _MENU_ entries per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ extractions",
+                infoEmpty: "No extractions found",
+                infoFiltered: "(filtered from _MAX_ total extractions)",
+                zeroRecords: "No matching extractions found",
+                emptyTable: "No data available - extract some documents first!",
+                paginate: {
+                    first: "⏮ First",
+                    last: "Last ⏭",
+                    next: "Next ▶",
+                    previous: "◀ Previous"
+                }
             }
-        ],
-        responsive: true,
-        language: {
-            search: "🔍 Search:",
-            lengthMenu: "Show _MENU_ entries per page",
-            info: "Showing _START_ to _END_ of _TOTAL_ extractions",
-            infoEmpty: "No extractions found",
-            infoFiltered: "(filtered from _MAX_ total extractions)",
-            zeroRecords: "No matching extractions found",
-            emptyTable: "No data available - extract some documents first!",
-            paginate: {
-                first: "⏮ First",
-                last: "Last ⏭",
-                next: "Next ▶",
-                previous: "◀ Previous"
-            }
-        }
-    });
-    
-    console.log('DataTable initialized successfully!');
-    console.log('Page length:', dataTable.page.len());
-    console.log('Total pages:', dataTable.page.info().pages);
+        });
+        
+        console.log('DataTable initialized successfully!');
+        console.log('Page length:', dataTable.page.len());
+        console.log('Total pages:', dataTable.page.info().pages);
+    } catch (error) {
+        console.error('Error initializing DataTable:', error);
+        showMessage('⚠️ Error displaying table. Some features may not work correctly.', 'warning');
+    }
 }
 
 /**
  * Display empty table
  */
 function displayEmptyTable() {
+    console.log('Displaying empty table');
+    
+    // Destroy existing DataTable if it exists
     if (dataTable) {
-        dataTable.destroy();
+        try {
+            dataTable.destroy();
+            console.log('Destroyed existing DataTable');
+        } catch (e) {
+            console.error('Error destroying DataTable:', e);
+        }
     }
     
     const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: #999;">No data available. Extract some documents to see them here!</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: #999; font-size: 16px;">📋 No data available. Extract some documents to see them here!</td></tr>';
     
-    // Initialize empty DataTable
-    dataTable = $('#contractsTable').DataTable({
-        searching: false,
-        paging: false,
-        info: false
-    });
+    // Initialize empty DataTable with error suppression
+    try {
+        dataTable = $('#contractsTable').DataTable({
+            searching: false,
+            paging: false,
+            info: false,
+            ordering: false,
+            language: {
+                emptyTable: "No data available - extract some documents first!",
+                zeroRecords: "No matching records found"
+            }
+        });
+        console.log('Empty DataTable initialized successfully');
+    } catch (e) {
+        console.error('Error initializing empty DataTable:', e);
+        // If DataTable fails, just leave the simple HTML message
+    }
 }
 
 /**
@@ -318,19 +356,54 @@ function formatRiskScore(score) {
     if (!score || score === '-') return '-';
     
     try {
-        // Extract numeric score from format like "20/100 (Low)"
-        const match = score.toString().match(/(\d+)\/\d+\s*\((\w+)\)/);
+        let numScore;
+        let riskLevel;
+        
+        // Extract numeric score from format like "20/100 (Low)" or just "20"
+        const match = score.toString().match(/(\d+)(?:\/\d+)?\s*(?:\((\w+)\))?/);
         
         if (match) {
-            const numScore = parseInt(match[1]);
-            const level = match[2].toLowerCase();
+            numScore = parseInt(match[1]);
+            riskLevel = match[2]; // May be undefined if not in "score (level)" format
             
+            // If level not provided, calculate from score
+            if (!riskLevel) {
+                if (numScore >= 80) {
+                    riskLevel = 'Critical';
+                } else if (numScore >= 60) {
+                    riskLevel = 'High';
+                } else if (numScore >= 30) {
+                    riskLevel = 'Medium';
+                } else {
+                    riskLevel = 'Low';
+                }
+            }
+            
+            // Determine CSS class
             let className = 'risk-low';
-            if (numScore >= 80) className = 'risk-critical';
-            else if (numScore >= 60) className = 'risk-high';
-            else if (numScore >= 30) className = 'risk-medium';
+            const levelLower = riskLevel.toLowerCase();
+            if (levelLower === 'critical' || numScore >= 80) {
+                className = 'risk-critical';
+            } else if (levelLower === 'high' || numScore >= 60) {
+                className = 'risk-high';
+            } else if (levelLower === 'medium' || numScore >= 30) {
+                className = 'risk-medium';
+            }
             
-            return `<span class="${className}">${score}</span>`;
+            // Return just the label, not the number
+            return `<span class="${className}">${riskLevel}</span>`;
+        }
+        
+        // If it's already just a label (Low, Medium, High, Critical)
+        if (['low', 'medium', 'high', 'critical'].includes(score.toString().toLowerCase())) {
+            const level = score.toString();
+            const levelLower = level.toLowerCase();
+            let className = 'risk-low';
+            if (levelLower === 'critical') className = 'risk-critical';
+            else if (levelLower === 'high') className = 'risk-high';
+            else if (levelLower === 'medium') className = 'risk-medium';
+            
+            return `<span class="${className}">${level.charAt(0).toUpperCase() + level.slice(1).toLowerCase()}</span>`;
         }
         
         return score;
@@ -360,9 +433,20 @@ function showLoading(show) {
 /**
  * Show message
  */
-function showMessage(message, type) {
+function showMessage(message, type = 'info') {
     const messageBox = document.getElementById('messageBox');
-    const className = type === 'success' ? 'success-message' : 'error-message';
+    let className = 'info-message';
+    
+    if (type === 'success') {
+        className = 'success-message';
+    } else if (type === 'error') {
+        className = 'error-message';
+    } else if (type === 'warning') {
+        className = 'warning-message';
+    } else if (type === 'info') {
+        className = 'info-message';
+    }
+    
     messageBox.innerHTML = `<div class="${className}">${escapeHtml(message)}</div>`;
 }
 
