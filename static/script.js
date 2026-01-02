@@ -236,6 +236,33 @@ async function handleExtract() {
         const extractData = await extractResponse.json();
         console.log('Extraction completed. Results:', extractData);
         
+        // Check if it's a duplicate invoice warning
+        if (extractData.status === 'duplicate_invoice' && extractData.warning === true) {
+            console.log('Duplicate invoice detected:', extractData);
+            
+            // Show custom warning modal (replaces browser alert)
+            showDuplicateInvoiceModal(extractData);
+            
+            // Show status error
+            const invoiceId = extractData.details?.invoice_id || 'Unknown';
+            showStatus(`Duplicate invoice: ${invoiceId} already exists`, 'error');
+            
+            // Reset button and hide extracted content
+            btn.disabled = false;
+            btn.innerHTML = '<span class="icon">🔍</span> Extract Information';
+            
+            const extractedContent = document.getElementById('extractedContent');
+            if (extractedContent) {
+                extractedContent.style.display = 'none';
+            }
+            
+            // Clear extraction ID since it wasn't saved
+            currentExtractionId = null;
+            window.currentExtractionId = null;
+            
+            return; // Stop here - don't display results
+        }
+        
         if (!extractData.results) {
             throw new Error('No results returned from extraction');
         }
@@ -314,11 +341,25 @@ function displayResults(results, extractionId = null) {
     document.getElementById('contractType').className = 'badge ' + (results.contract_type || '').toLowerCase();
     document.getElementById('executionDate').textContent = results.execution_date || '-';
     
-    // Risk Score
-    const riskScore = parseInt(results.risk_score) || 0;
-    document.getElementById('riskScore').textContent = riskScore;
-    document.getElementById('riskScore').className = 'risk-badge ' + 
-        (riskScore < 30 ? 'low' : riskScore < 60 ? 'medium' : 'high');
+    // Risk Score - Show label instead of number
+    const riskScoreValue = parseInt(results.risk_score) || 0;
+    
+    // Determine risk level from score
+    let riskLevel = 'Low';
+    let riskClass = 'low';
+    if (riskScoreValue >= 80) {
+        riskLevel = 'Critical';
+        riskClass = 'critical';
+    } else if (riskScoreValue >= 60) {
+        riskLevel = 'High';
+        riskClass = 'high';
+    } else if (riskScoreValue >= 30) {
+        riskLevel = 'Medium';
+        riskClass = 'medium';
+    }
+    
+    document.getElementById('riskScore').textContent = riskLevel;
+    document.getElementById('riskScore').className = 'risk-badge ' + riskClass;
     
     // Parties
     document.getElementById('party1Name').textContent = results.parties?.party_1_name || '-';
@@ -331,7 +372,7 @@ function displayResults(results, extractionId = null) {
     document.getElementById('paymentAmount').textContent = payment.amount ? 
         (payment.currency === 'INR' ? '₹' : '$') + payment.amount : '-';
     document.getElementById('paymentCurrency').textContent = payment.currency || '-';
-    document.getElementById('paymentFrequency').textContent = payment.frequency || '-';
+    document.getElementById('paymentFrequency').textContent = payment.frequency || '1';  // Default to "1" if empty
     
     // Clauses
     document.getElementById('terminationClause').textContent = 
@@ -609,4 +650,151 @@ async function handleDocumentSelection(event) {
 // Reload extractions list after new extraction
 async function reloadExtractionsList() {
     await loadExtractionsList();
+}
+
+// ============================================================
+// DUPLICATE INVOICE WARNING MODAL FUNCTIONS
+// ============================================================
+
+/**
+ * Show the duplicate invoice warning modal with details
+ * @param {Object} data - The duplicate invoice response data
+ */
+function showDuplicateInvoiceModal(data) {
+    const modal = document.getElementById('duplicateWarningModal');
+    if (!modal) {
+        console.error('Duplicate warning modal not found in DOM');
+        return;
+    }
+    
+    const details = data.details || {};
+    
+    // Populate modal data
+    const invoiceId = details.invoice_id || 'Unknown';
+    const existingDoc = details.existing_document || 'Unknown';
+    const processedDate = details.processed_date || '';
+    const vendor = details.vendor || '';
+    const amount = details.amount || '';
+    const currency = details.currency || '';
+    
+    // Set invoice ID
+    const invoiceIdEl = document.getElementById('duplicateInvoiceId');
+    if (invoiceIdEl) {
+        invoiceIdEl.textContent = invoiceId;
+    }
+    
+    // Set existing file name
+    const existingFileEl = document.getElementById('duplicateExistingFile');
+    if (existingFileEl) {
+        existingFileEl.textContent = existingDoc;
+    }
+    
+    // Set vendor (show/hide based on availability)
+    const vendorItem = document.getElementById('duplicateVendorItem');
+    const vendorEl = document.getElementById('duplicateVendor');
+    if (vendor && vendor.trim()) {
+        if (vendorItem) vendorItem.style.display = 'flex';
+        if (vendorEl) vendorEl.textContent = vendor;
+    } else {
+        if (vendorItem) vendorItem.style.display = 'none';
+    }
+    
+    // Set amount (show/hide based on availability)
+    const amountItem = document.getElementById('duplicateAmountItem');
+    const amountEl = document.getElementById('duplicateAmount');
+    if (amount && amount.toString().trim()) {
+        if (amountItem) amountItem.style.display = 'flex';
+        if (amountEl) {
+            const formattedAmount = currency ? `${currency} ${amount}` : amount;
+            amountEl.textContent = formattedAmount;
+        }
+    } else {
+        if (amountItem) amountItem.style.display = 'none';
+    }
+    
+    // Set processed date
+    const processedDateEl = document.getElementById('duplicateProcessedDate');
+    if (processedDateEl) {
+        if (processedDate) {
+            try {
+                const dateObj = new Date(processedDate);
+                processedDateEl.textContent = dateObj.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                processedDateEl.textContent = processedDate;
+            }
+        } else {
+            processedDateEl.textContent = 'Unknown';
+        }
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    
+    // Add event listeners for closing modal
+    setupDuplicateModalCloseListeners();
+    
+    // Log for debugging
+    console.log('[DUPLICATE MODAL] Showing duplicate invoice warning:', {
+        invoiceId,
+        existingDoc,
+        vendor,
+        amount,
+        currency,
+        processedDate
+    });
+}
+
+/**
+ * Close the duplicate invoice warning modal
+ */
+function closeDuplicateInvoiceModal() {
+    const modal = document.getElementById('duplicateWarningModal');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('[DUPLICATE MODAL] Modal closed');
+    }
+}
+
+/**
+ * Setup event listeners for closing the duplicate modal
+ */
+function setupDuplicateModalCloseListeners() {
+    // Close button (X)
+    const closeBtn = document.getElementById('closeDuplicateModal');
+    if (closeBtn) {
+        closeBtn.onclick = closeDuplicateInvoiceModal;
+    }
+    
+    // OK button
+    const okBtn = document.getElementById('duplicateModalOkBtn');
+    if (okBtn) {
+        okBtn.onclick = closeDuplicateInvoiceModal;
+    }
+    
+    // Click outside modal to close
+    const modal = document.getElementById('duplicateWarningModal');
+    if (modal) {
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                closeDuplicateInvoiceModal();
+            }
+        };
+    }
+    
+    // ESC key to close
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('duplicateWarningModal');
+            if (modal && modal.style.display === 'flex') {
+                closeDuplicateInvoiceModal();
+            }
+        }
+    });
 }
