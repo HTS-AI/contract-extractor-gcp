@@ -1,0 +1,169 @@
+[
+  {
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmphs2nmk8g.pdf",
+    "file_name": "lease_invoice_LS-2025-205.pdf",
+    "file_hash": "91a4f3980e809006bed56a99542f09f22d703c64abadf3db22b59d0b8ab2722f",
+    "status": "completed",
+    "results": {
+      "contract_title": "LEASE",
+      "contract_type": "LEASE",
+      "document_id": "LS-2025-205",
+      "execution_date": "2025-01-01",
+      "risk_score": 0,
+      "parties": {
+        "party_1_name": "AeroTower Infrastructure",
+        "party_1_address": "",
+        "party_1_type": "Vendor",
+        "party_2_name": "Zeta Mobile Services",
+        "party_2_address": "",
+        "party_2_type": "Customer"
+      },
+      "payment_terms": {
+        "amount": "103500.00",
+        "currency": "USD",
+        "frequency": "Yearly",
+        "due_date": "2026-01-01",
+        "amount_explanation": ""
+      },
+      "payment_details": {},
+      "termination_clause": "",
+      "confidentiality_clause": "",
+      "liability_clause": "",
+      "governing_law": "",
+      "deliverables": [],
+      "missing_clauses": [],
+      "document_ids": {
+        "invoice_id": "LS-2025-205",
+        "contract_id": null,
+        "agreement_id": null,
+        "reference_id": null,
+        "document_number": null,
+        "lease_id": null,
+        "nda_id": null,
+        "po_number": null,
+        "project_id": null,
+        "other_ids": []
+      },
+      "references": {
+        "document_ids_invoice_id": {
+          "page": 1
+        },
+        "party_party_1": {
+          "page": 1
+        },
+        "party_party_2": {
+          "page": 1
+        },
+        "amount": {
+          "page": 1
+        },
+        "frequency": {
+          "page": 1
+        },
+        "currency": {
+          "page": 1
+        },
+        "start_date": {
+          "page": 1
+        },
+        "due_date": {
+          "page": 1
+        }
+      },
+      "_extraction_metadata": {
+        "method": "hybrid",
+        "components": {
+          "rule_based": true,
+          "spacy_ner": false,
+          "graph_based": false
+        }
+      }
+    },
+    "uploaded_at": "2026-01-09T15:05:11.941370",
+    "extracted_at": "2026-01-09T15:05:38.367412",
+    "extracted_data": {
+      "document_type": "LEASE",
+      "party_names": {
+        "party_1": "AeroTower Infrastructure",
+        "party_2": "Zeta Mobile Services",
+        "additional_parties": []
+      },
+      "start_date": "2025-01-01",
+      "due_date": "2026-01-01",
+      "amount": "103500.00",
+      "frequency": "Yearly",
+      "account_type": "Rent & Lease Expense",
+      "document_ids": {
+        "invoice_id": "LS-2025-205",
+        "contract_id": null,
+        "agreement_id": null,
+        "reference_id": null,
+        "document_number": null,
+        "lease_id": null,
+        "nda_id": null,
+        "po_number": null,
+        "project_id": null,
+        "other_ids": []
+      },
+      "rules_and_compliance_violation": "No violation of rules and compliance",
+      "risk_score": {
+        "score": 0,
+        "level": "Low",
+        "category": "🟢 Low Risk",
+        "risk_factors": []
+      },
+      "currency": "USD",
+      "per_period_amount": "103500.00",
+      "per_month_amount": "8625.00",
+      "period_name": "year",
+      "references": {
+        "document_ids_invoice_id": {
+          "page": 1
+        },
+        "party_party_1": {
+          "page": 1
+        },
+        "party_party_2": {
+          "page": 1
+        },
+        "amount": {
+          "page": 1
+        },
+        "frequency": {
+          "page": 1
+        },
+        "currency": {
+          "page": 1
+        },
+        "start_date": {
+          "page": 1
+        },
+        "due_date": {
+          "page": 1
+        }
+      },
+      "_extraction_metadata": {
+        "agent_version": "langgraph-v1",
+        "extraction_method": "agent_based",
+        "document_type": "LEASE",
+        "classification_confidence": "HIGH",
+        "status": "completed",
+        "timestamp": "2026-01-09T15:05:37.338996"
+      }
+    },
+    "metadata": {
+      "document_type": "LEASE",
+      "classification_confidence": "HIGH",
+      "classification_reasoning": "The document discusses rental terms, including lessor and lessee information, and specifies a lease agreement for property with payment details, which aligns with the characteristics of a lease.",
+      "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmphs2nmk8g.pdf",
+      "file_name": "tmphs2nmk8g.pdf",
+      "extraction_method": "langgraph_agent",
+      "document_text": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44",
+      "page_map": {
+        "1": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44"
+      },
+      "status": "completed",
+      "error": null
+    }
+  }
+]

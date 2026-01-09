@@ -85,9 +85,25 @@ dashboard_data = {
 
 
 def load_extractions_from_file():
-    """Load extractions from JSON file on server startup."""
+    """Load extractions from GCS (if available) or JSON file on server startup."""
     global extractions_store
     try:
+        # Try loading from cache manager (supports GCS)
+        cache_manager = get_cache_manager()
+        gcs_data = cache_manager.load_extractions_data()
+        
+        if gcs_data:
+            # GCS data is a list of extractions, convert to dict
+            if isinstance(gcs_data, list):
+                extractions_store = {item.get("extraction_id", str(i)): item for i, item in enumerate(gcs_data)}
+            elif isinstance(gcs_data, dict) and "extractions" in gcs_data:
+                extractions_store = gcs_data.get("extractions", {})
+            else:
+                extractions_store = gcs_data if isinstance(gcs_data, dict) else {}
+            print(f"[STARTUP] Loaded {len(extractions_store)} extractions from cache (GCS/local)")
+            return
+        
+        # Fallback to local file
         if EXTRACTIONS_JSON_FILE.exists():
             with open(EXTRACTIONS_JSON_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -102,16 +118,28 @@ def load_extractions_from_file():
 
 
 def save_extractions_to_file():
-    """Save extractions to JSON file for persistence."""
+    """Save extractions to GCS (if available) and JSON file for persistence."""
     try:
         data = {
             "last_updated": datetime.now().isoformat(),
             "total_extractions": len(extractions_store),
             "extractions": extractions_store
         }
+        
+        # Save to local file
         with open(EXTRACTIONS_JSON_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, default=str)
         print(f"[SAVE] Extractions saved to {EXTRACTIONS_JSON_FILE.name}")
+        
+        # Also save to GCS via cache manager (if GCS is enabled)
+        try:
+            cache_manager = get_cache_manager()
+            # Convert to list format for GCS storage
+            extractions_list = list(extractions_store.values())
+            cache_manager.save_extractions_data(extractions_list)
+        except Exception as gcs_error:
+            print(f"[SAVE] Note: GCS save skipped or failed: {gcs_error}")
+            
     except Exception as e:
         print(f"[ERROR] Failed to save extractions: {e}")
 
@@ -303,9 +331,9 @@ async def extract_document(extraction_id: str):
                 doc_type = extracted_data.get("document_type", "UNKNOWN")
                 
                 if doc_type == "INVOICE":
-                    # Extract invoice ID from document_ids
+                    # Extract invoice ID from document_ids (including quotation_number)
                     doc_ids = extracted_data.get("document_ids", {})
-                    invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number") or ""
+                    invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number") or doc_ids.get("quotation_number") or ""
                     
                     if invoice_id and invoice_id.strip():
                         print(f"\n[DUPLICATE CHECK] Checking for duplicate invoice ID: {invoice_id}")
@@ -457,9 +485,9 @@ async def extract_document(extraction_id: str):
         
         # ============== DUPLICATE INVOICE ID CHECK (FOR INVOICES ONLY) ==============
         if doc_type == "INVOICE":
-            # Extract invoice ID from document_ids
+            # Extract invoice ID from document_ids (including quotation_number)
             doc_ids = extracted_data.get("document_ids", {})
-            invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number") or ""
+            invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number") or doc_ids.get("quotation_number") or ""
             
             if invoice_id and invoice_id.strip():
                 print(f"\n[STEP 3.5] Checking for duplicate invoice ID: {invoice_id}")
@@ -925,11 +953,34 @@ def check_duplicate_invoice_id(invoice_id: str, current_extraction_id: str = Non
     return None
 
 
+def _is_bank_address(address: str) -> bool:
+    """Check if an address is a bank address based on keywords."""
+    if not address or not isinstance(address, str):
+        return False
+    address_lower = address.lower()
+    bank_keywords = ['bank', 'branch', 'iban', 'swift', 'account no', 'account number', 'a/c no']
+    return any(keyword in address_lower for keyword in bank_keywords)
+
+
 def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
     """Transform extracted data to frontend expected format."""
     # Get party names
     party_names = extracted_data.get("party_names", {})
     doc_type = extracted_data.get("document_type", "CONTRACT")
+    
+    # Filter out bank addresses from vendor/customer addresses
+    vendor_address = party_names.get("vendor_address", "")
+    customer_address = party_names.get("customer_address", "")
+    
+    # If vendor_address contains bank keywords, it's likely a bank address - clear it
+    if vendor_address and _is_bank_address(vendor_address):
+        print(f"   [WARNING] Vendor address contains bank keywords, clearing: {vendor_address[:50]}...")
+        vendor_address = ""
+    
+    # If customer_address contains bank keywords, it's likely a bank address - clear it
+    if customer_address and _is_bank_address(customer_address):
+        print(f"   [WARNING] Customer address contains bank keywords, clearing: {customer_address[:50]}...")
+        customer_address = ""
     
     # Get risk score
     risk_score_data = extracted_data.get("risk_score", {})
@@ -939,21 +990,53 @@ def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
     party_1_name = party_names.get("party_1", "")
     party_2_name = party_names.get("party_2", "")
     
+    # Determine which party is customer/vendor
+    # Check if we have explicit customer/vendor information
+    vendor_name = party_names.get("vendor", "")
+    customer_name = party_names.get("customer", "")
+    
     # For invoices, use vendor/customer if party_1/party_2 not set
     if doc_type == "INVOICE":
-        if not party_1_name and party_names.get("vendor"):
-            party_1_name = party_names.get("vendor", "")
-        if not party_2_name and party_names.get("customer"):
-            party_2_name = party_names.get("customer", "")
+        if not party_1_name and vendor_name:
+            party_1_name = vendor_name
+        if not party_2_name and customer_name:
+            party_2_name = customer_name
+    
+    # Determine party types based on customer/vendor mapping
+    # Default: party_1 is vendor (address comes from vendor_address), party_2 is customer (address comes from customer_address)
+    party_1_type = "Vendor"
+    party_2_type = "Customer"
+    
+    # Check if customer name matches either party to determine types
+    if customer_name:
+        # Normalize names for comparison
+        customer_name_normalized = customer_name.lower().strip()
+        party_1_name_normalized = party_1_name.lower().strip() if party_1_name else ""
+        party_2_name_normalized = party_2_name.lower().strip() if party_2_name else ""
+        
+        # If customer name matches party_1, then party_1 is customer and party_2 is vendor
+        if party_1_name_normalized and customer_name_normalized == party_1_name_normalized:
+            party_1_type = "Customer"
+            party_2_type = "Vendor"
+        # If customer name matches party_2, then party_2 is customer and party_1 is vendor (default case)
+        elif party_2_name_normalized and customer_name_normalized == party_2_name_normalized:
+            party_2_type = "Customer"
+            party_1_type = "Vendor"
+        # If customer_name exists but doesn't match either, check address mapping
+        # party_2_address comes from customer_address, so party_2 is customer
+        else:
+            party_2_type = "Customer"
+            party_1_type = "Vendor"
     
     # Get document IDs
     doc_ids = extracted_data.get("document_ids", {})
-    invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number", "")
+    invoice_id = doc_ids.get("invoice_id") or doc_ids.get("invoice_number") or doc_ids.get("quotation_number") or ""
     
-    # Get primary document ID (try multiple fields)
+    # Get primary document ID (try multiple fields, including quotation_number)
     document_id = (
         doc_ids.get("invoice_id") or 
         doc_ids.get("invoice_number") or 
+        doc_ids.get("quotation_number") or  # Quote number can be invoice number
         doc_ids.get("contract_id") or 
         doc_ids.get("agreement_id") or
         doc_ids.get("lease_id") or
@@ -973,16 +1056,20 @@ def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
         "risk_score": risk_score,
         "parties": {
             "party_1_name": party_1_name,
-            "party_1_address": party_names.get("vendor_address", ""),
+            "party_1_address": vendor_address,
+            "party_1_type": party_1_type,
             "party_2_name": party_2_name,
-            "party_2_address": party_names.get("customer_address", "")
+            "party_2_address": customer_address,
+            "party_2_type": party_2_type
         },
         "payment_terms": {
             "amount": extracted_data.get("amount", ""),
             "currency": extracted_data.get("currency", ""),
             "frequency": extracted_data.get("frequency") or "1",  # Default to "1" if empty
-            "due_date": extracted_data.get("due_date", "")
+            "due_date": extracted_data.get("due_date", ""),
+            "amount_explanation": extracted_data.get("amount_explanation", "")
         },
+        "payment_details": extracted_data.get("payment_details", {}),
         "termination_clause": "",
         "confidentiality_clause": extracted_data.get("confidentiality_clause", ""),
         "liability_clause": "",

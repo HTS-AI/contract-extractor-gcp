@@ -132,13 +132,14 @@ class DocumentParser:
     def parse(self, file_path: str, use_ocr: bool = False) -> str:
         """
         Parse a document and extract text.
+        For hybrid documents (semi-OCR), combines native text extraction with OCR.
         
         Args:
             file_path: Path to the document file
-            use_ocr: If True, use OCR for PDF files (for scanned documents)
+            use_ocr: If True, use OCR for PDF files (for scanned documents or hybrid documents)
             
         Returns:
-            Extracted text from the document
+            Extracted text from the document (combined from native text + OCR for hybrid docs)
             
         Raises:
             ValueError: If file format is not supported
@@ -150,26 +151,74 @@ class DocumentParser:
         file_ext = Path(file_path).suffix.lower()
         
         if file_ext == '.pdf':
-            # Only use OCR/Vision API if explicitly enabled
-            if self.use_gcs_vision and (use_ocr or self._is_scanned_pdf(file_path)):
-                # Use GCS Vision API (required for OCR)
+            # First, always try to extract native text
+            native_text = self._parse_pdf(file_path)
+            
+            # Check if we should also use OCR (for hybrid or scanned documents)
+            should_use_ocr = False
+            if self.use_gcs_vision:
+                if use_ocr:
+                    # Explicitly requested OCR
+                    should_use_ocr = True
+                    print("[PARSER] OCR explicitly requested - will combine with native text")
+                elif self._is_scanned_pdf(file_path):
+                    # Detected as scanned PDF
+                    should_use_ocr = True
+                    print("[PARSER] Scanned PDF detected - will use OCR")
+                elif len(native_text.strip()) < 100:
+                    # Very little native text - likely needs OCR
+                    should_use_ocr = True
+                    print("[PARSER] Very little native text extracted - will use OCR to supplement")
+                else:
+                    # Check if document appears to be hybrid (has some text but might be incomplete)
+                    # Estimate pages for text density check
+                    estimated_pages = max(1, len(native_text) // 2000)
+                    text_density = len(native_text.strip()) / estimated_pages
+                    if text_density < 500:  # Less than 500 chars per page on average
+                        should_use_ocr = True
+                        print(f"[PARSER] Hybrid document detected (low text density: {text_density:.0f} chars/page) - will combine native text with OCR")
+            
+            if should_use_ocr and self.use_gcs_vision:
+                # Use OCR to supplement native text (for hybrid documents)
                 try:
-                    # Try importing to check availability
                     from vision_gcp import vision_ocr_pdf
                     from gcs_utils import upload_file_to_gcs, read_text_from_gcs
-                    # If import succeeds, use Vision API
-                    return self._parse_pdf_with_vision_api(file_path)
+                    
+                    print("[PARSER] Extracting text using OCR (Vision API)...")
+                    ocr_text = self._parse_pdf_with_vision_api(file_path)
+                    
+                    # Combine native text and OCR text intelligently
+                    # For simple parse (no pages), use the longer/more complete version
+                    if len(ocr_text.strip()) > len(native_text.strip()) * 1.2:
+                        # OCR has significantly more content - use it as primary
+                        combined_text = ocr_text
+                        print(f"[PARSER] Using OCR text as primary ({len(ocr_text)} chars vs {len(native_text)} chars native)")
+                    elif len(native_text.strip()) > 100:
+                        # Native text is substantial - use it as primary
+                        combined_text = native_text
+                        print(f"[PARSER] Using native text as primary ({len(native_text)} chars vs {len(ocr_text)} chars OCR)")
+                    else:
+                        # Native text is sparse - use OCR
+                        combined_text = ocr_text
+                        print(f"[PARSER] Using OCR text (native text too sparse)")
+                    
+                    return combined_text
+                    
                 except ImportError as e:
-                    # If import fails, fall back to regular PDF parsing
+                    # If import fails, fall back to native text only
                     import warnings
                     warnings.warn(
-                        f"Vision API not available ({str(e)}). Falling back to PyPDF2 extraction.",
+                        f"Vision API not available ({str(e)}). Using native text extraction only.",
                         UserWarning
                     )
-                    return self._parse_pdf(file_path)
+                    return native_text
+                except Exception as e:
+                    # If OCR fails, use native text
+                    print(f"[PARSER] OCR failed ({str(e)}), using native text only")
+                    return native_text
             else:
-                # Use regular PDF parsing (PyPDF2)
-                return self._parse_pdf(file_path)
+                # Use regular PDF parsing (native text only)
+                return native_text
         elif file_ext in ['.docx', '.doc']:
             return self._parse_docx(file_path)
         elif file_ext in ['.txt', '.text']:
@@ -180,14 +229,15 @@ class DocumentParser:
     def parse_with_pages(self, file_path: str, use_ocr: bool = False) -> tuple[str, dict]:
         """
         Parse a document and extract text with page information.
+        For hybrid documents (semi-OCR), combines native text extraction with OCR.
         
         Args:
             file_path: Path to the document file
-            use_ocr: If True, use OCR for PDF files (for scanned documents)
+            use_ocr: If True, use OCR for PDF files (for scanned documents or hybrid documents)
             
         Returns:
             Tuple of (full_text, page_map) where:
-            - full_text: Complete extracted text
+            - full_text: Complete extracted text (combined from native text + OCR)
             - page_map: Dictionary mapping page numbers to text content
             
         Raises:
@@ -200,26 +250,82 @@ class DocumentParser:
         file_ext = Path(file_path).suffix.lower()
         
         if file_ext == '.pdf':
-            # Only use OCR/Vision API if explicitly enabled
-            if self.use_gcs_vision and (use_ocr or self._is_scanned_pdf(file_path)):
-                # Use GCS Vision API (required for OCR)
+            # First, always try to extract native text
+            native_text, native_page_map = self._parse_pdf_with_pages(file_path)
+            
+            # For hybrid documents, we need to detect if OCR text exists
+            # Strategy: Always try OCR if Vision API is available, then compare and combine
+            should_use_ocr = False
+            
+            if self.use_gcs_vision:
+                # Always check for OCR text if Vision API is available
+                # This ensures we capture OCR content (like vendor address) that might be missing from native text
+                if use_ocr:
+                    # Explicitly requested OCR
+                    should_use_ocr = True
+                    print("[PARSER] OCR explicitly requested - will extract and check for OCR text")
+                elif self._is_scanned_pdf(file_path):
+                    # Detected as scanned PDF
+                    should_use_ocr = True
+                    print("[PARSER] Scanned PDF detected - will use OCR")
+                elif len(native_text.strip()) < 100:
+                    # Very little native text - likely needs OCR
+                    should_use_ocr = True
+                    print("[PARSER] Very little native text extracted - will check OCR text")
+                else:
+                    # For hybrid documents: Always try OCR to detect if there's additional OCR text
+                    # This is important because some parts (like vendor address) might only be in OCR
+                    should_use_ocr = True
+                    print("[PARSER] Checking for OCR text in document (hybrid detection)...")
+            
+            if should_use_ocr and self.use_gcs_vision:
+                # Extract OCR text to detect if it exists and has additional content
                 try:
-                    # Try importing to check availability
                     from vision_gcp import vision_ocr_pdf
                     from gcs_utils import upload_file_to_gcs, read_text_from_gcs
-                    # If import succeeds, use Vision API
-                    return self._parse_pdf_with_vision_api_with_pages(file_path)
+                    
+                    print("[PARSER] Extracting text using OCR (Vision API)...")
+                    ocr_text, ocr_page_map = self._parse_pdf_with_vision_api_with_pages(file_path)
+                    
+                    # Check if OCR text exists and has meaningful content
+                    if ocr_text and len(ocr_text.strip()) > 50:
+                        print(f"[PARSER] OCR text detected: {len(ocr_text)} characters")
+                        
+                        native_len = len(native_text.strip())
+                        ocr_len = len(ocr_text.strip())
+                        
+                        # ALWAYS combine for hybrid documents
+                        # The _combine_text_sources function will intelligently merge
+                        # and extract unique content from OCR that's missing from native
+                        # This is critical for hybrid PDFs where footer addresses are in OCR only
+                        
+                        print(f"[PARSER] Combining native ({native_len} chars) with OCR ({ocr_len} chars) for hybrid document")
+                        
+                        combined_text, combined_page_map = self._combine_text_sources(
+                            native_text, native_page_map, ocr_text, ocr_page_map
+                        )
+                        
+                        print(f"[PARSER] Combined extraction: {len(combined_text)} chars total")
+                        return combined_text, combined_page_map
+                    else:
+                        print(f"[PARSER] OCR extraction returned minimal/no text - using native text only")
+                        return native_text, native_page_map
+                    
                 except ImportError as e:
-                    # If import fails, fall back to regular PDF parsing
+                    # If import fails, fall back to native text only
                     import warnings
                     warnings.warn(
-                        f"Vision API not available ({str(e)}). Falling back to PyPDF2 extraction.",
+                        f"Vision API not available ({str(e)}). Using native text extraction only.",
                         UserWarning
                     )
-                    return self._parse_pdf_with_pages(file_path)
+                    return native_text, native_page_map
+                except Exception as e:
+                    # If OCR fails, use native text
+                    print(f"[PARSER] OCR failed ({str(e)}), using native text only")
+                    return native_text, native_page_map
             else:
-                # Use regular PDF parsing (PyPDF2)
-                return self._parse_pdf_with_pages(file_path)
+                # Use regular PDF parsing (native text only)
+                return native_text, native_page_map
         elif file_ext in ['.docx', '.doc']:
             return self._parse_docx_with_pages(file_path)
         elif file_ext in ['.txt', '.text']:
@@ -770,4 +876,113 @@ class DocumentParser:
             print(f"[TABLE EXTRACTION] Error extracting tables from DOCX: {e}")
         
         return tables
+    
+    def _combine_text_sources(
+        self, 
+        native_text: str, 
+        native_page_map: dict, 
+        ocr_text: str, 
+        ocr_page_map: dict
+    ) -> tuple[str, dict]:
+        """
+        Intelligently combine native text extraction with OCR text.
+        For hybrid documents, MERGES both sources to capture all content.
+        
+        CRITICAL: For hybrid PDFs, some content (like footer addresses) exists ONLY in OCR.
+        We must merge both sources, not choose one over the other.
+        
+        Args:
+            native_text: Text extracted from native PDF text layer
+            native_page_map: Page map for native text
+            ocr_text: Text extracted from OCR
+            ocr_page_map: Page map for OCR text
+            
+        Returns:
+            Tuple of (combined_text, combined_page_map)
+        """
+        combined_page_map = {}
+        combined_text_parts = []
+        
+        # Get all page numbers from both sources
+        all_pages = set(list(native_page_map.keys()) + list(ocr_page_map.keys()))
+        
+        for page_num in sorted(all_pages):
+            native_page_text = native_page_map.get(page_num, "").strip()
+            ocr_page_text = ocr_page_map.get(page_num, "").strip()
+            
+            if native_page_text and ocr_page_text:
+                # Both sources have text - MERGE them for hybrid documents
+                # Strategy: Find content in OCR that's NOT in native and append it
+                
+                # Check for key content that might be in OCR but not native
+                ocr_lower = ocr_page_text.lower()
+                native_lower = native_page_text.lower()
+                
+                # Look for address-related keywords and content that might be in OCR only
+                address_keywords = ['office no', 'office number', 'floor', 'po box', 'p.o. box', 
+                                   'tel:', 'fax:', 'email:', 'phone:', 'street', 'building', 'tower',
+                                   'west bay', 'doha', 'qatar', 'authorized signatory']
+                
+                # Extract OCR lines that contain address keywords NOT found in native
+                ocr_unique_lines = []
+                ocr_lines = ocr_page_text.split('\n')
+                
+                for line in ocr_lines:
+                    line_stripped = line.strip()
+                    if not line_stripped:
+                        continue
+                    
+                    line_lower = line_stripped.lower()
+                    
+                    # Check if this line has address keywords
+                    has_address_keyword = any(kw in line_lower for kw in address_keywords)
+                    
+                    # Check if this content is NOT in native text (fuzzy match)
+                    # Use a simplified check: if key parts of the line are not in native text
+                    line_key_parts = [word for word in line_lower.split() if len(word) > 3]
+                    is_unique = False
+                    
+                    if has_address_keyword:
+                        # For lines with address keywords, check if any key part is missing from native
+                        for part in line_key_parts:
+                            if part not in native_lower and part not in ['the', 'and', 'for', 'with']:
+                                is_unique = True
+                                break
+                    else:
+                        # For other lines, only include if significantly unique (most parts missing)
+                        missing_count = sum(1 for part in line_key_parts if part not in native_lower and part not in ['the', 'and', 'for', 'with'])
+                        if len(line_key_parts) > 0 and missing_count > len(line_key_parts) * 0.6:
+                            is_unique = True
+                    
+                    if is_unique and len(line_stripped) > 10:
+                        ocr_unique_lines.append(line_stripped)
+                
+                # Combine: Use native text as base, append unique OCR content
+                if ocr_unique_lines:
+                    unique_ocr_content = '\n'.join(ocr_unique_lines)
+                    combined_page_text = native_page_text + '\n\n--- Additional OCR Content ---\n' + unique_ocr_content
+                    print(f"[COMBINE] Page {page_num}: Merged native ({len(native_page_text)} chars) + unique OCR ({len(unique_ocr_content)} chars)")
+                    print(f"[COMBINE] Unique OCR lines found: {len(ocr_unique_lines)}")
+                else:
+                    # No unique content in OCR - use native
+                    combined_page_text = native_page_text
+                    print(f"[COMBINE] Page {page_num}: Using native text ({len(native_page_text)} chars) - no unique OCR content")
+                    
+            elif native_page_text:
+                # Only native text available
+                combined_page_text = native_page_text
+            elif ocr_page_text:
+                # Only OCR text available
+                combined_page_text = ocr_page_text
+                print(f"[COMBINE] Page {page_num}: Using OCR text only ({len(ocr_page_text)} chars)")
+            else:
+                # No text for this page
+                combined_page_text = ""
+            
+            if combined_page_text:
+                combined_page_map[page_num] = combined_page_text
+                combined_text_parts.append(combined_page_text)
+        
+        combined_text = '\n'.join(combined_text_parts)
+        return combined_text, combined_page_map
 

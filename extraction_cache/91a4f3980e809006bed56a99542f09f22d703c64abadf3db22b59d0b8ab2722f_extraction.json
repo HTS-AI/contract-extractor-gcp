@@ -1,6 +1,6 @@
 {
   "file_hash": "91a4f3980e809006bed56a99542f09f22d703c64abadf3db22b59d0b8ab2722f",
-  "cached_at": "2025-12-09T16:37:52.761655",
+  "cached_at": "2026-01-09T15:05:37.340391",
   "extracted_data": {
     "document_type": "LEASE",
     "party_names": {
@@ -68,22 +68,22 @@
       "document_type": "LEASE",
       "classification_confidence": "HIGH",
       "status": "completed",
-      "timestamp": "2025-12-09T16:37:52.761655"
+      "timestamp": "2026-01-09T15:05:37.338996"
     }
   },
   "metadata": {
     "document_type": "LEASE",
     "classification_confidence": "HIGH",
-    "classification_reasoning": "The document discusses rental/lease terms, including lessor and lessee information, as well as details about the lease agreement and payment structure.",
-    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpkjhxjzlf.pdf",
-    "file_name": "tmpkjhxjzlf.pdf",
+    "classification_reasoning": "The document discusses rental terms, including lessor and lessee information, and specifies a lease agreement for property with payment details, which aligns with the characteristics of a lease.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmphs2nmk8g.pdf",
+    "file_name": "tmphs2nmk8g.pdf",
     "extraction_method": "langgraph_agent",
-    "document_text": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44\n",
+    "document_text": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44",
     "page_map": {
-      "1": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44\n"
+      "1": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44"
     },
     "status": "completed",
     "error": null
   },
-  "document_text": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44\n"
+  "document_text": "Field\nValue\nInvoice ID\nLS-2025-205\nInvoice Date\n10-Jan-2025\nDocument Type\nLease Agreement\nFrequency\nYearly\nLessor\nAeroTower Infrastructure\nLessee\nZeta Mobile Services\nAccount Head\nMacro Tower Lease\nStart Date\n01-Jan-2025\nDue Date\n01-Jan-2026\nDescription\nAmount\nMacro Tower Lease (Site ZM-550)\n$96,000.00\nAnnual Maintenance\n$7,500.00\nTotal Amount Due\n$103,500.00\nPayment Field\nDetails\nBank Name\nNational Trust Bank\nAccount No\n5544332211\nSWIFT/UPI\nNTBINT44"
 }

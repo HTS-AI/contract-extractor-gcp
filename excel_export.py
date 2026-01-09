@@ -284,6 +284,7 @@ class ExcelExporter:
 def update_contract_excel(extracted_data: Dict[str, Any], file_name: str, excel_file_path: str = "contract_extractions.xlsx") -> bool:
     """
     Convenience function to update Excel file with extracted contract data.
+    Also saves to GCS if GCS_CACHE_BUCKET is configured.
     
     Args:
         extracted_data: Extracted contract data dictionary
@@ -294,5 +295,17 @@ def update_contract_excel(extracted_data: Dict[str, Any], file_name: str, excel_
         True if successful, False otherwise
     """
     exporter = ExcelExporter(excel_file_path)
-    return exporter.create_or_update_excel(extracted_data, file_name)
+    success = exporter.create_or_update_excel(extracted_data, file_name)
+    
+    # Also save to GCS if enabled
+    if success:
+        try:
+            from cache_manager import get_cache_manager
+            cache_manager = get_cache_manager()
+            if cache_manager.use_gcs:
+                cache_manager.save_excel_to_gcs(excel_file_path, os.path.basename(excel_file_path))
+        except Exception as e:
+            print(f"[EXCEL] Note: GCS upload skipped or failed: {e}")
+    
+    return success
 
