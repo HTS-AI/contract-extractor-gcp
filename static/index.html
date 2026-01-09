@@ -120,7 +120,7 @@
                             <div class="party-box">
                                 <div class="party-header">
                                     <span class="party-icon">🏢</span>
-                                    <h4>Party 1</h4>
+                                    <h4 id="party1Label">Party 1</h4>
                                 </div>
                                 <div class="party-content">
                                     <div class="party-field">
@@ -136,7 +136,7 @@
                             <div class="party-box">
                                 <div class="party-header">
                                     <span class="party-icon">🤝</span>
-                                    <h4>Party 2</h4>
+                                    <h4 id="party2Label">Party 2</h4>
                                 </div>
                                 <div class="party-content">
                                     <div class="party-field">
@@ -152,15 +152,16 @@
                         </div>
                     </div>
 
-                    <!-- Payment Terms -->
+                    <!-- Payment Details -->
                     <div class="info-card">
                         <div class="card-header">
-                            <h3>💰 Payment Terms</h3>
+                            <h3>💰 Payment Details</h3>
                         </div>
                         <div class="info-grid">
                             <div class="info-item">
                                 <label>Amount</label>
                                 <span id="paymentAmount" class="info-value">-</span>
+                                <small id="amountExplanation" style="display: none; color: #6b7280; font-size: 0.75em; margin-top: 4px; font-style: italic;"></small>
                             </div>
                             <div class="info-item">
                                 <label>Currency</label>
@@ -169,6 +170,55 @@
                             <div class="info-item">
                                 <label>Frequency</label>
                                 <span id="paymentFrequency" class="info-value">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Account Details -->
+                        <div id="accountDetailsSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                            <h4 style="color: #3b82f6; font-size: 0.95em; font-weight: 600; margin-bottom: 12px;">Account Details</h4>
+                            
+                            <!-- Indian Account Format -->
+                            <div id="indianAccountDetails" style="display: none;">
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label>Name:</label>
+                                        <span id="accountHolderName" class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Account No:</label>
+                                        <span id="accountNumber" class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>IFSC Code:</label>
+                                        <span id="ifscCode" class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Branch:</label>
+                                        <span id="branch" class="info-value">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- International Account Format -->
+                            <div id="internationalAccountDetails" style="display: none;">
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label>Account No/IBAN:</label>
+                                        <span id="accountNumberIban" class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>SWIFT Code:</label>
+                                        <span id="swiftCode" class="info-value">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Bank Address (common for both) -->
+                            <div id="bankAddressSection" style="display: none; margin-top: 12px;">
+                                <div class="info-item">
+                                    <label>Bank Address:</label>
+                                    <span id="bankAddress" class="info-value" style="word-break: break-word;">-</span>
+                                </div>
                             </div>
                         </div>
                     </div>

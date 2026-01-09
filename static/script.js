@@ -10,6 +10,80 @@ let extractionInterval = null;
 // Expose to window for chatbot integration
 window.currentExtractionId = null;
 
+// Currency symbol mapping
+const CURRENCY_SYMBOLS = {
+    // Major currencies with symbols
+    'USD': '$',
+    'INR': '₹',
+    'EUR': '€',
+    'GBP': '£',
+    'JPY': '¥',
+    'CNY': '¥',
+    'CHF': 'Fr.',
+    'CAD': 'C$',
+    'AUD': 'A$',
+    'NZD': 'NZ$',
+    'SGD': 'S$',
+    'HKD': 'HK$',
+    'TWD': 'NT$',
+    'MYR': 'RM',
+    'THB': '฿',
+    'PHP': '₱',
+    'IDR': 'Rp',
+    'VND': '₫',
+    'KRW': '₩',
+    'TRY': '₺',
+    'RUB': '₽',
+    'BRL': 'R$',
+    'ZAR': 'R',
+    'PLN': 'zł',
+    // Gulf currencies (no common symbols - use code)
+    'QAR': 'QAR',
+    'SAR': 'SAR',
+    'AED': 'AED',
+    'KWD': 'KWD',
+    'BHD': 'BHD',
+    'OMR': 'OMR',
+    // Other currencies
+    'EGP': 'E£',
+    'PKR': 'Rs',
+    'LKR': 'Rs',
+    'BDT': '৳',
+    'NPR': 'Rs',
+    'MXN': '$',
+    'SEK': 'kr',
+    'NOK': 'kr',
+    'DKK': 'kr'
+};
+
+/**
+ * Format amount with appropriate currency symbol or code
+ * @param {string|number} amount - The amount to format
+ * @param {string} currency - The currency code (e.g., 'QAR', 'USD', 'INR')
+ * @returns {string} Formatted amount with currency
+ */
+function formatAmountWithCurrency(amount, currency) {
+    if (!amount) return '-';
+    
+    const currencyCode = (currency || '').toUpperCase().trim();
+    const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode || '$';
+    
+    // Format number with commas
+    const numAmount = parseFloat(String(amount).replace(/,/g, ''));
+    const formattedAmount = isNaN(numAmount) ? amount : numAmount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    // For currencies without symbols (like QAR), put code before amount with space
+    // For currencies with symbols (like $, ₹), put symbol directly before amount
+    if (symbol.length > 1) {
+        return `${symbol} ${formattedAmount}`;
+    } else {
+        return `${symbol}${formattedAmount}`;
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
     checkAuthentication();
@@ -367,12 +441,98 @@ function displayResults(results, extractionId = null) {
     document.getElementById('party2Name').textContent = results.parties?.party_2_name || '-';
     document.getElementById('party2Address').textContent = results.parties?.party_2_address || '-';
     
+    // Set party labels (Vendor/Customer) - use types from backend, default to Vendor/Customer if not provided
+    const party1Type = results.parties?.party_1_type || 'Vendor';
+    const party2Type = results.parties?.party_2_type || 'Customer';
+    
+    document.getElementById('party1Label').textContent = party1Type;
+    document.getElementById('party2Label').textContent = party2Type;
+    
     // Payment Terms
     const payment = results.payment_terms || {};
     document.getElementById('paymentAmount').textContent = payment.amount ? 
-        (payment.currency === 'INR' ? '₹' : '$') + payment.amount : '-';
+        formatAmountWithCurrency(payment.amount, payment.currency) : '-';
     document.getElementById('paymentCurrency').textContent = payment.currency || '-';
     document.getElementById('paymentFrequency').textContent = payment.frequency || '1';  // Default to "1" if empty
+    
+    // Amount Explanation (shows how total was calculated based on document)
+    const amountExplanationEl = document.getElementById('amountExplanation');
+    if (amountExplanationEl) {
+        const explanation = payment.amount_explanation || results.amount_explanation || '';
+        if (explanation) {
+            amountExplanationEl.textContent = explanation;
+            amountExplanationEl.style.display = 'block';
+        } else {
+            amountExplanationEl.style.display = 'none';
+        }
+    }
+    
+    // Account Details
+    const paymentDetails = results.payment_details || {};
+    const accountDetailsSection = document.getElementById('accountDetailsSection');
+    const indianAccountDetails = document.getElementById('indianAccountDetails');
+    const internationalAccountDetails = document.getElementById('internationalAccountDetails');
+    const bankAddressSection = document.getElementById('bankAddressSection');
+    
+    // Check if we have any account details
+    const hasAccountDetails = paymentDetails.account_holder_name || 
+                             paymentDetails.account_number || 
+                             paymentDetails.account_number_iban || 
+                             paymentDetails.ifsc_code || 
+                             paymentDetails.swift_code || 
+                             paymentDetails.branch || 
+                             paymentDetails.bank_address;
+    
+    if (hasAccountDetails) {
+        accountDetailsSection.style.display = 'block';
+        
+        // Determine if it's Indian account (has IFSC) or international (has SWIFT/IBAN)
+        const hasIFSC = paymentDetails.ifsc_code && paymentDetails.ifsc_code.trim() !== '';
+        const hasSWIFT = paymentDetails.swift_code && paymentDetails.swift_code.trim() !== '';
+        const hasIBAN = paymentDetails.account_number_iban && paymentDetails.account_number_iban.trim() !== '';
+        
+        if (hasIFSC || (paymentDetails.account_number && !hasSWIFT && !hasIBAN)) {
+            // Indian account format
+            indianAccountDetails.style.display = 'block';
+            internationalAccountDetails.style.display = 'none';
+            
+            document.getElementById('accountHolderName').textContent = paymentDetails.account_holder_name || '-';
+            document.getElementById('accountNumber').textContent = paymentDetails.account_number || '-';
+            document.getElementById('ifscCode').textContent = paymentDetails.ifsc_code || '-';
+            document.getElementById('branch').textContent = paymentDetails.branch || '-';
+        } else if (hasSWIFT || hasIBAN) {
+            // International account format
+            indianAccountDetails.style.display = 'none';
+            internationalAccountDetails.style.display = 'block';
+            
+            document.getElementById('accountNumberIban').textContent = paymentDetails.account_number_iban || paymentDetails.account_number || '-';
+            document.getElementById('swiftCode').textContent = paymentDetails.swift_code || '-';
+        } else {
+            // Fallback: show Indian format if account_number exists
+            if (paymentDetails.account_number) {
+                indianAccountDetails.style.display = 'block';
+                internationalAccountDetails.style.display = 'none';
+                
+                document.getElementById('accountHolderName').textContent = paymentDetails.account_holder_name || '-';
+                document.getElementById('accountNumber').textContent = paymentDetails.account_number || '-';
+                document.getElementById('ifscCode').textContent = paymentDetails.ifsc_code || '-';
+                document.getElementById('branch').textContent = paymentDetails.branch || '-';
+            } else {
+                indianAccountDetails.style.display = 'none';
+                internationalAccountDetails.style.display = 'none';
+            }
+        }
+        
+        // Bank Address (common for both)
+        if (paymentDetails.bank_address && paymentDetails.bank_address.trim() !== '') {
+            bankAddressSection.style.display = 'block';
+            document.getElementById('bankAddress').textContent = paymentDetails.bank_address;
+        } else {
+            bankAddressSection.style.display = 'none';
+        }
+    } else {
+        accountDetailsSection.style.display = 'none';
+    }
     
     // Clauses
     document.getElementById('terminationClause').textContent = 
@@ -705,8 +865,7 @@ function showDuplicateInvoiceModal(data) {
     if (amount && amount.toString().trim()) {
         if (amountItem) amountItem.style.display = 'flex';
         if (amountEl) {
-            const formattedAmount = currency ? `${currency} ${amount}` : amount;
-            amountEl.textContent = formattedAmount;
+            amountEl.textContent = formatAmountWithCurrency(amount, currency);
         }
     } else {
         if (amountItem) amountItem.style.display = 'none';

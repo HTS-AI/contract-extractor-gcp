@@ -296,10 +296,7 @@ Return your response in JSON format:
                 risk_score += 5
                 risk_factors.append({"factor": "Missing currency information", "severity": "Low", "impact": 5})
             
-            # Check frequency (for recurring invoices)
-            if not extracted_data.get("frequency"):
-                risk_score += 3
-                risk_factors.append({"factor": "Missing payment frequency", "severity": "Low", "impact": 3})
+            # Note: Frequency defaults to "1" (one-time payment) if not mentioned, so it's not flagged as missing
         else:
             # Contract/NDA/Lease risk factors
             parties = extracted_data.get("party_names", {})
@@ -328,9 +325,7 @@ Return your response in JSON format:
                 risk_score += 15
                 risk_factors.append({"factor": "Missing both payment amount and due date (Critical)", "severity": "High", "impact": 15})
             
-            if not extracted_data.get("frequency"):
-                risk_score += 5
-                risk_factors.append({"factor": "Missing payment frequency", "severity": "Low", "impact": 5})
+            # Note: Frequency defaults to "1" (one-time payment) if not mentioned, so it's not flagged as missing
         
         # Compliance Violations (for all document types)
         compliance_violation = extracted_data.get("rules_and_compliance_violation", "")
@@ -534,6 +529,7 @@ REQUIRED OUTPUT FORMAT (STRICT JSON):
     "balance_due": ""
   }},
   "amount": "",
+  "amount_explanation": "",
   "currency": "",
   "line_items": [
     {{
@@ -550,8 +546,13 @@ REQUIRED OUTPUT FORMAT (STRICT JSON):
     "payment_terms": "",
     "payment_method": "",
     "bank_name": "",
+    "account_holder_name": "",
     "account_number": "",
+    "account_number_iban": "",
     "ifsc_code": "",
+    "swift_code": "",
+    "branch": "",
+    "bank_address": "",
     "upi_id": ""
   }},
   "frequency": "",
@@ -564,32 +565,73 @@ REQUIRED OUTPUT FORMAT (STRICT JSON):
 EXTRACTION INSTRUCTIONS:
 1. Invoice Type: Identify type (Tax Invoice, Proforma, Commercial, Construction, Lease, Service, etc.)
 2. Vendor/Supplier: Extract company name issuing the invoice (look for "FROM", "BILLED BY", "VENDOR", "SUPPLIER", "SELLER", company name at top)
+   - Vendor Address: Extract vendor address carefully. Look for address in these locations:
+     * FOOTER SECTION: Look at the bottom of the document, after signature blocks, in contact information sections
+     * Look for addresses that include: Office number, Floor, Building name, Street, City, Country, PO Box
+     * Look for addresses that appear with contact details like Tel, Fax, Email, Phone
+     * Look for addresses BELOW red lines, separators, or horizontal lines
+     * Look in a separate "From" section if present
+     * The vendor address is typically the company's registered/business address, not the bank address
+   - CRITICAL: If an address contains the word "bank" (case-insensitive), it is a BANK ADDRESS, NOT a vendor address. Do NOT extract it as vendor_address.
+   - CRITICAL: Vendor address often appears in the footer with contact information (Tel, Fax, Email, Phone numbers). Extract the full address including office number, building, street, city, country, and PO Box if present.
+   - Example: "Risin Ventures W.L.L, Office No 12, 3rd Floor, Al Reem Tower, West Bay, Doha, Qatar, PO Box- 4969" would be a vendor address
 3. Customer/Buyer: Extract company/person being billed (look for "TO", "BILL TO", "BILLED TO", "CUSTOMER", "BUYER")
+   - Customer Address: Extract customer address from "Bill To", "Ship To", or "Customer" sections
+   - CRITICAL: If an address contains the word "bank" (case-insensitive), it is a BANK ADDRESS, NOT a customer address. Do NOT extract it as customer_address.
 4. Document IDs (CRITICAL - Extract ALL of these if present):
-   - invoice_id: Main invoice identifier (look for "INVOICE ID", "INVOICE NO", "INVOICE #", "INV NO", "INV #", "INVOICE NUMBER")
-   - invoice_number: Same as invoice_id if not separately specified
+   - invoice_id: Main invoice identifier. Look for:
+     * "INVOICE ID", "INVOICE NO", "INVOICE #", "INV NO", "INV #", "INVOICE NUMBER"
+     * "QUOTE NUMBER", "QUOTATION NUMBER", "QUOTE NO", "QUO #", "QUOTATION REF NO", "QUOTATION REF"
+     * CRITICAL: Extract the ACTUAL VALUE/NUMBER, NOT the label. 
+       - If you see "Invoice No: INV-123", extract "INV-123" (NOT "Invoice No")
+       - If you see "Quote No: ENT-20251217-10", extract "ENT-20251217-10" (NOT "Quote No")
+       - If you see "Quote No ENT-20251217-10" (without colon), extract "ENT-20251217-10"
+       - Look for the alphanumeric value that appears AFTER or NEXT TO labels like "Invoice No:", "Quote No:", etc.
+       - The value is typically in the same row/box as the label, or in an adjacent cell/field
+     * IMPORTANT: If you find a "Quote Number" or "Quotation Number" label, ALSO check the NEXT box/field or adjacent area for the actual number or alphanumeric value - this is often the actual invoice/quote number
+     * If quotation_number is found and it's the same as invoice number, extract it ONLY ONCE (prefer invoice_id/invoice_number, not quotation_number)
+     * NEVER extract labels like "Quote No", "Invoice No", "Quotation Number" - only extract the actual alphanumeric identifier
+   - invoice_number: Same as invoice_id if not separately specified. Extract the ACTUAL VALUE, not the label. If invoice and quote numbers are identical, extract only once
    - bill_number: Bill identifier (look for "BILL NO", "BILL #", "BILL NUMBER")
    - po_number: Purchase order number (look for "PO", "P.O.", "PURCHASE ORDER", "PO NUMBER", "PO #")
    - order_number: Order reference (look for "ORDER NO", "ORDER #", "ORDER NUMBER", "ORD NO")
    - reference_id: Any reference number (look for "REF", "REF NO", "REFERENCE", "REF #")
    - document_number: Generic document number (look for "DOC NO", "DOCUMENT NO", "DOC #")
-   - quotation_number: Quote reference (look for "QUOTE", "QUOTATION", "QUOTE NO", "QUO #")
+   - quotation_number: Quote reference (look for "QUOTE", "QUOTATION", "QUOTE NO", "QUO #", "QUOTATION REF NO", "QUOTATION REF")
+     * CRITICAL: Extract the ACTUAL VALUE/NUMBER, NOT the label. 
+       - If you see "Quote No: ENT-20251217-10", extract "ENT-20251217-10" (NOT "Quote No")
+       - If you see "Quote No ENT-20251217-10" (without colon), extract "ENT-20251217-10"
+       - Look for the alphanumeric value that appears AFTER or NEXT TO labels like "Quote No:", "Quote Number:", "Quotation No:", etc.
+       - The value is typically in the same row/box as the label, or in an adjacent cell/field
+       - NEVER extract labels like "Quote No", "Quotation Number" - only extract the actual alphanumeric identifier
+     * CRITICAL: If quotation_number is found, ALSO check adjacent boxes/fields for numbers or alphanumeric values that might be the invoice number
+     * IMPORTANT: If quotation_number is the SAME as invoice_id/invoice_number (e.g., "Invoice: EST-007471; Quote: EST-007471"), extract it ONLY ONCE - do NOT duplicate. Prefer storing it in invoice_id/invoice_number and leave quotation_number empty
+     * Only extract quotation_number if it's DIFFERENT from the invoice number
    - receipt_number: Receipt identifier (look for "RECEIPT", "RECEIPT NO", "REC #")
    - transaction_id: Transaction reference (look for "TRANSACTION", "TXN", "TRANS ID")
    - other_ids: Any other identifiers found in the document
-   NOTE: The primary document identifier should go in both invoice_id AND invoice_number
+   NOTE: The primary document identifier should go in both invoice_id AND invoice_number. If quotation_number is the primary identifier, use it for both invoice_id and invoice_number as well.
 5. Dates: Extract invoice date, due date, delivery date as YYYY-MM-DD (be flexible with date formats)
 6. Amounts and Currency: Extract ALL monetary values including taxes
    - Look for: Subtotal, Discount, Taxable Amount, Tax, CGST, SGST, IGST, GST, VAT, Total, Grand Total, Amount Due, Balance
    - CRITICAL: Extract amounts EXACTLY as shown - preserve ALL decimal places (e.g., 12688.76 NOT 12689)
    - Strip currency symbols but keep the complete numeric value with decimals
    - IMPORTANT: Detect currency from:
-     * Currency symbols: $, ₹, €, £, etc.
-     * Currency codes: USD, INR, EUR, GBP, AED, CAD, AUD
-     * Currency words: Dollars, Rupees, Euros, Pounds, Dirhams
-     * Country names: USA/India/UK/UAE (infer currency)
+     * Currency symbols: $, ₹, €, £, ¥, ﷼, etc.
+     * Currency codes: USD, INR, EUR, GBP, AED, CAD, AUD, QAR, SAR, KWD, BHD, OMR, JPY, CNY, SGD, MYR, THB, CHF, etc.
+     * Currency words: Dollars, Rupees, Euros, Pounds, Dirhams, Riyals, Yen, Yuan, Francs, etc.
+     * "Currency: XXX" patterns (e.g., "Currency: QAR" means Qatari Riyal)
+     * "TOTAL XXX" patterns (e.g., "TOTAL QAR 33,480.00" means currency is QAR)
+     * Country/city names to infer currency:
+       - Qatar/Doha → QAR (Qatari Riyal)
+       - Saudi Arabia/Riyadh → SAR (Saudi Riyal)
+       - UAE/Dubai → AED (UAE Dirham)
+       - Kuwait → KWD (Kuwaiti Dinar)
+       - Bahrain → BHD (Bahraini Dinar)
+       - Oman/Muscat → OMR (Omani Rial)
+       - India → INR, USA → USD, UK → GBP, etc.
      * If currency symbol is missing due to OCR, look for currency mentioned ANYWHERE in the document
-   - Set "currency" field with the detected currency code (USD, INR, EUR, etc.)
+   - Set "currency" field with the detected 3-letter currency code (USD, INR, EUR, QAR, SAR, etc.)
 7. Line Items: Extract EACH product/service listed with:
    - Description/Item name
    - HSN/SAC code if present
@@ -599,10 +641,32 @@ EXTRACTION INSTRUCTIONS:
    - Amount/Total for that line
    - Tax rate (if shown per item)
 8. Tax Details: Extract GST, VAT, CGST, SGST, IGST as applicable (may be shown as percentage or amount)
-9. Payment Details: Extract bank details, payment terms, UPI if present
+9. Payment Details: Extract ALL bank and account details:
+   - Account Holder Name: Name of the account holder (look for "Account Name", "Name", "Beneficiary Name", "Payee Name", "Payment in the name of")
+   - Account Number: For Indian accounts, extract account number (look for "Account No", "A/C No", "Account Number", "A/C Number")
+   - Account Number/IBAN: For international accounts, extract IBAN or account number (look for "IBAN", "Account No/IBAN", "Account Number", "A/C No")
+   - IFSC Code: For Indian accounts, extract IFSC code (look for "IFSC", "IFSC Code", "IFSC CODE")
+   - SWIFT Code: For international accounts, extract SWIFT code (look for "SWIFT", "SWIFT Code", "BIC", "BIC Code")
+   - Branch: Extract branch name/location (look for "Branch", "Branch Name", "Branch Location")
+   - Bank Name: Extract bank name (look for bank name near account details, payment instructions)
+   - Bank Address: Extract full bank address. This is typically the address that appears near bank account details, payment instructions, or below account information. 
+     * Look for addresses that contain bank name, branch name, or are clearly associated with banking/payment information
+     * Bank addresses often appear after account numbers, IBAN, SWIFT codes, or in payment instruction sections
+     * Example: "Qatar National Bank, Shoumoukh Corporate Branch, Doha, Qatar" would be a bank address
+   - Payment Terms: Extract payment terms if mentioned
+   - Payment Method: Extract payment method if mentioned
+   - UPI ID: Extract UPI ID if present (for Indian payments)
 10. For party_1, use vendor name; for party_2, use customer name
 11. For amount field, use the total/grand total/amount due (the final payable amount)
-12. For start_date, use invoice_date; for due_date, use payment due date
+12. amount_explanation: Provide a brief one-line explanation of how the total amount was derived from the document.
+   - If taxes are mentioned as extra (e.g., "GST 18% Extra"), explain: "Base amount X + 18% GST = Total Y"
+   - If subtotal + tax breakdown is shown, explain: "Subtotal X + Tax Y = Total Z"
+   - If total is directly stated without calculation, explain: "Total as stated in document"
+   - Examples:
+     * "56,450.00 + 18% GST (10,161.00) = 66,611.00"
+     * "Subtotal 50,000 + CGST 9% + SGST 9% = 59,000"
+     * "Grand Total as stated in invoice"
+13. For start_date, use invoice_date; for due_date, use payment due date
 13. If any field is not found in the document, leave it as empty string ""
 14. Extract ALL line items, don't skip any
 15. Be flexible with terminology - different invoices use different terms for the same fields
@@ -616,9 +680,27 @@ IMPORTANT NOTES:
 - Amounts may have currency symbols ($, ₹, €, etc.) - extract EXACT numeric value with ALL decimals (12688.76 NOT 12689)
 - NEVER round amounts - keep them exactly as shown in the document
 - Look carefully at the document structure to identify vendor vs customer
-- OCR ISSUES: Currency symbols ($, ₹) may be missing or misread - look for currency mentioned ANYWHERE in document (text, headers, footers)
-- If currency symbol is missing, search for: "USD", "Dollar", "INR", "Rupee", country names, or any currency indication
-- Common OCR errors: $ → S, ₹ → Rs, € → C - be flexible in detection
+- ADDRESS EXTRACTION CRITICAL RULES:
+  * Vendor address: 
+    - Look in FOOTER sections at the bottom of the document
+    - Look BELOW signature blocks, after "Authorized Signatory", "For [Company Name]", or similar signature text
+    - Look for addresses that appear with contact information (Tel, Fax, Email, Phone numbers)
+    - Look for addresses that include: Office number, Floor number, Building name, Street/Area, City, Country, PO Box
+    - Look BELOW red lines, separators, or horizontal lines
+    - Typically appears after company name in footer or in a separate "From" section
+    - Example format: "Company Name, Office No X, Floor Y, Building Name, Area, City, Country, PO Box- Z"
+    - Example: "Risin Ventures W.L.L, Office No 12, 3rd Floor, Al Reem Tower, West Bay, Doha, Qatar, PO Box- 4969"
+    - IMPORTANT: If you see multiple addresses, the one with contact details (Tel, Fax, Email) in the footer is usually the vendor address
+  * Customer address: Look in "Bill To", "Ship To", or "Customer" sections
+  * Bank address: Any address containing "bank" (case-insensitive) or appearing near payment/account details should go to bank_address, NOT vendor_address or customer_address
+  * If an address contains words like "Bank", "Branch", "IBAN", "SWIFT", "Account", it's likely a bank address
+  * Bank addresses often appear in payment instruction sections, near account numbers, or below payment details
+  * CRITICAL: The vendor address is the company's business/registered address (usually in footer with contact info), NOT the bank address
+- OCR ISSUES: Currency symbols ($, ₹, €, £, ¥) may be missing or misread - look for currency mentioned ANYWHERE in document (text, headers, footers)
+- If currency symbol is missing, search for currency codes (QAR, SAR, USD, INR, etc.) or words (Riyal, Dollar, Rupee, etc.)
+- Look for patterns like "Currency: QAR", "TOTAL QAR", "Amount in QAR", etc.
+- Common OCR errors: $ → S, ₹ → Rs, € → C, £ → L - be flexible in detection
+- For Gulf currencies (QAR, SAR, AED, KWD, BHD, OMR), look for country/city names (Qatar, Saudi, Dubai, etc.)
 
 Return ONLY valid JSON."""
 
@@ -660,9 +742,11 @@ def parse_document_node(state: ExtractionState) -> ExtractionState:
         parser = DocumentParser(use_gcs_vision=use_gcs)
         
         if state.get("file_path"):
+            # For hybrid documents, always try OCR to detect OCR text
+            # The parser will intelligently combine native text with OCR text
             document_text, page_map = parser.parse_with_pages(
                 state["file_path"], 
-                use_ocr=state.get("use_ocr", False)
+                use_ocr=True  # Always enable OCR detection for hybrid documents
             )
             state["document_text"] = document_text
             state["page_map"] = page_map
@@ -1064,8 +1148,20 @@ def _find_page_references(extracted_data: Dict[str, Any], page_map: Dict[int, st
                 "USD": ["$", "USD", "US DOLLAR", "DOLLAR"],
                 "INR": ["₹", "INR", "RUPEE", "Rs.", "Rs "],
                 "EUR": ["€", "EUR", "EURO"],
-                "GBP": ["£", "GBP", "POUND"],
-                "AED": ["AED", "DIRHAM"]
+                "GBP": ["£", "GBP", "POUND", "STERLING"],
+                "AED": ["AED", "DIRHAM", "UAE DIRHAM"],
+                "QAR": ["QAR", "QATARI RIYAL", "QATARI RIYALS", "Q.R."],
+                "SAR": ["SAR", "SAUDI RIYAL", "SAUDI RIYALS", "﷼"],
+                "KWD": ["KWD", "KUWAITI DINAR"],
+                "BHD": ["BHD", "BAHRAINI DINAR"],
+                "OMR": ["OMR", "OMANI RIAL"],
+                "CAD": ["CAD", "C$", "CANADIAN DOLLAR"],
+                "AUD": ["AUD", "A$", "AUSTRALIAN DOLLAR"],
+                "JPY": ["JPY", "YEN", "¥"],
+                "CNY": ["CNY", "RMB", "YUAN", "RENMINBI"],
+                "SGD": ["SGD", "S$", "SINGAPORE DOLLAR"],
+                "CHF": ["CHF", "SWISS FRANC"],
+                "MYR": ["MYR", "RM", "RINGGIT"]
             }
             
             if currency.upper() in currency_patterns:
@@ -1199,7 +1295,220 @@ def finalize_node(state: ExtractionState) -> ExtractionState:
 # ============== Enhancement Helpers ==============
 
 def _extract_currency(extracted_data: Dict[str, Any], document_text: str) -> Dict[str, Any]:
-    """Extract and normalize currency from amount and document text."""
+    """Extract and normalize currency from amount and document text.
+    
+    Supports a comprehensive list of currencies including:
+    - Major currencies: USD, EUR, GBP, INR, etc.
+    - Gulf currencies: QAR, SAR, AED, KWD, BHD, OMR
+    - Asian currencies: JPY, CNY, SGD, MYR, THB, PHP, IDR, VND, KRW, HKD, TWD
+    - Other currencies: CHF, SEK, NOK, DKK, PLN, CZK, HUF, ZAR, BRL, MXN, NZD, etc.
+    """
+    # Comprehensive currency mapping: code -> (keywords, symbols, country/city indicators)
+    CURRENCY_MAP = {
+        # Gulf/Middle East currencies
+        "QAR": {
+            "keywords": ["QAR", "QATARI RIYAL", "QATARI RIYALS", "Q.R.", "QR "],
+            "symbols": [],
+            "locations": ["QATAR", "DOHA", "QATARI"]
+        },
+        "SAR": {
+            "keywords": ["SAR", "SAUDI RIYAL", "SAUDI RIYALS", "S.R.", "SR "],
+            "symbols": ["﷼"],
+            "locations": ["SAUDI", "SAUDI ARABIA", "RIYADH", "JEDDAH", "MECCA", "MEDINA"]
+        },
+        "AED": {
+            "keywords": ["AED", "DIRHAM", "DIRHAMS", "UAE DIRHAM", "EMIRATI DIRHAM"],
+            "symbols": ["د.إ"],
+            "locations": ["UAE", "UNITED ARAB EMIRATES", "DUBAI", "ABU DHABI", "SHARJAH", "EMIRATI"]
+        },
+        "KWD": {
+            "keywords": ["KWD", "KUWAITI DINAR", "KUWAITI DINARS", "K.D."],
+            "symbols": ["د.ك"],
+            "locations": ["KUWAIT", "KUWAITI"]
+        },
+        "BHD": {
+            "keywords": ["BHD", "BAHRAINI DINAR", "BAHRAINI DINARS", "B.D."],
+            "symbols": ["د.ب"],
+            "locations": ["BAHRAIN", "BAHRAINI", "MANAMA"]
+        },
+        "OMR": {
+            "keywords": ["OMR", "OMANI RIAL", "OMANI RIALS", "O.R."],
+            "symbols": ["ر.ع."],
+            "locations": ["OMAN", "OMANI", "MUSCAT"]
+        },
+        # Major Western currencies
+        "USD": {
+            "keywords": ["USD", "US DOLLAR", "US DOLLARS", "DOLLAR", "DOLLARS", "US$"],
+            "symbols": ["$"],
+            "locations": ["USA", "UNITED STATES", "AMERICA", "NEW YORK", "CALIFORNIA", "TEXAS", "FLORIDA"]
+        },
+        "EUR": {
+            "keywords": ["EUR", "EURO", "EUROS"],
+            "symbols": ["€"],
+            "locations": ["EUROPE", "EUROPEAN", "GERMANY", "FRANCE", "ITALY", "SPAIN", "NETHERLANDS", "BELGIUM"]
+        },
+        "GBP": {
+            "keywords": ["GBP", "POUND", "POUNDS", "BRITISH POUND", "STERLING", "POUND STERLING"],
+            "symbols": ["£"],
+            "locations": ["UK", "UNITED KINGDOM", "BRITAIN", "BRITISH", "LONDON", "ENGLAND", "SCOTLAND", "WALES"]
+        },
+        "CHF": {
+            "keywords": ["CHF", "SWISS FRANC", "SWISS FRANCS", "FRANKEN"],
+            "symbols": ["Fr.", "SFr."],
+            "locations": ["SWITZERLAND", "SWISS", "ZURICH", "GENEVA", "BERN"]
+        },
+        # Indian currency
+        "INR": {
+            "keywords": ["INR", "RUPEE", "RUPEES", "INDIAN RUPEE", "RS.", "RS ", "RS"],
+            "symbols": ["₹"],
+            "locations": ["INDIA", "INDIAN", "MUMBAI", "DELHI", "BANGALORE", "CHENNAI", "KOLKATA", "HYDERABAD", "PUNE"]
+        },
+        # Other major currencies
+        "CAD": {
+            "keywords": ["CAD", "CANADIAN DOLLAR", "CANADIAN DOLLARS", "C$", "CA$"],
+            "symbols": ["C$"],
+            "locations": ["CANADA", "CANADIAN", "TORONTO", "VANCOUVER", "MONTREAL", "OTTAWA"]
+        },
+        "AUD": {
+            "keywords": ["AUD", "AUSTRALIAN DOLLAR", "AUSTRALIAN DOLLARS", "A$", "AU$"],
+            "symbols": ["A$"],
+            "locations": ["AUSTRALIA", "AUSTRALIAN", "SYDNEY", "MELBOURNE", "BRISBANE", "PERTH"]
+        },
+        "NZD": {
+            "keywords": ["NZD", "NEW ZEALAND DOLLAR", "NZ$"],
+            "symbols": ["NZ$"],
+            "locations": ["NEW ZEALAND", "AUCKLAND", "WELLINGTON"]
+        },
+        # Asian currencies
+        "JPY": {
+            "keywords": ["JPY", "YEN", "JAPANESE YEN"],
+            "symbols": ["¥", "円"],
+            "locations": ["JAPAN", "JAPANESE", "TOKYO", "OSAKA", "KYOTO"]
+        },
+        "CNY": {
+            "keywords": ["CNY", "RMB", "YUAN", "RENMINBI", "CHINESE YUAN"],
+            "symbols": ["¥", "元"],
+            "locations": ["CHINA", "CHINESE", "BEIJING", "SHANGHAI", "SHENZHEN", "GUANGZHOU"]
+        },
+        "SGD": {
+            "keywords": ["SGD", "SINGAPORE DOLLAR", "S$"],
+            "symbols": ["S$"],
+            "locations": ["SINGAPORE", "SINGAPOREAN"]
+        },
+        "MYR": {
+            "keywords": ["MYR", "RINGGIT", "MALAYSIAN RINGGIT", "RM"],
+            "symbols": ["RM"],
+            "locations": ["MALAYSIA", "MALAYSIAN", "KUALA LUMPUR"]
+        },
+        "THB": {
+            "keywords": ["THB", "BAHT", "THAI BAHT"],
+            "symbols": ["฿"],
+            "locations": ["THAILAND", "THAI", "BANGKOK"]
+        },
+        "PHP": {
+            "keywords": ["PHP", "PESO", "PHILIPPINE PESO"],
+            "symbols": ["₱"],
+            "locations": ["PHILIPPINES", "PHILIPPINE", "MANILA"]
+        },
+        "IDR": {
+            "keywords": ["IDR", "RUPIAH", "INDONESIAN RUPIAH"],
+            "symbols": ["Rp"],
+            "locations": ["INDONESIA", "INDONESIAN", "JAKARTA", "BALI"]
+        },
+        "VND": {
+            "keywords": ["VND", "DONG", "VIETNAMESE DONG"],
+            "symbols": ["₫"],
+            "locations": ["VIETNAM", "VIETNAMESE", "HANOI", "HO CHI MINH"]
+        },
+        "KRW": {
+            "keywords": ["KRW", "WON", "KOREAN WON"],
+            "symbols": ["₩"],
+            "locations": ["KOREA", "KOREAN", "SOUTH KOREA", "SEOUL"]
+        },
+        "HKD": {
+            "keywords": ["HKD", "HONG KONG DOLLAR", "HK$"],
+            "symbols": ["HK$"],
+            "locations": ["HONG KONG"]
+        },
+        "TWD": {
+            "keywords": ["TWD", "TAIWAN DOLLAR", "NT$", "NEW TAIWAN DOLLAR"],
+            "symbols": ["NT$"],
+            "locations": ["TAIWAN", "TAIPEI"]
+        },
+        # European currencies (non-Euro)
+        "SEK": {
+            "keywords": ["SEK", "KRONA", "SWEDISH KRONA"],
+            "symbols": ["kr"],
+            "locations": ["SWEDEN", "SWEDISH", "STOCKHOLM"]
+        },
+        "NOK": {
+            "keywords": ["NOK", "NORWEGIAN KRONE"],
+            "symbols": ["kr"],
+            "locations": ["NORWAY", "NORWEGIAN", "OSLO"]
+        },
+        "DKK": {
+            "keywords": ["DKK", "DANISH KRONE"],
+            "symbols": ["kr"],
+            "locations": ["DENMARK", "DANISH", "COPENHAGEN"]
+        },
+        "PLN": {
+            "keywords": ["PLN", "ZLOTY", "POLISH ZLOTY"],
+            "symbols": ["zł"],
+            "locations": ["POLAND", "POLISH", "WARSAW"]
+        },
+        # Other currencies
+        "ZAR": {
+            "keywords": ["ZAR", "RAND", "SOUTH AFRICAN RAND"],
+            "symbols": ["R"],
+            "locations": ["SOUTH AFRICA", "JOHANNESBURG", "CAPE TOWN"]
+        },
+        "BRL": {
+            "keywords": ["BRL", "REAL", "BRAZILIAN REAL"],
+            "symbols": ["R$"],
+            "locations": ["BRAZIL", "BRAZILIAN", "SAO PAULO", "RIO"]
+        },
+        "MXN": {
+            "keywords": ["MXN", "MEXICAN PESO"],
+            "symbols": ["$"],
+            "locations": ["MEXICO", "MEXICAN", "MEXICO CITY"]
+        },
+        "TRY": {
+            "keywords": ["TRY", "TURKISH LIRA", "LIRA"],
+            "symbols": ["₺"],
+            "locations": ["TURKEY", "TURKISH", "ISTANBUL", "ANKARA"]
+        },
+        "RUB": {
+            "keywords": ["RUB", "RUBLE", "RUSSIAN RUBLE"],
+            "symbols": ["₽"],
+            "locations": ["RUSSIA", "RUSSIAN", "MOSCOW"]
+        },
+        "EGP": {
+            "keywords": ["EGP", "EGYPTIAN POUND"],
+            "symbols": ["E£", "ج.م"],
+            "locations": ["EGYPT", "EGYPTIAN", "CAIRO"]
+        },
+        "PKR": {
+            "keywords": ["PKR", "PAKISTANI RUPEE"],
+            "symbols": ["Rs"],
+            "locations": ["PAKISTAN", "PAKISTANI", "KARACHI", "LAHORE", "ISLAMABAD"]
+        },
+        "LKR": {
+            "keywords": ["LKR", "SRI LANKAN RUPEE"],
+            "symbols": ["Rs", "රු"],
+            "locations": ["SRI LANKA", "COLOMBO"]
+        },
+        "BDT": {
+            "keywords": ["BDT", "TAKA", "BANGLADESHI TAKA"],
+            "symbols": ["৳"],
+            "locations": ["BANGLADESH", "BANGLADESHI", "DHAKA"]
+        },
+        "NPR": {
+            "keywords": ["NPR", "NEPALESE RUPEE"],
+            "symbols": ["Rs", "रू"],
+            "locations": ["NEPAL", "NEPALESE", "KATHMANDU"]
+        }
+    }
+    
     amount_str = extracted_data.get("amount", "")
     
     if not amount_str:
@@ -1229,21 +1538,21 @@ def _extract_currency(extracted_data: Dict[str, Any], document_text: str) -> Dic
             amount_upper = str(amount_str).upper()
             doc_text_upper = document_text.upper() if document_text else ""
             
-            # 1. Check amount string for currency symbols/codes
-            if re.search(r'Rs\.|Rs |RS\.|RS ', amount_str, re.IGNORECASE) or "INR" in amount_upper or "₹" in amount_str:
-                currency = "INR"
-            elif "USD" in amount_upper or "$" in amount_str or "US$" in amount_upper:
-                currency = "USD"
-            elif "EUR" in amount_upper or "€" in amount_str:
-                currency = "EUR"
-            elif "GBP" in amount_upper or "£" in amount_str:
-                currency = "GBP"
-            elif "AED" in amount_upper:
-                currency = "AED"
-            elif "CAD" in amount_upper or "C$" in amount_str:
-                currency = "CAD"
-            elif "AUD" in amount_upper or "A$" in amount_str:
-                currency = "AUD"
+            # 1. Check amount string for currency codes/keywords
+            for curr_code, curr_info in CURRENCY_MAP.items():
+                # Check keywords in amount string
+                for keyword in curr_info["keywords"]:
+                    if keyword.upper() in amount_upper:
+                        currency = curr_code
+                        break
+                # Check symbols in amount string
+                if not currency:
+                    for symbol in curr_info["symbols"]:
+                        if symbol in amount_str:
+                            currency = curr_code
+                            break
+                if currency:
+                    break
             
             # 2. If no currency found in amount, check amounts field for nested currency
             if not currency:
@@ -1252,46 +1561,57 @@ def _extract_currency(extracted_data: Dict[str, Any], document_text: str) -> Dic
                     for key, value in amounts.items():
                         if value and isinstance(value, str):
                             value_upper = value.upper()
-                            if "$" in value or "USD" in value_upper or "US$" in value_upper:
-                                currency = "USD"
-                                break
-                            elif "₹" in value or "INR" in value_upper or re.search(r'Rs\.', value, re.IGNORECASE):
-                                currency = "INR"
-                                break
-                            elif "€" in value or "EUR" in value_upper:
-                                currency = "EUR"
-                                break
+                            for curr_code, curr_info in CURRENCY_MAP.items():
+                                for keyword in curr_info["keywords"]:
+                                    if keyword.upper() in value_upper:
+                                        currency = curr_code
+                                        break
+                                if not currency:
+                                    for symbol in curr_info["symbols"]:
+                                        if symbol in value:
+                                            currency = curr_code
+                                            break
+                                if currency:
+                                    break
+                        if currency:
+                            break
             
             # 3. If still no currency, check extracted currency field
             if not currency:
                 extracted_currency = extracted_data.get("currency", "")
-                if extracted_currency and extracted_currency.upper() in ["USD", "INR", "EUR", "GBP", "AED", "CAD", "AUD"]:
-                    currency = extracted_currency.upper()
+                if extracted_currency:
+                    extracted_upper = extracted_currency.upper().strip()
+                    if extracted_upper in CURRENCY_MAP:
+                        currency = extracted_upper
             
             # 4. If still no currency, search document text for currency keywords
             if not currency and document_text:
-                # Check for currency mentions in document
-                if any(keyword in doc_text_upper for keyword in ["USD", "US DOLLAR", "DOLLAR", "$"]):
-                    currency = "USD"
-                elif any(keyword in doc_text_upper for keyword in ["INR", "RUPEE", "RS.", "₹"]):
-                    currency = "INR"
-                elif any(keyword in doc_text_upper for keyword in ["EUR", "EURO", "€"]):
-                    currency = "EUR"
-                elif any(keyword in doc_text_upper for keyword in ["GBP", "POUND", "£"]):
-                    currency = "GBP"
-                elif any(keyword in doc_text_upper for keyword in ["AED", "DIRHAM"]):
-                    currency = "AED"
+                # First check for explicit "Currency: XXX" pattern
+                currency_pattern = re.search(r'CURRENCY[:\s]+([A-Z]{3})', doc_text_upper)
+                if currency_pattern:
+                    found_code = currency_pattern.group(1)
+                    if found_code in CURRENCY_MAP:
+                        currency = found_code
                 
-                # Check for country mentions to infer currency
+                # Check for currency codes/keywords in document
                 if not currency:
-                    if any(country in doc_text_upper for country in ["INDIA", "INDIAN", "MUMBAI", "DELHI", "BANGALORE", "CHENNAI"]):
-                        currency = "INR"
-                    elif any(country in doc_text_upper for country in ["USA", "UNITED STATES", "AMERICA", "NEW YORK", "CALIFORNIA"]):
-                        currency = "USD"
-                    elif any(country in doc_text_upper for country in ["UAE", "DUBAI", "ABU DHABI"]):
-                        currency = "AED"
-                    elif any(country in doc_text_upper for country in ["UK", "UNITED KINGDOM", "LONDON", "BRITAIN"]):
-                        currency = "GBP"
+                    for curr_code, curr_info in CURRENCY_MAP.items():
+                        for keyword in curr_info["keywords"]:
+                            if keyword.upper() in doc_text_upper:
+                                currency = curr_code
+                                break
+                        if currency:
+                            break
+                
+                # Check for country/location mentions to infer currency
+                if not currency:
+                    for curr_code, curr_info in CURRENCY_MAP.items():
+                        for location in curr_info["locations"]:
+                            if location in doc_text_upper:
+                                currency = curr_code
+                                break
+                        if currency:
+                            break
             
             # 5. Default to USD if no currency detected (common default for international invoices)
             if not currency:
@@ -1524,22 +1844,96 @@ def _normalize_invoice_data(extracted_data: Dict[str, Any]) -> Dict[str, Any]:
     # Normalize document IDs - ensure primary ID is captured
     doc_ids = extracted_data.get("document_ids", {})
     if doc_ids:
-        # Find the primary document identifier (try multiple fields)
+        # Helper function to clean labels from extracted values
+        def clean_label_from_value(value):
+            """Remove common labels like 'Quote No', 'Invoice No', etc. from extracted values."""
+            if not value or not isinstance(value, str):
+                return value
+            value = value.strip()
+            # Remove common label patterns
+            label_patterns = [
+                r'^invoice\s*:?\s*quote\s*no\s*;?\s*quote\s*:?\s*quote\s*no\s*$',
+                r'^invoice\s*:?\s*quote\s*no\s*$',
+                r'^quote\s*:?\s*quote\s*no\s*$',
+                r'^quote\s*no\s*:?\s*$',
+                r'^invoice\s*no\s*:?\s*$',
+                r'^quotation\s*no\s*:?\s*$',
+                r'^quote\s*number\s*:?\s*$',
+                r'^invoice\s*number\s*:?\s*$',
+            ]
+            for pattern in label_patterns:
+                if re.match(pattern, value, re.IGNORECASE):
+                    return ""
+            # Remove label prefixes if value contains both label and value
+            # Pattern: "Label: Value" -> extract "Value"
+            match = re.match(r'^(?:invoice|quote|quotation)\s*(?:no|number)\s*:?\s*(.+)$', value, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+            # Pattern: "Invoice: Value; Quote: Value" -> extract "Value"
+            match = re.match(r'^invoice\s*:?\s*(.+?)\s*;?\s*quote\s*:?\s*(.+?)$', value, re.IGNORECASE)
+            if match:
+                val1 = match.group(1).strip()
+                val2 = match.group(2).strip()
+                # If both are the same, return one; if different, prefer the first
+                if val1 == val2:
+                    return val1
+                # If one is just "Quote No", return the other
+                if re.match(r'^quote\s*no\s*$', val2, re.IGNORECASE):
+                    return val1
+                if re.match(r'^quote\s*no\s*$', val1, re.IGNORECASE):
+                    return val2
+                return val1  # Default to first value
+            return value
+        
+        invoice_id = clean_label_from_value(doc_ids.get("invoice_id", ""))
+        invoice_number = clean_label_from_value(doc_ids.get("invoice_number", ""))
+        quotation_number = clean_label_from_value(doc_ids.get("quotation_number", ""))
+        
+        # Update doc_ids with cleaned values
+        if invoice_id != doc_ids.get("invoice_id", ""):
+            doc_ids["invoice_id"] = invoice_id
+        if invoice_number != doc_ids.get("invoice_number", ""):
+            doc_ids["invoice_number"] = invoice_number
+        if quotation_number != doc_ids.get("quotation_number", ""):
+            doc_ids["quotation_number"] = quotation_number
+        
+        invoice_id = invoice_id.strip() if invoice_id else ""
+        invoice_number = invoice_number.strip() if invoice_number else ""
+        quotation_number = quotation_number.strip() if quotation_number else ""
+        
+        # If invoice_id/invoice_number and quotation_number are the same, remove duplicate from quotation_number
+        if quotation_number:
+            if quotation_number == invoice_id or quotation_number == invoice_number:
+                # Same value, remove from quotation_number to avoid duplication
+                doc_ids["quotation_number"] = ""
+                quotation_number = ""
+        
+        # Find the primary document identifier (try multiple fields, including quotation_number if different)
         primary_id = (
-            doc_ids.get("invoice_id") or 
-            doc_ids.get("invoice_number") or 
-            doc_ids.get("bill_number") or
-            doc_ids.get("document_number") or
-            doc_ids.get("reference_id") or
+            invoice_id or 
+            invoice_number or 
+            quotation_number or  # Quote number can be invoice number if different
+            doc_ids.get("bill_number", "").strip() or
+            doc_ids.get("document_number", "").strip() or
+            doc_ids.get("reference_id", "").strip() or
             ""
         )
         
         # Set both invoice_id and invoice_number to the primary ID if either is empty
         if primary_id:
-            if not doc_ids.get("invoice_id"):
+            if not invoice_id:
                 doc_ids["invoice_id"] = primary_id
-            if not doc_ids.get("invoice_number"):
+            if not invoice_number:
                 doc_ids["invoice_number"] = primary_id
+        
+        # If quotation_number exists and is different from invoice_id/invoice_number, 
+        # it should also be considered as a valid invoice identifier (only if invoice_id is empty)
+        if quotation_number and quotation_number != primary_id:
+            # If invoice_id is empty, use quotation_number
+            if not doc_ids.get("invoice_id"):
+                doc_ids["invoice_id"] = quotation_number
+            if not doc_ids.get("invoice_number"):
+                doc_ids["invoice_number"] = quotation_number
         
         extracted_data["document_ids"] = doc_ids
     
