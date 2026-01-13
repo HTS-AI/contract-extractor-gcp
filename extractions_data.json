@@ -1,0 +1,863 @@
+{
+  "last_updated": "2026-01-12T19:20:24.609903",
+  "total_extractions": 2,
+  "extractions": {
+    "88c751f4-6ab5-47b8-8aa4-26b1536ef281": {
+      "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpikrw7qst.pdf",
+      "file_name": "doc1.pdf",
+      "file_hash": "7aed7c708c5698fc1de8aa4e931637c833f96baab3a8da3787d1c2ad470488f3",
+      "status": "completed",
+      "results": {
+        "contract_title": "INVOICE",
+        "contract_type": "INVOICE",
+        "document_id": "EXP-2025-0092",
+        "execution_date": "2025-01-15",
+        "risk_score": 0,
+        "parties": {
+          "party_1_name": "Zenith Precision Engineering Ltd.",
+          "party_1_address": "Unit 4, Vector Park, Bristol, BS32 4TF, UK",
+          "party_1_type": "Vendor",
+          "party_2_name": "AeroSpace Dynamics Inc.",
+          "party_2_address": "4500 Aviation Blvd, El Segundo, CA 90245, USA",
+          "party_2_type": "Customer"
+        },
+        "payment_terms": {
+          "amount": "32520.00",
+          "currency": "USD",
+          "frequency": "1",
+          "due_date": "2025-02-14",
+          "amount_explanation": "Total as stated in document"
+        },
+        "payment_details": {
+          "payment_terms": "",
+          "payment_method": "",
+          "bank_name": "Barclays Bank UK",
+          "account_holder_name": "James Sterling",
+          "account_number": "",
+          "account_number_iban": "GB44 BARC 2000 0099 8877 66",
+          "ifsc_code": "",
+          "swift_code": "BARCGB22",
+          "branch": "",
+          "bank_address": "",
+          "upi_id": ""
+        },
+        "termination_clause": "",
+        "confidentiality_clause": "",
+        "liability_clause": "",
+        "governing_law": "",
+        "deliverables": [],
+        "missing_clauses": [],
+        "document_ids": {
+          "invoice_id": "EXP-2025-0092",
+          "invoice_number": "EXP-2025-0092",
+          "bill_number": "",
+          "po_number": "",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "receipt_number": "",
+          "transaction_id": "",
+          "other_ids": []
+        },
+        "references": {
+          "document_ids_invoice_id": {
+            "page": 1
+          },
+          "document_ids_invoice_number": {
+            "page": 1
+          },
+          "party_vendor": {
+            "page": 1
+          },
+          "party_customer": {
+            "page": 1
+          },
+          "party_party_1": {
+            "page": 1
+          },
+          "party_party_2": {
+            "page": 1
+          },
+          "amount": {
+            "page": 1
+          },
+          "currency": {
+            "page": 1
+          },
+          "invoice_type": {
+            "page": 1
+          },
+          "start_date": {
+            "page": 1
+          },
+          "due_date": {
+            "page": 1
+          }
+        },
+        "_extraction_metadata": {
+          "method": "hybrid",
+          "components": {
+            "rule_based": true,
+            "spacy_ner": false,
+            "graph_based": false
+          }
+        },
+        "invoice_details": {
+          "invoice_id": "EXP-2025-0092",
+          "invoice_type": "Commercial",
+          "vendor_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "eori": "GB998231005",
+            "tax_id": "",
+            "ein": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "customer_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "eori": "",
+            "tax_id": "EIN-45-099221",
+            "ein": "EIN-45-099221",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "vendor_gstin": "",
+          "vendor_pan": "",
+          "customer_gstin": "",
+          "line_items": [
+            {
+              "description": "Titanium Fasteners Grade 5 (Aircraft Spec)",
+              "hsn_sac_code": "8108.90.30",
+              "quantity": "5000",
+              "unit": "",
+              "rate": "2.45",
+              "amount": "12250.00",
+              "tax_rate": ""
+            },
+            {
+              "description": "Hydraulic Seals High Temp PTFE",
+              "hsn_sac_code": "3926.90.99",
+              "quantity": "250",
+              "unit": "",
+              "rate": "45.00",
+              "amount": "11250.00",
+              "tax_rate": ""
+            },
+            {
+              "description": "Custom Machined Brackets Aluminum 7075",
+              "hsn_sac_code": "7616.99.50",
+              "quantity": "40",
+              "unit": "",
+              "rate": "185.50",
+              "amount": "7420.00",
+              "tax_rate": ""
+            }
+          ],
+          "tax_details": {
+            "subtotal": "30920.00",
+            "cgst": "",
+            "sgst": "",
+            "igst": "",
+            "gst": "",
+            "vat": "",
+            "tax_amount": "",
+            "discount": ""
+          },
+          "payment_details": {
+            "payment_terms": "",
+            "payment_method": "",
+            "bank_name": "Barclays Bank UK",
+            "account_holder_name": "James Sterling",
+            "account_number": "",
+            "account_number_iban": "GB44 BARC 2000 0099 8877 66",
+            "ifsc_code": "",
+            "swift_code": "BARCGB22",
+            "branch": "",
+            "bank_address": "",
+            "upi_id": ""
+          },
+          "payment_terms": "",
+          "payment_method": "",
+          "bank_name": "Barclays Bank UK",
+          "bank_address": "",
+          "notes": "",
+          "declaration": "",
+          "terms_and_conditions": "",
+          "remarks": "",
+          "additional_info": "",
+          "dates": {
+            "invoice_date": "2025-01-15",
+            "due_date": "2025-02-14",
+            "supply_date": "",
+            "delivery_date": ""
+          },
+          "amounts": {
+            "subtotal": "30920.00",
+            "additional_charges": [
+              {
+                "label": "Insurance",
+                "amount": "350.00"
+              },
+              {
+                "label": "Freight Charges",
+                "amount": "1250.00"
+              }
+            ],
+            "taxes": [],
+            "discount": "",
+            "discount_percent": "",
+            "total": "32520.00",
+            "amount_due": "",
+            "amount_paid": "",
+            "balance_due": ""
+          }
+        }
+      },
+      "uploaded_at": "2026-01-12T19:15:12.805255",
+      "extracted_at": "2026-01-12T19:16:02.327721",
+      "extracted_data": {
+        "document_type": "INVOICE",
+        "invoice_type": "Commercial",
+        "party_names": {
+          "vendor": "Zenith Precision Engineering Ltd.",
+          "vendor_address": "Unit 4, Vector Park, Bristol, BS32 4TF, UK",
+          "vendor_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "eori": "GB998231005",
+            "tax_id": "",
+            "ein": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "customer": "AeroSpace Dynamics Inc.",
+          "customer_address": "4500 Aviation Blvd, El Segundo, CA 90245, USA",
+          "customer_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "eori": "",
+            "tax_id": "EIN-45-099221",
+            "ein": "EIN-45-099221",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "party_1": "Zenith Precision Engineering Ltd.",
+          "party_2": "AeroSpace Dynamics Inc.",
+          "additional_parties": []
+        },
+        "document_ids": {
+          "invoice_id": "EXP-2025-0092",
+          "invoice_number": "EXP-2025-0092",
+          "bill_number": "",
+          "po_number": "",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "receipt_number": "",
+          "transaction_id": "",
+          "other_ids": []
+        },
+        "dates": {
+          "invoice_date": "2025-01-15",
+          "due_date": "2025-02-14",
+          "supply_date": "",
+          "delivery_date": ""
+        },
+        "start_date": "2025-01-15",
+        "due_date": "2025-02-14",
+        "amounts": {
+          "subtotal": "30920.00",
+          "additional_charges": [
+            {
+              "label": "Insurance",
+              "amount": "350.00"
+            },
+            {
+              "label": "Freight Charges",
+              "amount": "1250.00"
+            }
+          ],
+          "taxes": [],
+          "discount": "",
+          "discount_percent": "",
+          "total": "32520.00",
+          "amount_due": "",
+          "amount_paid": "",
+          "balance_due": ""
+        },
+        "amount": "32520.00",
+        "amount_explanation": "Total as stated in document",
+        "currency": "USD",
+        "line_items": [
+          {
+            "description": "Titanium Fasteners Grade 5 (Aircraft Spec)",
+            "hsn_sac_code": "8108.90.30",
+            "quantity": "5000",
+            "unit": "",
+            "rate": "2.45",
+            "amount": "12250.00",
+            "tax_rate": ""
+          },
+          {
+            "description": "Hydraulic Seals High Temp PTFE",
+            "hsn_sac_code": "3926.90.99",
+            "quantity": "250",
+            "unit": "",
+            "rate": "45.00",
+            "amount": "11250.00",
+            "tax_rate": ""
+          },
+          {
+            "description": "Custom Machined Brackets Aluminum 7075",
+            "hsn_sac_code": "7616.99.50",
+            "quantity": "40",
+            "unit": "",
+            "rate": "185.50",
+            "amount": "7420.00",
+            "tax_rate": ""
+          }
+        ],
+        "payment_details": {
+          "payment_terms": "",
+          "payment_method": "",
+          "bank_name": "Barclays Bank UK",
+          "account_holder_name": "James Sterling",
+          "account_number": "",
+          "account_number_iban": "GB44 BARC 2000 0099 8877 66",
+          "ifsc_code": "",
+          "swift_code": "BARCGB22",
+          "branch": "",
+          "bank_address": "",
+          "upi_id": ""
+        },
+        "frequency": "",
+        "account_type": "Raw Materials & Components",
+        "notes": "",
+        "declaration": "",
+        "terms_and_conditions": "",
+        "remarks": "",
+        "additional_info": "",
+        "rules_and_compliance_violation": "",
+        "risk_score": {
+          "score": 0,
+          "level": "Low",
+          "category": "\ud83d\udfe2 Low Risk",
+          "risk_factors": []
+        },
+        "tax_details": {
+          "subtotal": "30920.00",
+          "cgst": "",
+          "sgst": "",
+          "igst": "",
+          "gst": "",
+          "vat": "",
+          "tax_amount": "",
+          "discount": ""
+        },
+        "references": {
+          "document_ids_invoice_id": {
+            "page": 1
+          },
+          "document_ids_invoice_number": {
+            "page": 1
+          },
+          "party_vendor": {
+            "page": 1
+          },
+          "party_customer": {
+            "page": 1
+          },
+          "party_party_1": {
+            "page": 1
+          },
+          "party_party_2": {
+            "page": 1
+          },
+          "amount": {
+            "page": 1
+          },
+          "currency": {
+            "page": 1
+          },
+          "invoice_type": {
+            "page": 1
+          },
+          "start_date": {
+            "page": 1
+          },
+          "due_date": {
+            "page": 1
+          }
+        },
+        "_extraction_metadata": {
+          "agent_version": "langgraph-v1",
+          "extraction_method": "agent_based",
+          "document_type": "INVOICE",
+          "classification_confidence": "HIGH",
+          "status": "completed",
+          "timestamp": "2026-01-12T19:15:59.788535"
+        }
+      },
+      "metadata": {
+        "document_type": "INVOICE",
+        "classification_confidence": "HIGH",
+        "classification_reasoning": "The document contains an invoice number, itemized charges, and payment due information, which are all indicators of an invoice.",
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpikrw7qst.pdf",
+        "file_name": "tmpikrw7qst.pdf",
+        "extraction_method": "langgraph_agent",
+        "document_text": "ZENITH PRECISION\nEngineering Ltd.COMMERCIAL  INVOICE\nInvoice #:  EXP-2025-0092\nDate:  15-Jan-2025\nDue Date:  14-Feb-2025\nIncoterms: DAP  (New York JFK) Origin: United Kingdom Carrier: DHL  Express Net Wt: 132.00 KG\nEXPORTER / SUPPLIER\nZenith Precision Engineering Ltd.\nUnit 4, V ector Park\nBristol, BS32 4TF , UK\nVAT/EORI: GB998231005CONSIGNEE / BILL  TO\nAeroSpace Dynamics Inc.\n4500 Aviation Blvd\nEl Segundo, CA  90245, USA\nTax ID: EIN-45-099221\nITEM / DESCRIPTION HS CODE QTY UNIT PRICE TOTAL (USD)\nTitanium Fasteners\nGrade 5 (Aircraft Spec)8108.90.30 5,000 2.45 12,250.00\nHydraulic Seals\nHigh Temp PTFE3926.90.99 250 45.00 11,250.00\nCustom Machined Brackets\nAluminum 70757616.99.50 40 185.50 7,420.00\nSubtotal: 30,920.00\nInsurance: 350.00\nFreight Charges: 1,250.00\nTotal Amount (USD) 32,520.00\nAmount in W ords:  Thirty-T wo Thousand Five Hundred Twenty US Dollars Only .\nBanking Instructions\nBank:  Barclays Bank UK\nSWIFT : BARCGB22\nIBAN:  GB44 BARC 2000 0099 8877 66\nIntermediary:  Citibank NY  (CITIUS33)For Zenith Precision Engineering Ltd.\nJames Sterling\nExport Manager",
+        "page_map": {
+          "1": "ZENITH PRECISION\nEngineering Ltd.COMMERCIAL  INVOICE\nInvoice #:  EXP-2025-0092\nDate:  15-Jan-2025\nDue Date:  14-Feb-2025\nIncoterms: DAP  (New York JFK) Origin: United Kingdom Carrier: DHL  Express Net Wt: 132.00 KG\nEXPORTER / SUPPLIER\nZenith Precision Engineering Ltd.\nUnit 4, V ector Park\nBristol, BS32 4TF , UK\nVAT/EORI: GB998231005CONSIGNEE / BILL  TO\nAeroSpace Dynamics Inc.\n4500 Aviation Blvd\nEl Segundo, CA  90245, USA\nTax ID: EIN-45-099221\nITEM / DESCRIPTION HS CODE QTY UNIT PRICE TOTAL (USD)\nTitanium Fasteners\nGrade 5 (Aircraft Spec)8108.90.30 5,000 2.45 12,250.00\nHydraulic Seals\nHigh Temp PTFE3926.90.99 250 45.00 11,250.00\nCustom Machined Brackets\nAluminum 70757616.99.50 40 185.50 7,420.00\nSubtotal: 30,920.00\nInsurance: 350.00\nFreight Charges: 1,250.00\nTotal Amount (USD) 32,520.00\nAmount in W ords:  Thirty-T wo Thousand Five Hundred Twenty US Dollars Only .\nBanking Instructions\nBank:  Barclays Bank UK\nSWIFT : BARCGB22\nIBAN:  GB44 BARC 2000 0099 8877 66\nIntermediary:  Citibank NY  (CITIUS33)For Zenith Precision Engineering Ltd.\nJames Sterling\nExport Manager"
+        },
+        "status": "completed",
+        "error": null
+      },
+      "extraction_id": "88c751f4-6ab5-47b8-8aa4-26b1536ef281"
+    },
+    "df2b042c-8b6a-4a9b-a2e0-9060d27d16f2": {
+      "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp_zzg1c6x.pdf",
+      "file_name": "doc2.pdf",
+      "file_hash": "9c60d8eae3c98337caf7f5888001179ce4c1b812ab5a9b6f6e0ae8caba98ed53",
+      "status": "completed",
+      "results": {
+        "contract_title": "INVOICE",
+        "contract_type": "INVOICE",
+        "document_id": "CDS/25-26/0442",
+        "execution_date": "2026-01-12",
+        "risk_score": 30,
+        "parties": {
+          "party_1_name": "CHROMATIC Digital Solutions Pvt. Ltd.",
+          "party_1_address": "HITEC City, Hyderabad, Telangana - 500081",
+          "party_1_type": "Vendor",
+          "party_2_name": "Nexus Healthcare Systems",
+          "party_2_address": "Plot No 44, Jubilee Hills, Hyderabad, Telangana - 500033",
+          "party_2_type": "Customer"
+        },
+        "payment_terms": {
+          "amount": "815527.50",
+          "currency": "INR",
+          "frequency": "1",
+          "due_date": "",
+          "amount_explanation": "Grand Total as stated in invoice"
+        },
+        "payment_details": {
+          "payment_terms": "Net 30 Days",
+          "payment_method": "",
+          "bank_name": "ICICI Bank Ltd",
+          "account_holder_name": "",
+          "account_number": "004505009988",
+          "account_number_iban": "",
+          "ifsc_code": "ICIC0000045",
+          "swift_code": "",
+          "branch": "Gachibowli, Hyderabad",
+          "bank_address": "",
+          "upi_id": ""
+        },
+        "termination_clause": "",
+        "confidentiality_clause": "",
+        "liability_clause": "",
+        "governing_law": "",
+        "deliverables": [],
+        "missing_clauses": [
+          "Missing payment due date",
+          "Priority: One critical attribute (due date or amount) missing - Medium risk enforced"
+        ],
+        "document_ids": {
+          "invoice_id": "CDS/25-26/0442",
+          "invoice_number": "CDS/25-26/0442",
+          "bill_number": "",
+          "po_number": "PO-NEX-2026-11",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "receipt_number": "",
+          "transaction_id": "",
+          "other_ids": []
+        },
+        "references": {
+          "document_ids_invoice_id": {
+            "page": 1
+          },
+          "document_ids_invoice_number": {
+            "page": 1
+          },
+          "currency": {
+            "page": 1
+          },
+          "invoice_type": {
+            "page": 1
+          },
+          "start_date": {
+            "page": 1
+          },
+          "due_date": {
+            "page": 1
+          },
+          "amount": {
+            "page": 1
+          }
+        },
+        "_extraction_metadata": {
+          "method": "hybrid",
+          "components": {
+            "rule_based": true,
+            "spacy_ner": false,
+            "graph_based": false
+          }
+        },
+        "invoice_details": {
+          "invoice_id": "CDS/25-26/0442",
+          "invoice_type": "Tax Invoice",
+          "vendor_tax_ids": {
+            "gstin": "36AAFCC1234A1Z5",
+            "pan": "AAFCC1234A",
+            "vat": "",
+            "eori": "",
+            "tax_id": "",
+            "ein": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "customer_tax_ids": {
+            "gstin": "36BBPQ9876K1Z2",
+            "pan": "",
+            "vat": "",
+            "eori": "",
+            "tax_id": "",
+            "ein": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "vendor_gstin": "36AAFCC1234A1Z5",
+          "vendor_pan": "AAFCC1234A",
+          "customer_gstin": "36BBPQ9876K1Z2",
+          "line_items": [
+            {
+              "description": "Enterprise ERP License Annual Subscription (Jan'26 - Dec'26)",
+              "hsn_sac_code": "997331",
+              "quantity": "1",
+              "unit": "",
+              "rate": "150000.00",
+              "amount": "150000.00",
+              "tax_rate": "9%"
+            },
+            {
+              "description": "Implementation Support Consulting Hours (Discount applied)",
+              "hsn_sac_code": "998313",
+              "quantity": "150",
+              "unit": "",
+              "rate": "850.00",
+              "amount": "121125.00",
+              "tax_rate": "9%"
+            },
+            {
+              "description": "Dell PowerEdge R750 Rack Server, 2x Intel Xeon, 64GB RAM",
+              "hsn_sac_code": "8471",
+              "quantity": "2",
+              "unit": "",
+              "rate": "210000.00",
+              "amount": "420000.00",
+              "tax_rate": "9%"
+            }
+          ],
+          "tax_details": {
+            "subtotal": "691125.00",
+            "cgst": "",
+            "sgst": "",
+            "igst": "",
+            "gst": "",
+            "vat": "",
+            "tax_amount": "",
+            "discount": ""
+          },
+          "payment_details": {
+            "payment_terms": "Net 30 Days",
+            "payment_method": "",
+            "bank_name": "ICICI Bank Ltd",
+            "account_holder_name": "",
+            "account_number": "004505009988",
+            "account_number_iban": "",
+            "ifsc_code": "ICIC0000045",
+            "swift_code": "",
+            "branch": "Gachibowli, Hyderabad",
+            "bank_address": "",
+            "upi_id": ""
+          },
+          "payment_terms": "Net 30 Days",
+          "payment_method": "",
+          "bank_name": "ICICI Bank Ltd",
+          "bank_address": "",
+          "notes": "",
+          "declaration": "",
+          "terms_and_conditions": "1. Interest @ 18% p.a. will be charged on delayed payments. 2. Goods once sold will not be taken back. 3. Subject to Hyderabad Jurisdiction.",
+          "remarks": "",
+          "additional_info": "",
+          "dates": {
+            "invoice_date": "2026-01-12",
+            "due_date": "",
+            "supply_date": "",
+            "delivery_date": ""
+          },
+          "amounts": {
+            "subtotal": "691125.00",
+            "additional_charges": [],
+            "taxes": [
+              {
+                "label": "CGST",
+                "percent": "9%",
+                "amount": "62201.25"
+              },
+              {
+                "label": "SGST",
+                "percent": "9%",
+                "amount": "62201.25"
+              }
+            ],
+            "discount": "",
+            "discount_percent": "",
+            "total": "815527.50",
+            "amount_due": "",
+            "amount_paid": "",
+            "balance_due": ""
+          }
+        }
+      },
+      "uploaded_at": "2026-01-12T19:19:26.792197",
+      "extracted_at": "2026-01-12T19:20:21.979822",
+      "extracted_data": {
+        "document_type": "INVOICE",
+        "invoice_type": "Tax Invoice",
+        "party_names": {
+          "vendor": "CHROMATIC Digital Solutions Pvt. Ltd.",
+          "vendor_address": "HITEC City, Hyderabad, Telangana - 500081",
+          "vendor_tax_ids": {
+            "gstin": "36AAFCC1234A1Z5",
+            "pan": "AAFCC1234A",
+            "vat": "",
+            "eori": "",
+            "tax_id": "",
+            "ein": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "customer": "Nexus Healthcare Systems",
+          "customer_address": "Plot No 44, Jubilee Hills, Hyderabad, Telangana - 500033",
+          "customer_tax_ids": {
+            "gstin": "36BBPQ9876K1Z2",
+            "pan": "",
+            "vat": "",
+            "eori": "",
+            "tax_id": "",
+            "ein": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "",
+            "other_id": "",
+            "other_id_label": ""
+          },
+          "party_1": "CHROMATIC Digital Solutions Pvt. Ltd.",
+          "party_2": "Nexus Healthcare Systems",
+          "additional_parties": []
+        },
+        "document_ids": {
+          "invoice_id": "CDS/25-26/0442",
+          "invoice_number": "CDS/25-26/0442",
+          "bill_number": "",
+          "po_number": "PO-NEX-2026-11",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "receipt_number": "",
+          "transaction_id": "",
+          "other_ids": []
+        },
+        "dates": {
+          "invoice_date": "2026-01-12",
+          "due_date": "",
+          "supply_date": "",
+          "delivery_date": ""
+        },
+        "start_date": "2026-01-12",
+        "due_date": "",
+        "amounts": {
+          "subtotal": "691125.00",
+          "additional_charges": [],
+          "taxes": [
+            {
+              "label": "CGST",
+              "percent": "9%",
+              "amount": "62201.25"
+            },
+            {
+              "label": "SGST",
+              "percent": "9%",
+              "amount": "62201.25"
+            }
+          ],
+          "discount": "",
+          "discount_percent": "",
+          "total": "815527.50",
+          "amount_due": "",
+          "amount_paid": "",
+          "balance_due": ""
+        },
+        "amount": "815527.50",
+        "amount_explanation": "Grand Total as stated in invoice",
+        "currency": "INR",
+        "line_items": [
+          {
+            "description": "Enterprise ERP License Annual Subscription (Jan'26 - Dec'26)",
+            "hsn_sac_code": "997331",
+            "quantity": "1",
+            "unit": "",
+            "rate": "150000.00",
+            "amount": "150000.00",
+            "tax_rate": "9%"
+          },
+          {
+            "description": "Implementation Support Consulting Hours (Discount applied)",
+            "hsn_sac_code": "998313",
+            "quantity": "150",
+            "unit": "",
+            "rate": "850.00",
+            "amount": "121125.00",
+            "tax_rate": "9%"
+          },
+          {
+            "description": "Dell PowerEdge R750 Rack Server, 2x Intel Xeon, 64GB RAM",
+            "hsn_sac_code": "8471",
+            "quantity": "2",
+            "unit": "",
+            "rate": "210000.00",
+            "amount": "420000.00",
+            "tax_rate": "9%"
+          }
+        ],
+        "payment_details": {
+          "payment_terms": "Net 30 Days",
+          "payment_method": "",
+          "bank_name": "ICICI Bank Ltd",
+          "account_holder_name": "",
+          "account_number": "004505009988",
+          "account_number_iban": "",
+          "ifsc_code": "ICIC0000045",
+          "swift_code": "",
+          "branch": "Gachibowli, Hyderabad",
+          "bank_address": "",
+          "upi_id": ""
+        },
+        "frequency": "",
+        "account_type": "Software Subscriptions & Licenses",
+        "notes": "",
+        "declaration": "",
+        "terms_and_conditions": "1. Interest @ 18% p.a. will be charged on delayed payments. 2. Goods once sold will not be taken back. 3. Subject to Hyderabad Jurisdiction.",
+        "remarks": "",
+        "additional_info": "",
+        "rules_and_compliance_violation": "",
+        "risk_score": {
+          "score": 30,
+          "level": "Medium",
+          "category": "\ud83d\udfe1 Medium Risk",
+          "risk_factors": [
+            {
+              "factor": "Missing payment due date",
+              "severity": "High",
+              "impact": 15
+            },
+            {
+              "factor": "Priority: One critical attribute (due date or amount) missing - Medium risk enforced",
+              "severity": "Medium",
+              "impact": 0
+            }
+          ]
+        },
+        "tax_details": {
+          "subtotal": "691125.00",
+          "cgst": "",
+          "sgst": "",
+          "igst": "",
+          "gst": "",
+          "vat": "",
+          "tax_amount": "",
+          "discount": ""
+        },
+        "references": {
+          "document_ids_invoice_id": {
+            "page": 1
+          },
+          "document_ids_invoice_number": {
+            "page": 1
+          },
+          "currency": {
+            "page": 1
+          },
+          "invoice_type": {
+            "page": 1
+          },
+          "start_date": {
+            "page": 1
+          },
+          "due_date": {
+            "page": 1
+          },
+          "amount": {
+            "page": 1
+          }
+        },
+        "_extraction_metadata": {
+          "agent_version": "langgraph-v1",
+          "extraction_method": "agent_based",
+          "document_type": "INVOICE",
+          "classification_confidence": "HIGH",
+          "status": "completed",
+          "timestamp": "2026-01-12T19:20:19.371218"
+        }
+      },
+      "metadata": {
+        "document_type": "INVOICE",
+        "classification_confidence": "HIGH",
+        "classification_reasoning": "The document contains an invoice number, itemized charges, tax details, GST information, and payment terms, which are all indicative of an invoice.",
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp_zzg1c6x.pdf",
+        "file_name": "tmp_zzg1c6x.pdf",
+        "extraction_method": "langgraph_agent",
+        "document_text": "CHROMATIC\nDigital Solutions Pvt. Ltd.\nHITEC Ci ty, Hyderabad, T elangana - 500081\nGSTIN:  36AAFCC1234A1Z5 | PAN: AAFCC1234ATAX INVOICE\nORIGINAL FOR RECIPIENT\n# CDS/25-26/0442\nBILLED T O\nNexus Heal thcare Systems\nPlot No 44 , Jubi lee Hi lls\nHyderabad, T elangana - 500033\nGSTIN:  36BBPQ9876K1Z2DETAILS\nInvoice Date: 12-Jan-2026\nPO Ref: PO-NEX -2026-11\nPlace of Supply: Telangana (36)\nPayment T erms: Net 30 Da ys\n# Item Description HSN/S AC Qty Rate Taxable CGST SGST Total\n1 Enterprise ERP License\nAnnual Subscription (Jan'26 - Dec'26)997331 1 1,50,000 1,50,000 13,500\n(9%)13,500\n(9%)1,77,000\n2 Implementation Support\nConsul ting Hours (Discount appl ied)998313 150 850 1,21,125 10,901\n(9%)10,901\n(9%)1,42,927\n3 Dell PowerEdge R750\nRack S erver, 2x Intel X eon, 64GB RAM8471 2 2,10,000 4,20,000 37,800\n(9%)37,800\n(9%)4,95,600\nAmount in W ords:\nIndian R upees Eight Lakh Fi fteen Thousand Fiv e Hundr ed Twenty-\nSeven and Fi fty Paise Only .\nBank Ac count Detai ls:\nBank Name: ICICI B ank Ltd\nA/c No: 004505009988\nIFSC: ICIC0000045\nBranch: Gachibowl i, Hyderabad\nTerms & Condi tions:\n1. Interest @ 18% p .a. wi ll be char ged on dela yed pa yments.\n2. Goods once sold wi ll not be tak en back.\n3. Subject to Hy derabad Jurisdiction.Total T axable V alue 6,91,125.00\nAdd: CGST (9%) 62,201.25\nAdd: SGST (9%) 62,201.25\nGrand T otal (INR) 8,15,527 .50\nAuthoriz ed Signatory\nFor Chr omatic Digi tal Solutions\nSignatur e\n\n--- Additional OCR Content ---\nPlot No 44 , Jubilee Hills\n1. Interest @ 18 % p.a. will be charged on delayed payments .\n8,15,527.50\nAuthorized Signatory",
+        "page_map": {
+          "1": "CHROMATIC\nDigital Solutions Pvt. Ltd.\nHITEC Ci ty, Hyderabad, T elangana - 500081\nGSTIN:  36AAFCC1234A1Z5 | PAN: AAFCC1234ATAX INVOICE\nORIGINAL FOR RECIPIENT\n# CDS/25-26/0442\nBILLED T O\nNexus Heal thcare Systems\nPlot No 44 , Jubi lee Hi lls\nHyderabad, T elangana - 500033\nGSTIN:  36BBPQ9876K1Z2DETAILS\nInvoice Date: 12-Jan-2026\nPO Ref: PO-NEX -2026-11\nPlace of Supply: Telangana (36)\nPayment T erms: Net 30 Da ys\n# Item Description HSN/S AC Qty Rate Taxable CGST SGST Total\n1 Enterprise ERP License\nAnnual Subscription (Jan'26 - Dec'26)997331 1 1,50,000 1,50,000 13,500\n(9%)13,500\n(9%)1,77,000\n2 Implementation Support\nConsul ting Hours (Discount appl ied)998313 150 850 1,21,125 10,901\n(9%)10,901\n(9%)1,42,927\n3 Dell PowerEdge R750\nRack S erver, 2x Intel X eon, 64GB RAM8471 2 2,10,000 4,20,000 37,800\n(9%)37,800\n(9%)4,95,600\nAmount in W ords:\nIndian R upees Eight Lakh Fi fteen Thousand Fiv e Hundr ed Twenty-\nSeven and Fi fty Paise Only .\nBank Ac count Detai ls:\nBank Name: ICICI B ank Ltd\nA/c No: 004505009988\nIFSC: ICIC0000045\nBranch: Gachibowl i, Hyderabad\nTerms & Condi tions:\n1. Interest @ 18% p .a. wi ll be char ged on dela yed pa yments.\n2. Goods once sold wi ll not be tak en back.\n3. Subject to Hy derabad Jurisdiction.Total T axable V alue 6,91,125.00\nAdd: CGST (9%) 62,201.25\nAdd: SGST (9%) 62,201.25\nGrand T otal (INR) 8,15,527 .50\nAuthoriz ed Signatory\nFor Chr omatic Digi tal Solutions\nSignatur e\n\n--- Additional OCR Content ---\nPlot No 44 , Jubilee Hills\n1. Interest @ 18 % p.a. will be charged on delayed payments .\n8,15,527.50\nAuthorized Signatory"
+        },
+        "status": "completed",
+        "error": null
+      }
+    }
+  }
+}

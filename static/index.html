@@ -65,6 +65,10 @@
                             <span class="btn-icon">📊</span>
                             <span>Data Table</span>
                         </a>
+                        <button id="fileManagerBtn" class="header-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                            <span class="btn-icon">🗂️</span>
+                            <span>Manage Files</span>
+                        </button>
                         <button id="logoutBtn" class="header-btn logout-btn">
                             <span class="btn-icon">🚪</span>
                             <span>Logout</span>
@@ -111,6 +115,31 @@
                         </div>
                     </div>
 
+                    <!-- Invoice Details & Invoice Dates (shown only for invoices) -->
+                    <div class="info-card" id="invoiceDetailsCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>🧾 Invoice Details & Invoice Dates</h3>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Invoice ID</label>
+                                <span id="invoiceId" class="info-value badge" style="font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 10px; border-radius: 6px;">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Invoice Type</label>
+                                <span id="invoiceType" class="info-value">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Invoice Dates - Dynamic -->
+                        <div id="invoiceDatesSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                            <h4 style="color: #2563eb; font-size: 0.95em; font-weight: 600; margin-bottom: 12px;">📅 Invoice Dates</h4>
+                            <div class="info-grid" id="invoiceDatesGrid">
+                                <!-- Date items will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Parties -->
                     <div class="info-card">
                         <div class="card-header">
@@ -152,6 +181,23 @@
                         </div>
                     </div>
 
+                    <!-- Payment Terms -->
+                    <div class="info-card" id="paymentTermsCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>💳 Payment Terms</h3>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item" id="paymentTermsItem" style="display: none;">
+                                <label>Payment Terms</label>
+                                <span id="invoicePaymentTerms" class="info-value" style="background: #f3e8ff; padding: 6px 12px; border-radius: 6px; border-left: 3px solid #7c3aed;">-</span>
+                            </div>
+                            <div class="info-item" id="paymentMethodItem" style="display: none;">
+                                <label>Payment Method</label>
+                                <span id="invoicePaymentMethod" class="info-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Payment Details -->
                     <div class="info-card">
                         <div class="card-header">
@@ -167,84 +213,114 @@
                                 <label>Currency</label>
                                 <span id="paymentCurrency" class="info-value">-</span>
                             </div>
-                            <div class="info-item">
-                                <label>Frequency</label>
-                                <span id="paymentFrequency" class="info-value">-</span>
-                            </div>
                         </div>
-                        
-                        <!-- Account Details -->
-                        <div id="accountDetailsSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-                            <h4 style="color: #3b82f6; font-size: 0.95em; font-weight: 600; margin-bottom: 12px;">Account Details</h4>
-                            
-                            <!-- Indian Account Format -->
-                            <div id="indianAccountDetails" style="display: none;">
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <label>Name:</label>
-                                        <span id="accountHolderName" class="info-value">-</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <label>Account No:</label>
-                                        <span id="accountNumber" class="info-value">-</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <label>IFSC Code:</label>
-                                        <span id="ifscCode" class="info-value">-</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <label>Branch:</label>
-                                        <span id="branch" class="info-value">-</span>
-                                    </div>
-                                </div>
+                    </div>
+
+                    <!-- Amount Breakdown -->
+                    <div class="info-card" id="amountBreakdownCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>💹 Amount Breakdown</h3>
+                        </div>
+                        <div class="info-grid" id="taxBreakdownGrid">
+                            <!-- Breakdown items will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- Vendor/Supplier Tax IDs -->
+                    <div class="info-card" id="vendorTaxIdsCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>🏢 Vendor/Supplier Tax IDs</h3>
+                        </div>
+                        <div class="info-grid" id="vendorTaxIdsGrid">
+                            <!-- Vendor tax IDs will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- Customer/Buyer Tax IDs -->
+                    <div class="info-card" id="customerTaxIdsCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>🤝 Customer/Buyer Tax IDs</h3>
+                        </div>
+                        <div class="info-grid" id="customerTaxIdsGrid">
+                            <!-- Customer tax IDs will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- Bank Details -->
+                    <div class="info-card" id="bankDetailsCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>🏦 Bank Details</h3>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Bank Name</label>
+                                <span id="bankName" class="info-value">-</span>
                             </div>
-                            
-                            <!-- International Account Format -->
-                            <div id="internationalAccountDetails" style="display: none;">
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <label>Account No/IBAN:</label>
-                                        <span id="accountNumberIban" class="info-value">-</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <label>SWIFT Code:</label>
-                                        <span id="swiftCode" class="info-value">-</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Bank Address (common for both) -->
-                            <div id="bankAddressSection" style="display: none; margin-top: 12px;">
-                                <div class="info-item">
-                                    <label>Bank Address:</label>
-                                    <span id="bankAddress" class="info-value" style="word-break: break-word;">-</span>
-                                </div>
+                            <div class="info-item" style="grid-column: span 2;">
+                                <label>Bank Address</label>
+                                <span id="invoiceBankAddress" class="info-value" style="word-break: break-word;">-</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Clauses -->
-                    <div class="info-card">
+                    <!-- Account Details -->
+                    <div class="info-card" id="accountDetailsCard" style="display: none;">
                         <div class="card-header">
-                            <h3>⚖️ Legal Clauses</h3>
+                            <h3>🏧 Account Details</h3>
                         </div>
-                        <div class="clauses-grid">
-                            <div class="clause-item">
-                                <label>Termination Clause</label>
-                                <div id="terminationClause" class="clause-text">-</div>
+                        
+                        <!-- Indian Account Format -->
+                        <div id="indianAccountDetails" style="display: none;">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>Name:</label>
+                                    <span id="accountHolderName" class="info-value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Account No:</label>
+                                    <span id="accountNumber" class="info-value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>IFSC Code:</label>
+                                    <span id="ifscCode" class="info-value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Branch:</label>
+                                    <span id="branch" class="info-value">-</span>
+                                </div>
                             </div>
-                            <div class="clause-item">
-                                <label>Confidentiality</label>
-                                <div id="confidentialityClause" class="clause-text">-</div>
+                        </div>
+                        
+                        <!-- International Account Format -->
+                        <div id="internationalAccountDetails" style="display: none;">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>Account No/IBAN:</label>
+                                    <span id="accountNumberIban" class="info-value">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>SWIFT Code:</label>
+                                    <span id="swiftCode" class="info-value">-</span>
+                                </div>
                             </div>
-                            <div class="clause-item">
-                                <label>Liability</label>
-                                <div id="liabilityClause" class="clause-text">-</div>
+                        </div>
+                        
+                        <!-- Bank Address (common for both) -->
+                        <div id="bankAddressSection" style="display: none; margin-top: 12px;">
+                            <div class="info-item">
+                                <label>Bank Address:</label>
+                                <span id="bankAddress" class="info-value" style="word-break: break-word;">-</span>
                             </div>
-                            <div class="clause-item">
-                                <label>Governing Law</label>
-                                <div id="governingLaw" class="clause-text">-</div>
-                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="info-card" id="additionalInfoCard" style="display: none;">
+                        <div class="card-header">
+                            <h3>📝 Additional Information</h3>
+                        </div>
+                        <div id="additionalTextContent">
+                            <!-- Notes, Declaration, Terms, Remarks will be dynamically added here -->
                         </div>
                     </div>
 
@@ -482,6 +558,245 @@
             </div>
         </div>
     </div>
+
+    <!-- File Manager Modal -->
+    <div id="fileManagerModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
+                <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <span>🗂️</span>
+                    <span>File & Cache Manager</span>
+                </h2>
+                <button id="closeFileManagerBtn" style="background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px 10px; border-radius: 6px;">&times;</button>
+            </div>
+            
+            <div style="padding: 15px; background: #fef2f2; border-bottom: 1px solid #fecaca;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span id="gcsStatusBadge" style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600;"></span>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button id="refreshFilesBtn" class="file-mgr-btn" style="background: #3b82f6;">🔄 Refresh</button>
+                        <button id="selectAllFilesBtn" class="file-mgr-btn" style="background: #8b5cf6;">☑️ Select All</button>
+                        <button id="deselectAllFilesBtn" class="file-mgr-btn" style="background: #6b7280;">☐ Deselect All</button>
+                        <button id="deleteSelectedBtn" class="file-mgr-btn" style="background: #ef4444;">🗑️ Delete Selected</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding: 15px; overflow-y: auto; flex: 1;">
+                <!-- File Categories Tabs -->
+                <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button class="file-tab active" data-tab="extractions">📄 Extractions <span id="extractionsCount" class="tab-count">0</span></button>
+                    <button class="file-tab" data-tab="extraction_cache">📦 Extraction Cache <span id="extractionCacheCount" class="tab-count">0</span></button>
+                    <button class="file-tab" data-tab="chatbot_cache">💬 Chatbot Cache <span id="chatbotCacheCount" class="tab-count">0</span></button>
+                    <button class="file-tab" data-tab="exports">📊 Exports <span id="exportsCount" class="tab-count">0</span></button>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="fileManagerLoading" style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading files...</p>
+                </div>
+                
+                <!-- Delete Progress Section -->
+                <div id="deleteProgressSection" style="display: none; padding: 20px; background: #fef3c7; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                        <span id="deleteProgressTitle" style="font-weight: 600; color: #92400e;">Deleting files...</span>
+                    </div>
+                    <div style="background: #fde68a; border-radius: 4px; height: 8px; overflow: hidden;">
+                        <div id="deleteProgressBar" style="background: linear-gradient(90deg, #f59e0b, #d97706); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.85em; color: #78350f;">
+                        <span id="deleteProgressText">0 of 0 files</span>
+                        <span id="deleteProgressPercent">0%</span>
+                    </div>
+                    <div id="deleteProgressDetails" style="margin-top: 10px; font-size: 0.8em; color: #92400e; max-height: 100px; overflow-y: auto;"></div>
+                </div>
+                
+                <!-- Files Table -->
+                <div id="filesTableContainer" style="display: none;">
+                    <table class="files-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="width: 40px; padding: 10px;"><input type="checkbox" id="selectAllCheckbox"></th>
+                                <th style="padding: 10px; text-align: left;">File Name</th>
+                                <th style="padding: 10px; text-align: left;">Original Document</th>
+                                <th style="padding: 10px; text-align: center;">Location</th>
+                                <th style="padding: 10px; text-align: right;">Size</th>
+                                <th style="padding: 10px; text-align: center;">Modified</th>
+                                <th style="padding: 10px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTableBody">
+                            <!-- Files will be populated here -->
+                        </tbody>
+                    </table>
+                    
+                    <div id="noFilesMessage" style="display: none; text-align: center; padding: 40px; color: #6b7280;">
+                        <p style="font-size: 3em; margin-bottom: 10px;">📭</p>
+                        <p>No files in this category</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding: 15px; border-top: 1px solid #e5e7eb; background: #f9fafb; border-radius: 0 0 12px 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="color: #6b7280; font-size: 0.9em;">
+                        <span id="selectedCount">0</span> files selected
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="clearAllCacheBtn" class="file-mgr-btn" style="background: #f59e0b;">⚠️ Clear All Cache</button>
+                        <button id="clearEverythingBtn" class="file-mgr-btn" style="background: #dc2626;">🔥 Clear Everything</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirm Delete Modal -->
+    <div id="confirmDeleteModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 450px; text-align: center;">
+            <div style="padding: 30px;">
+                <div style="font-size: 4em; margin-bottom: 15px;">⚠️</div>
+                <h3 id="confirmDeleteTitle" style="margin-bottom: 10px; color: #dc2626;">Confirm Deletion</h3>
+                <p id="confirmDeleteMessage" style="color: #6b7280; margin-bottom: 20px;"></p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="cancelDeleteBtn" class="file-mgr-btn" style="background: #6b7280; padding: 10px 25px;">Cancel</button>
+                    <button id="confirmDeleteBtn" class="file-mgr-btn" style="background: #dc2626; padding: 10px 25px;">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Modal Base Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 90%;
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* File Manager Styles */
+        .file-mgr-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .file-mgr-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .file-mgr-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .file-tab {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        .file-tab:hover {
+            background: #f3f4f6;
+        }
+        .file-tab.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .tab-count {
+            display: inline-block;
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        .file-tab.active .tab-count {
+            background: rgba(255,255,255,0.2);
+        }
+        .files-table tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.2s;
+        }
+        .files-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        .files-table td {
+            padding: 12px 10px;
+        }
+        .location-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        .location-local {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .location-gcs {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .delete-single-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+        .delete-single-btn:hover {
+            background: #fecaca;
+        }
+        #fileManagerModal .modal-content {
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 
     <script src="/static/script.js"></script>
     <script src="/static/chatbot.js"></script>

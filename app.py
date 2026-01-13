@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Request
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -126,22 +126,27 @@ def save_extractions_to_file():
             "extractions": extractions_store
         }
         
-        # Save to local file
+        # Save to local file (legacy format for backward compatibility)
         with open(EXTRACTIONS_JSON_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, default=str)
         print(f"[SAVE] Extractions saved to {EXTRACTIONS_JSON_FILE.name}")
         
-        # Also save to GCS via cache manager (if GCS is enabled)
+        # Save each extraction as individual file (new approach)
         try:
             cache_manager = get_cache_manager()
-            # Convert to list format for GCS storage
-            extractions_list = list(extractions_store.values())
-            cache_manager.save_extractions_data(extractions_list)
+            for extraction_id, extraction_data in extractions_store.items():
+                cache_manager.save_extraction_record(extraction_id, extraction_data)
         except Exception as gcs_error:
-            print(f"[SAVE] Note: GCS save skipped or failed: {gcs_error}")
+            print(f"[SAVE] Note: Individual file save skipped or failed: {gcs_error}")
             
     except Exception as e:
         print(f"[ERROR] Failed to save extractions: {e}")
+
+
+# Alias for compatibility
+def save_extractions_to_json():
+    """Alias for save_extractions_to_file()."""
+    save_extractions_to_file()
 
 
 # Load extractions on module import (server startup)
@@ -1090,14 +1095,46 @@ def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
     
     # Add invoice-specific fields if it's an invoice
     if doc_type == "INVOICE":
+        payment_details = extracted_data.get("payment_details", {})
+        
+        # Get tax identifiers - support both old format and new nested format
+        vendor_tax_ids = party_names.get("vendor_tax_ids", {})
+        customer_tax_ids = party_names.get("customer_tax_ids", {})
+        
+        # Fallback to old format for backward compatibility
+        if not vendor_tax_ids:
+            vendor_tax_ids = {
+                "gstin": party_names.get("vendor_gstin", ""),
+                "pan": party_names.get("vendor_pan", "")
+            }
+        if not customer_tax_ids:
+            customer_tax_ids = {
+                "gstin": party_names.get("customer_gstin", "")
+            }
+        
         results["invoice_details"] = {
             "invoice_id": invoice_id,
             "invoice_type": extracted_data.get("invoice_type", ""),
-            "vendor_gstin": party_names.get("vendor_gstin", ""),
-            "customer_gstin": party_names.get("customer_gstin", ""),
+            "vendor_tax_ids": vendor_tax_ids,
+            "customer_tax_ids": customer_tax_ids,
+            # Keep backward compatibility
+            "vendor_gstin": vendor_tax_ids.get("gstin", "") or party_names.get("vendor_gstin", ""),
+            "vendor_pan": vendor_tax_ids.get("pan", "") or party_names.get("vendor_pan", ""),
+            "customer_gstin": customer_tax_ids.get("gstin", "") or party_names.get("customer_gstin", ""),
             "line_items": extracted_data.get("line_items", []),
             "tax_details": extracted_data.get("tax_details", {}),
-            "payment_details": extracted_data.get("payment_details", {})
+            "payment_details": payment_details,
+            "payment_terms": payment_details.get("payment_terms", ""),
+            "payment_method": payment_details.get("payment_method", ""),
+            "bank_name": payment_details.get("bank_name", ""),
+            "bank_address": payment_details.get("bank_address", ""),
+            "notes": extracted_data.get("notes", ""),
+            "declaration": extracted_data.get("declaration", ""),
+            "terms_and_conditions": extracted_data.get("terms_and_conditions", ""),
+            "remarks": extracted_data.get("remarks", ""),
+            "additional_info": extracted_data.get("additional_info", ""),
+            "dates": extracted_data.get("dates", {}),
+            "amounts": extracted_data.get("amounts", {})
         }
     
     return results
@@ -1503,6 +1540,209 @@ async def delete_chat_session(session_id: str):
         return JSONResponse(content={"success": True, "message": "Session deleted"})
         
     except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+# ============================================================================
+# FILE MANAGEMENT APIs - Cache and Storage Management
+# ============================================================================
+
+@app.get("/api/files/list")
+async def list_cached_files():
+    """
+    List all cached files from local storage and GCS.
+    Returns categorized list of files with metadata.
+    """
+    try:
+        cache_manager = get_cache_manager()
+        files = cache_manager.list_all_cached_files()
+        
+        # Add summary counts
+        files["summary"] = {
+            "total_extraction_cache": len(files.get("extraction_cache", [])),
+            "total_chatbot_cache": len(files.get("chatbot_cache", [])),
+            "total_extractions_data": len(files.get("extractions_data", [])),
+            "total_exports": len(files.get("exports", []))
+        }
+        
+        return JSONResponse(content={"success": True, "data": files})
+        
+    except Exception as e:
+        print(f"[ERROR] List files failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.post("/api/files/delete")
+async def delete_files(request: Request):
+    """
+    Delete specific files from local and/or GCS storage.
+    
+    Request body:
+    {
+        "files": [
+            {"path": "path/to/file", "location": "local|gcs"},
+            ...
+        ],
+        "file_hashes": ["hash1", "hash2"],  // Delete all cache for these hashes
+        "extraction_ids": ["id1", "id2"]     // Delete these extraction records
+    }
+    """
+    try:
+        body = await request.json()
+        
+        results = {
+            "deleted": [],
+            "failed": [],
+            "total_deleted": 0
+        }
+        
+        cache_manager = get_cache_manager()
+        
+        # Delete specific files
+        files_to_delete = body.get("files", [])
+        for file_info in files_to_delete:
+            file_path = file_info.get("path")
+            location = file_info.get("location", "local")
+            
+            success, message = cache_manager.delete_file(file_path, location)
+            if success:
+                results["deleted"].append(message)
+                results["total_deleted"] += 1
+            else:
+                results["failed"].append(message)
+        
+        # Delete by file hashes (deletes both extraction and chatbot cache)
+        file_hashes = body.get("file_hashes", [])
+        for file_hash in file_hashes:
+            hash_result = cache_manager.delete_by_file_hash(
+                file_hash, 
+                delete_local=True, 
+                delete_gcs=True
+            )
+            results["deleted"].extend(hash_result.get("deleted", []))
+            results["failed"].extend(hash_result.get("failed", []))
+            results["total_deleted"] += len(hash_result.get("deleted", []))
+        
+        # Delete extraction records from extractions_data.json
+        extraction_ids = body.get("extraction_ids", [])
+        for extraction_id in extraction_ids:
+            # Also delete from in-memory store
+            if extraction_id in extractions_store:
+                del extractions_store[extraction_id]
+            
+            success, message = cache_manager.delete_extraction_record(extraction_id)
+            if success:
+                results["deleted"].append(message)
+                results["total_deleted"] += 1
+            else:
+                results["failed"].append(message)
+        
+        # Save updated extractions store
+        if extraction_ids:
+            save_extractions_to_json()
+        
+        return JSONResponse(content={"success": True, "results": results})
+        
+    except Exception as e:
+        print(f"[ERROR] Delete files failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.post("/api/files/clear-all")
+async def clear_all_cache(request: Request):
+    """
+    Clear all cache files from local and/or GCS storage.
+    
+    Request body:
+    {
+        "clear_local": true,
+        "clear_gcs": true,
+        "clear_extractions_data": false,
+        "clear_in_memory": true
+    }
+    """
+    try:
+        body = await request.json()
+        
+        clear_local = body.get("clear_local", True)
+        clear_gcs = body.get("clear_gcs", True)
+        clear_extractions_data = body.get("clear_extractions_data", False)
+        clear_in_memory = body.get("clear_in_memory", True)
+        
+        cache_manager = get_cache_manager()
+        
+        results = cache_manager.clear_all_cache(
+            clear_local=clear_local,
+            clear_gcs=clear_gcs,
+            clear_extractions_data=clear_extractions_data
+        )
+        
+        # Clear in-memory store if requested
+        if clear_in_memory and clear_extractions_data:
+            global extractions_store
+            extractions_store.clear()
+            results["in_memory_cleared"] = True
+        
+        return JSONResponse(content={"success": True, "results": results})
+        
+    except Exception as e:
+        print(f"[ERROR] Clear all cache failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.delete("/api/files/extraction/{extraction_id}")
+async def delete_extraction_complete(extraction_id: str):
+    """
+    Delete an extraction completely - removes from extractions_data.json,
+    in-memory store, and all associated cache files (local and GCS).
+    """
+    try:
+        cache_manager = get_cache_manager()
+        results = {
+            "extraction_id": extraction_id,
+            "deleted": [],
+            "failed": []
+        }
+        
+        # Get file hash from in-memory store or extractions_data
+        file_hash = None
+        if extraction_id in extractions_store:
+            file_hash = extractions_store[extraction_id].get("file_hash")
+            del extractions_store[extraction_id]
+            results["deleted"].append("Removed from in-memory store")
+        
+        # Delete from extractions_data.json
+        success, message = cache_manager.delete_extraction_record(extraction_id)
+        if success:
+            results["deleted"].append(message)
+        else:
+            results["failed"].append(message)
+        
+        # Delete cache files if we have the file hash
+        if file_hash:
+            hash_result = cache_manager.delete_by_file_hash(file_hash, delete_local=True, delete_gcs=True)
+            results["deleted"].extend(hash_result.get("deleted", []))
+            results["failed"].extend(hash_result.get("failed", []))
+        
+        # Save updated extractions
+        save_extractions_to_json()
+        
+        return JSONResponse(content={"success": True, "results": results})
+        
+    except Exception as e:
+        print(f"[ERROR] Delete extraction failed: {e}")
         return JSONResponse(
             status_code=500,
             content={"success": False, "error": str(e)}

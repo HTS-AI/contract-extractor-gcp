@@ -264,11 +264,6 @@ function displayFactorsFromExcel(doc) {
             value: excelRow['Currency'] || ''
         },
         {
-            label: 'Frequency',
-            icon: '🔄',
-            value: excelRow['Frequency'] || '1'  // Default to "1" if empty
-        },
-        {
             label: 'Account Type (Head)',
             icon: '📊',
             value: excelRow['Account Type (Head)'] || ''
@@ -362,13 +357,6 @@ function displayFactors(doc) {
             value: getNestedValue(data, ['currency', 'payment_terms.currency']) || '',
             path: ['currency', 'payment_terms.currency'],
             refKey: 'currency'
-        },
-        {
-            label: 'Frequency',
-            icon: '🔄',
-            value: getNestedValue(data, ['frequency', 'payment_terms.frequency']) || '1',  // Default to "1" if empty
-            path: ['frequency', 'payment_terms.frequency'],
-            refKey: 'frequency'
         },
         {
             label: 'Account Type (Head)',
