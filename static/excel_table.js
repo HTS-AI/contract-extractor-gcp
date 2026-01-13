@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle DataTables errors gracefully
     $(document).on('error.dt', function(e, settings, techNote, message) {
         console.error('DataTables error:', message);
-        showMessage('⚠️ Unable to display table. Please refresh the page or contact support.', 'error');
+        showMessage('⚠️ Unable to display table. Please refresh the page or upload the invoice', 'error');
     });
 });
 
@@ -94,7 +94,6 @@ function displayTable(data) {
             <td>${formatDate(row['Due Date'])}</td>
             <td>${formatAmount(row['Amount'], row['Currency'])}</td>
             <td>${escapeHtml(row['Currency'] || '-')}</td>
-            <td>${escapeHtml(row['Frequency'] || '1')}</td>
             <td>${formatRiskScore(row['Risk Score'])}</td>
         `;
         

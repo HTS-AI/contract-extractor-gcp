@@ -483,11 +483,34 @@ REQUIRED OUTPUT FORMAT (STRICT JSON):
   "party_names": {{
     "vendor": "",
     "vendor_address": "",
-    "vendor_gstin": "",
-    "vendor_pan": "",
+    "vendor_tax_ids": {{
+      "gstin": "",
+      "pan": "",
+      "vat": "",
+      "eori": "",
+      "tax_id": "",
+      "ein": "",
+      "tin": "",
+      "trn": "",
+      "cr_number": "",
+      "other_id": "",
+      "other_id_label": ""
+    }},
     "customer": "",
     "customer_address": "",
-    "customer_gstin": "",
+    "customer_tax_ids": {{
+      "gstin": "",
+      "pan": "",
+      "vat": "",
+      "eori": "",
+      "tax_id": "",
+      "ein": "",
+      "tin": "",
+      "trn": "",
+      "cr_number": "",
+      "other_id": "",
+      "other_id_label": ""
+    }},
     "party_1": "",
     "party_2": "",
     "additional_parties": []
@@ -515,14 +538,21 @@ REQUIRED OUTPUT FORMAT (STRICT JSON):
   "due_date": "",
   "amounts": {{
     "subtotal": "",
+    "additional_charges": [
+      {{
+        "label": "",
+        "amount": ""
+      }}
+    ],
+    "taxes": [
+      {{
+        "label": "",
+        "percent": "",
+        "amount": ""
+      }}
+    ],
     "discount": "",
-    "taxable_amount": "",
-    "cgst": "",
-    "sgst": "",
-    "igst": "",
-    "gst": "",
-    "vat": "",
-    "tax_amount": "",
+    "discount_percent": "",
     "total": "",
     "amount_due": "",
     "amount_paid": "",
@@ -558,6 +588,10 @@ REQUIRED OUTPUT FORMAT (STRICT JSON):
   "frequency": "",
   "account_type": "Accounts Payable",
   "notes": "",
+  "declaration": "",
+  "terms_and_conditions": "",
+  "remarks": "",
+  "additional_info": "",
   "rules_and_compliance_violation": "",
   "risk_score": null
 }}
@@ -578,7 +612,18 @@ EXTRACTION INSTRUCTIONS:
 3. Customer/Buyer: Extract company/person being billed (look for "TO", "BILL TO", "BILLED TO", "CUSTOMER", "BUYER")
    - Customer Address: Extract customer address from "Bill To", "Ship To", or "Customer" sections
    - CRITICAL: If an address contains the word "bank" (case-insensitive), it is a BANK ADDRESS, NOT a customer address. Do NOT extract it as customer_address.
-4. Document IDs (CRITICAL - Extract ALL of these if present):
+4. Tax Identifiers (CRITICAL - Extract for BOTH vendor and customer):
+   - vendor_tax_ids and customer_tax_ids: Extract ALL tax/registration numbers found
+   - Different countries use different identifiers:
+     * India: GSTIN (15-digit), PAN (10-character)
+     * UK/EU: VAT Number (starts with country code like GB, DE, FR), EORI Number
+     * USA: Tax ID, EIN (Employer Identification Number, format XX-XXXXXXX)
+     * UAE: TRN (Tax Registration Number)
+     * General: TIN (Tax Identification Number), CR Number (Commercial Registration)
+   - Look for labels like: "VAT", "VAT No", "VAT/EORI", "Tax ID", "EIN", "TIN", "TRN", "GSTIN", "PAN", "CR No", "Registration No"
+   - If you find a tax ID not matching the above categories, use "other_id" and set "other_id_label" to the label found
+   - Extract the EXACT value (e.g., "GB998231005" for VAT, "EIN-45-099221" for Tax ID)
+5. Document IDs (CRITICAL - Extract ALL of these if present):
    - invoice_id: Main invoice identifier. Look for:
      * "INVOICE ID", "INVOICE NO", "INVOICE #", "INV NO", "INV #", "INVOICE NUMBER"
      * "QUOTE NUMBER", "QUOTATION NUMBER", "QUOTE NO", "QUO #", "QUOTATION REF NO", "QUOTATION REF"
@@ -612,8 +657,22 @@ EXTRACTION INSTRUCTIONS:
    - other_ids: Any other identifiers found in the document
    NOTE: The primary document identifier should go in both invoice_id AND invoice_number. If quotation_number is the primary identifier, use it for both invoice_id and invoice_number as well.
 5. Dates: Extract invoice date, due date, delivery date as YYYY-MM-DD (be flexible with date formats)
-6. Amounts and Currency: Extract ALL monetary values including taxes
-   - Look for: Subtotal, Discount, Taxable Amount, Tax, CGST, SGST, IGST, GST, VAT, Total, Grand Total, Amount Due, Balance
+6. Amounts and Currency: Extract ALL monetary values EXACTLY as labeled in the invoice
+   - subtotal: Extract the subtotal/base amount (look for "Subtotal", "Sub Total", "Net Amount", "Base Amount")
+   - additional_charges: Extract ALL additional charges as an array with EXACT labels from invoice:
+     * Each charge should have "label" (exact text from invoice) and "amount"
+     * Examples: "Shipping & Handling", "Freight", "Insurance", "FOB Value", "CIF Value"
+     * Examples: "Packaging", "Handling Charges", "Service Charge", "Delivery Fee"
+     * IMPORTANT: Use the EXACT label as it appears in the invoice, not a standardized name
+     * If only one charge exists, still use an array with one item
+     * If no additional charges, use empty array []
+   - taxes: Extract ALL taxes as an array with EXACT labels and percentages:
+     * Each tax should have "label" (e.g., "VAT", "GST", "CGST", "SGST", "IGST"), "percent" (e.g., "5%", "18%"), and "amount"
+     * IMPORTANT: Use the EXACT label as it appears in the invoice
+     * If percentage is shown, include it; if not, leave percent empty
+   - discount: Extract discount amount; discount_percent: Extract discount percentage (e.g., "10%")
+   - total: Extract the final total/grand total
+   - amount_due, amount_paid, balance_due: Extract if present
    - CRITICAL: Extract amounts EXACTLY as shown - preserve ALL decimal places (e.g., 12688.76 NOT 12689)
    - Strip currency symbols but keep the complete numeric value with decimals
    - IMPORTANT: Detect currency from:
@@ -653,8 +712,14 @@ EXTRACTION INSTRUCTIONS:
      * Look for addresses that contain bank name, branch name, or are clearly associated with banking/payment information
      * Bank addresses often appear after account numbers, IBAN, SWIFT codes, or in payment instruction sections
      * Example: "Qatar National Bank, Shoumoukh Corporate Branch, Doha, Qatar" would be a bank address
-   - Payment Terms: Extract payment terms if mentioned
-   - Payment Method: Extract payment method if mentioned
+   - Payment Terms: Extract payment terms/conditions if mentioned. Look for:
+     * "Net 30", "Net 60", "Net 90", "Due on receipt", "COD", "Cash on Delivery"
+     * "X days from invoice date", "X days from delivery", "Due within X days"
+     * "50% advance", "100% advance", "Payment in advance"
+     * "Letter of Credit", "L/C", "Bank Transfer", "Wire Transfer"
+     * "Milestone based", "Progress payment", "Retention"
+     * Any text describing when/how payment should be made
+   - Payment Method: Extract payment method if mentioned (Bank Transfer, Credit Card, Cash, Cheque, etc.)
    - UPI ID: Extract UPI ID if present (for Indian payments)
 10. For party_1, use vendor name; for party_2, use customer name
 11. For amount field, use the total/grand total/amount due (the final payable amount)
@@ -667,9 +732,15 @@ EXTRACTION INSTRUCTIONS:
      * "Subtotal 50,000 + CGST 9% + SGST 9% = 59,000"
      * "Grand Total as stated in invoice"
 13. For start_date, use invoice_date; for due_date, use payment due date
-13. If any field is not found in the document, leave it as empty string ""
-14. Extract ALL line items, don't skip any
-15. Be flexible with terminology - different invoices use different terms for the same fields
+14. If any field is not found in the document, leave it as empty string ""
+15. Extract ALL line items, don't skip any
+16. Be flexible with terminology - different invoices use different terms for the same fields
+17. Additional Text Fields (Extract if present):
+   - notes: Look for "Notes", "Note", "Important Notes", "Special Notes"
+   - declaration: Look for "Declaration", "Statutory Declaration", "Compliance Declaration", "GST Declaration"
+   - terms_and_conditions: Look for "Terms & Conditions", "Terms and Conditions", "Payment Terms", "T&C"
+   - remarks: Look for "Remarks", "Comments", "Observations", "Special Instructions"
+   - additional_info: Any other important text that doesn't fit above categories
 
 IMPORTANT NOTES:
 - Construction invoices may have labor, materials, equipment as line items

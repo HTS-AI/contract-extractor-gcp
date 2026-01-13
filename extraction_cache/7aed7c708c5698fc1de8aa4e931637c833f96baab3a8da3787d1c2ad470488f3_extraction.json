@@ -1,0 +1,211 @@
+{
+  "file_hash": "7aed7c708c5698fc1de8aa4e931637c833f96baab3a8da3787d1c2ad470488f3",
+  "cached_at": "2026-01-12T19:15:59.852611",
+  "extracted_data": {
+    "document_type": "INVOICE",
+    "invoice_type": "Commercial",
+    "party_names": {
+      "vendor": "Zenith Precision Engineering Ltd.",
+      "vendor_address": "Unit 4, Vector Park, Bristol, BS32 4TF, UK",
+      "vendor_tax_ids": {
+        "gstin": "",
+        "pan": "",
+        "vat": "",
+        "eori": "GB998231005",
+        "tax_id": "",
+        "ein": "",
+        "tin": "",
+        "trn": "",
+        "cr_number": "",
+        "other_id": "",
+        "other_id_label": ""
+      },
+      "customer": "AeroSpace Dynamics Inc.",
+      "customer_address": "4500 Aviation Blvd, El Segundo, CA 90245, USA",
+      "customer_tax_ids": {
+        "gstin": "",
+        "pan": "",
+        "vat": "",
+        "eori": "",
+        "tax_id": "EIN-45-099221",
+        "ein": "EIN-45-099221",
+        "tin": "",
+        "trn": "",
+        "cr_number": "",
+        "other_id": "",
+        "other_id_label": ""
+      },
+      "party_1": "Zenith Precision Engineering Ltd.",
+      "party_2": "AeroSpace Dynamics Inc.",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "invoice_id": "EXP-2025-0092",
+      "invoice_number": "EXP-2025-0092",
+      "bill_number": "",
+      "po_number": "",
+      "order_number": "",
+      "reference_id": "",
+      "document_number": "",
+      "quotation_number": "",
+      "receipt_number": "",
+      "transaction_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "invoice_date": "2025-01-15",
+      "due_date": "2025-02-14",
+      "supply_date": "",
+      "delivery_date": ""
+    },
+    "start_date": "2025-01-15",
+    "due_date": "2025-02-14",
+    "amounts": {
+      "subtotal": "30920.00",
+      "additional_charges": [
+        {
+          "label": "Insurance",
+          "amount": "350.00"
+        },
+        {
+          "label": "Freight Charges",
+          "amount": "1250.00"
+        }
+      ],
+      "taxes": [],
+      "discount": "",
+      "discount_percent": "",
+      "total": "32520.00",
+      "amount_due": "",
+      "amount_paid": "",
+      "balance_due": ""
+    },
+    "amount": "32520.00",
+    "amount_explanation": "Total as stated in document",
+    "currency": "USD",
+    "line_items": [
+      {
+        "description": "Titanium Fasteners Grade 5 (Aircraft Spec)",
+        "hsn_sac_code": "8108.90.30",
+        "quantity": "5000",
+        "unit": "",
+        "rate": "2.45",
+        "amount": "12250.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Hydraulic Seals High Temp PTFE",
+        "hsn_sac_code": "3926.90.99",
+        "quantity": "250",
+        "unit": "",
+        "rate": "45.00",
+        "amount": "11250.00",
+        "tax_rate": ""
+      },
+      {
+        "description": "Custom Machined Brackets Aluminum 7075",
+        "hsn_sac_code": "7616.99.50",
+        "quantity": "40",
+        "unit": "",
+        "rate": "185.50",
+        "amount": "7420.00",
+        "tax_rate": ""
+      }
+    ],
+    "payment_details": {
+      "payment_terms": "",
+      "payment_method": "",
+      "bank_name": "Barclays Bank UK",
+      "account_holder_name": "James Sterling",
+      "account_number": "",
+      "account_number_iban": "GB44 BARC 2000 0099 8877 66",
+      "ifsc_code": "",
+      "swift_code": "BARCGB22",
+      "branch": "",
+      "bank_address": "",
+      "upi_id": ""
+    },
+    "frequency": "",
+    "account_type": "Raw Materials & Components",
+    "notes": "",
+    "declaration": "",
+    "terms_and_conditions": "",
+    "remarks": "",
+    "additional_info": "",
+    "rules_and_compliance_violation": "",
+    "risk_score": {
+      "score": 0,
+      "level": "Low",
+      "category": "🟢 Low Risk",
+      "risk_factors": []
+    },
+    "tax_details": {
+      "subtotal": "30920.00",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "gst": "",
+      "vat": "",
+      "tax_amount": "",
+      "discount": ""
+    },
+    "references": {
+      "document_ids_invoice_id": {
+        "page": 1
+      },
+      "document_ids_invoice_number": {
+        "page": 1
+      },
+      "party_vendor": {
+        "page": 1
+      },
+      "party_customer": {
+        "page": 1
+      },
+      "party_party_1": {
+        "page": 1
+      },
+      "party_party_2": {
+        "page": 1
+      },
+      "amount": {
+        "page": 1
+      },
+      "currency": {
+        "page": 1
+      },
+      "invoice_type": {
+        "page": 1
+      },
+      "start_date": {
+        "page": 1
+      },
+      "due_date": {
+        "page": 1
+      }
+    },
+    "_extraction_metadata": {
+      "agent_version": "langgraph-v1",
+      "extraction_method": "agent_based",
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "status": "completed",
+      "timestamp": "2026-01-12T19:15:59.788535"
+    }
+  },
+  "metadata": {
+    "document_type": "INVOICE",
+    "classification_confidence": "HIGH",
+    "classification_reasoning": "The document contains an invoice number, itemized charges, and payment due information, which are all indicators of an invoice.",
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpikrw7qst.pdf",
+    "file_name": "tmpikrw7qst.pdf",
+    "extraction_method": "langgraph_agent",
+    "document_text": "ZENITH PRECISION\nEngineering Ltd.COMMERCIAL  INVOICE\nInvoice #:  EXP-2025-0092\nDate:  15-Jan-2025\nDue Date:  14-Feb-2025\nIncoterms: DAP  (New York JFK) Origin: United Kingdom Carrier: DHL  Express Net Wt: 132.00 KG\nEXPORTER / SUPPLIER\nZenith Precision Engineering Ltd.\nUnit 4, V ector Park\nBristol, BS32 4TF , UK\nVAT/EORI: GB998231005CONSIGNEE / BILL  TO\nAeroSpace Dynamics Inc.\n4500 Aviation Blvd\nEl Segundo, CA  90245, USA\nTax ID: EIN-45-099221\nITEM / DESCRIPTION HS CODE QTY UNIT PRICE TOTAL (USD)\nTitanium Fasteners\nGrade 5 (Aircraft Spec)8108.90.30 5,000 2.45 12,250.00\nHydraulic Seals\nHigh Temp PTFE3926.90.99 250 45.00 11,250.00\nCustom Machined Brackets\nAluminum 70757616.99.50 40 185.50 7,420.00\nSubtotal: 30,920.00\nInsurance: 350.00\nFreight Charges: 1,250.00\nTotal Amount (USD) 32,520.00\nAmount in W ords:  Thirty-T wo Thousand Five Hundred Twenty US Dollars Only .\nBanking Instructions\nBank:  Barclays Bank UK\nSWIFT : BARCGB22\nIBAN:  GB44 BARC 2000 0099 8877 66\nIntermediary:  Citibank NY  (CITIUS33)For Zenith Precision Engineering Ltd.\nJames Sterling\nExport Manager",
+    "page_map": {
+      "1": "ZENITH PRECISION\nEngineering Ltd.COMMERCIAL  INVOICE\nInvoice #:  EXP-2025-0092\nDate:  15-Jan-2025\nDue Date:  14-Feb-2025\nIncoterms: DAP  (New York JFK) Origin: United Kingdom Carrier: DHL  Express Net Wt: 132.00 KG\nEXPORTER / SUPPLIER\nZenith Precision Engineering Ltd.\nUnit 4, V ector Park\nBristol, BS32 4TF , UK\nVAT/EORI: GB998231005CONSIGNEE / BILL  TO\nAeroSpace Dynamics Inc.\n4500 Aviation Blvd\nEl Segundo, CA  90245, USA\nTax ID: EIN-45-099221\nITEM / DESCRIPTION HS CODE QTY UNIT PRICE TOTAL (USD)\nTitanium Fasteners\nGrade 5 (Aircraft Spec)8108.90.30 5,000 2.45 12,250.00\nHydraulic Seals\nHigh Temp PTFE3926.90.99 250 45.00 11,250.00\nCustom Machined Brackets\nAluminum 70757616.99.50 40 185.50 7,420.00\nSubtotal: 30,920.00\nInsurance: 350.00\nFreight Charges: 1,250.00\nTotal Amount (USD) 32,520.00\nAmount in W ords:  Thirty-T wo Thousand Five Hundred Twenty US Dollars Only .\nBanking Instructions\nBank:  Barclays Bank UK\nSWIFT : BARCGB22\nIBAN:  GB44 BARC 2000 0099 8877 66\nIntermediary:  Citibank NY  (CITIUS33)For Zenith Precision Engineering Ltd.\nJames Sterling\nExport Manager"
+    },
+    "status": "completed",
+    "error": null
+  },
+  "document_text": "ZENITH PRECISION\nEngineering Ltd.COMMERCIAL  INVOICE\nInvoice #:  EXP-2025-0092\nDate:  15-Jan-2025\nDue Date:  14-Feb-2025\nIncoterms: DAP  (New York JFK) Origin: United Kingdom Carrier: DHL  Express Net Wt: 132.00 KG\nEXPORTER / SUPPLIER\nZenith Precision Engineering Ltd.\nUnit 4, V ector Park\nBristol, BS32 4TF , UK\nVAT/EORI: GB998231005CONSIGNEE / BILL  TO\nAeroSpace Dynamics Inc.\n4500 Aviation Blvd\nEl Segundo, CA  90245, USA\nTax ID: EIN-45-099221\nITEM / DESCRIPTION HS CODE QTY UNIT PRICE TOTAL (USD)\nTitanium Fasteners\nGrade 5 (Aircraft Spec)8108.90.30 5,000 2.45 12,250.00\nHydraulic Seals\nHigh Temp PTFE3926.90.99 250 45.00 11,250.00\nCustom Machined Brackets\nAluminum 70757616.99.50 40 185.50 7,420.00\nSubtotal: 30,920.00\nInsurance: 350.00\nFreight Charges: 1,250.00\nTotal Amount (USD) 32,520.00\nAmount in W ords:  Thirty-T wo Thousand Five Hundred Twenty US Dollars Only .\nBanking Instructions\nBank:  Barclays Bank UK\nSWIFT : BARCGB22\nIBAN:  GB44 BARC 2000 0099 8877 66\nIntermediary:  Citibank NY  (CITIUS33)For Zenith Precision Engineering Ltd.\nJames Sterling\nExport Manager"
+}
