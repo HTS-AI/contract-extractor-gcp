@@ -4,6 +4,7 @@ Creates and updates an Excel file with extracted contract data.
 """
 
 import os
+import re
 import pandas as pd
 from pathlib import Path
 from typing import Dict, Any, Optional
@@ -26,6 +27,7 @@ class ExcelExporter:
         self.columns = [
             "Extracted At",
             "Document Name",
+            "Unique ID",  # Combined Invoice + PO number for matched invoices
             "ID",
             "Document Type",
             "Account Type (Head)",
@@ -35,6 +37,7 @@ class ExcelExporter:
             "Amount",
             "Currency",
             "Risk Score",
+            "Matched PO",  # PO matching information for invoices
         ]
     
     def _format_party_names(self, party_names: Dict[str, Any]) -> str:
@@ -185,6 +188,9 @@ class ExcelExporter:
         """
         Create or update Excel file with extracted contract data.
         
+        For INVOICES: Only saves if a matching PO is found.
+        For other document types: Saves normally.
+        
         Args:
             extracted_data: Extracted contract data dictionary
             file_name: Name of the uploaded document file
@@ -195,6 +201,23 @@ class ExcelExporter:
         try:
             print(f"[EXCEL] Starting export for '{file_name}'")
             print(f"[EXCEL] Target path: {os.path.abspath(self.excel_file_path)}")
+            
+            doc_type = extracted_data.get("document_type", "").upper()
+            
+            # ============== PO MATCHING CHECK FOR INVOICES ==============
+            # For invoices, only save to Excel if a PO was matched
+            if doc_type == "INVOICE":
+                po_match = extracted_data.get("_po_match", {})
+                if not po_match or not po_match.get("matched"):
+                    print(f"[EXCEL] BLOCKED: Invoice without matching PO - not saving to Excel")
+                    print(f"[EXCEL]   Document: {file_name}")
+                    print(f"[EXCEL]   Reason: No matching Purchase Order found")
+                    return False
+                else:
+                    po_number = po_match.get("po_number", "N/A")
+                    print(f"[EXCEL] Invoice has matching PO: {po_number}")
+            # ============== END PO MATCHING CHECK ==============
+            
             # Format document IDs into a single string
             document_ids_str = self._format_document_ids(extracted_data.get("document_ids", {}))
             # Use Qatar time (Asia/Qatar) for Extracted At
@@ -205,10 +228,62 @@ class ExcelExporter:
                 extracted_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
                 print("[EXCEL] Warning: ZoneInfo Asia/Qatar unavailable, using UTC fallback (tz-naive)")
             
+            # Format Matched PO information and generate Unique ID
+            matched_po_str = ""
+            unique_id = ""
+            
+            if doc_type == "INVOICE":
+                po_match = extracted_data.get("_po_match", {})
+                if po_match.get("matched"):
+                    po_number = po_match.get("po_number", "")
+                    po_filename = po_match.get("po_filename", "")
+                    if po_number:
+                        matched_po_str = f"PO: {po_number}"
+                        if po_filename:
+                            matched_po_str += f" ({po_filename})"
+                    
+                    # Generate Unique ID combining Invoice Number and PO Number
+                    # Format: INV{last_part_of_invoice}-PO{last_part_of_po}
+                    document_ids = extracted_data.get("document_ids", {})
+                    invoice_number = (
+                        document_ids.get("invoice_id") or 
+                        document_ids.get("invoice_number") or 
+                        document_ids.get("bill_number") or
+                        ""
+                    )
+                    
+                    if invoice_number and po_number:
+                        # Extract the last meaningful part of each ID
+                        # Split by common separators and get the last numeric/alphanumeric part
+                        
+                        # Get last part of invoice (e.g., "0197" from "PI/E/EXP/2526/0197")
+                        inv_parts = re.split(r'[/\-_\s]+', invoice_number)
+                        inv_suffix = inv_parts[-1] if inv_parts else invoice_number
+                        
+                        # Get last parts of PO (e.g., "2025-12" from "HTS/Doha/2025/12")
+                        po_parts = re.split(r'[/\-_\s]+', po_number)
+                        # Take last 2 parts for PO if available (year-number pattern)
+                        if len(po_parts) >= 2:
+                            po_suffix = f"{po_parts[-2]}-{po_parts[-1]}"
+                        else:
+                            po_suffix = po_parts[-1] if po_parts else po_number
+                        
+                        unique_id = f"INV{inv_suffix}-PO{po_suffix}"
+                        print(f"[EXCEL] Generated Unique ID: {unique_id}")
+                    elif invoice_number:
+                        inv_parts = re.split(r'[/\-_\s]+', invoice_number)
+                        inv_suffix = inv_parts[-1] if inv_parts else invoice_number
+                        unique_id = f"INV{inv_suffix}"
+                    elif po_number:
+                        po_parts = re.split(r'[/\-_\s]+', po_number)
+                        po_suffix = po_parts[-1] if po_parts else po_number
+                        unique_id = f"PO{po_suffix}"
+            
             # Prepare row data (aligned to column order)
             row_data = {
                 "Extracted At": extracted_at,
                 "Document Name": file_name,
+                "Unique ID": unique_id,
                 "ID": document_ids_str,
                 "Document Type": extracted_data.get("document_type", ""),
                 "Account Type (Head)": extracted_data.get("account_type", ""),
@@ -218,6 +293,7 @@ class ExcelExporter:
                 "Amount": extracted_data.get("amount", ""),
                 "Currency": extracted_data.get("currency", ""),
                 "Risk Score": self._format_risk_score(extracted_data.get("risk_score")),
+                "Matched PO": matched_po_str,
             }
             
             # Check if Excel file exists

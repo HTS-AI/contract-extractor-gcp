@@ -47,10 +47,12 @@ class CacheManager:
         self.cache_base_dir = cache_base_dir
         self.extraction_cache_dir = cache_base_dir / "extraction_cache"
         self.chatbot_cache_dir = cache_base_dir / "chatbot_cache"
+        self.po_cache_dir = cache_base_dir / "po_cache"  # Separate PO cache
         
         # Create local cache directories (used as fallback and for temp files)
         self.extraction_cache_dir.mkdir(exist_ok=True)
         self.chatbot_cache_dir.mkdir(exist_ok=True)
+        self.po_cache_dir.mkdir(exist_ok=True)
         
         # Check for GCS cache configuration
         self.gcs_cache_bucket = os.environ.get("GCS_CACHE_BUCKET", "")
@@ -62,6 +64,13 @@ class CacheManager:
                 self.gcs_cache_bucket += "/"
             print(f"[CACHE] Using GCS storage: {self.gcs_cache_bucket}")
             print(f"[CACHE] Local cache (fallback): {self.extraction_cache_dir.absolute()}")
+            
+            # Pre-initialize GCS connection to avoid delay on first request
+            try:
+                client = get_gcs_client()
+                print(f"[CACHE] GCS connection established and cached")
+            except Exception as e:
+                print(f"[CACHE] Warning: GCS pre-connection failed: {e}")
         else:
             print(f"[CACHE] Using local storage")
             print(f"[CACHE] Extraction cache: {self.extraction_cache_dir.absolute()}")
@@ -115,6 +124,22 @@ class CacheManager:
     def _get_gcs_chatbot_path(self, file_hash: str) -> str:
         """Get GCS path for chatbot cache."""
         return f"{self.gcs_cache_bucket}chatbot_cache/{file_hash}_chatbot.json"
+    
+    def get_po_cache_path(self, file_hash: str) -> Path:
+        """Get local cache file path for PO data."""
+        return self.po_cache_dir / f"{file_hash}_po.json"
+    
+    def _get_gcs_po_cache_path(self, file_hash: str) -> str:
+        """Get GCS path for PO cache."""
+        return f"{self.gcs_cache_bucket}po_cache/{file_hash}_po.json"
+    
+    def _get_gcs_po_index_path(self) -> str:
+        """Get GCS path for PO index (for fast lookup by PO number)."""
+        return f"{self.gcs_cache_bucket}po_cache/po_index.json"
+    
+    def _get_gcs_po_pdf_path(self, filename: str) -> str:
+        """Get GCS path for PO PDF storage."""
+        return f"{self.gcs_cache_bucket}purchase_orders/{filename}"
     
     def _get_gcs_extractions_data_path(self) -> str:
         """Get GCS path for extractions_data.json."""
@@ -329,6 +354,398 @@ class CacheManager:
             print(f"[CACHE] Error saving chatbot cache: {e}")
     
     # ========================================================================
+    # PURCHASE ORDER CACHE MANAGEMENT
+    # ========================================================================
+    
+    def load_po_cache(self, file_hash: str) -> Optional[Dict[str, Any]]:
+        """
+        Load PO extraction results from cache.
+        
+        Args:
+            file_hash: SHA256 hash of PO file content
+            
+        Returns:
+            Cached PO data or None if not found
+        """
+        # Try GCS first if enabled
+        if self.use_gcs:
+            gcs_path = self._get_gcs_po_cache_path(file_hash)
+            gcs_data = self._load_from_gcs(gcs_path)
+            if gcs_data:
+                return gcs_data
+        
+        # Fall back to local cache
+        cache_path = self.get_po_cache_path(file_hash)
+        
+        if not cache_path.exists():
+            return None
+        
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                cache_data = json.load(f)
+            
+            print(f"[CACHE] Loaded PO cache (local) for hash: {file_hash[:16]}...")
+            return cache_data
+        except Exception as e:
+            print(f"[CACHE] Error loading PO cache: {e}")
+            return None
+    
+    def save_po_cache(self, file_hash: str, extracted_data: Dict[str, Any], 
+                      metadata: Dict[str, Any], document_text: str, filename: str):
+        """
+        Save PO extraction results to cache.
+        
+        Args:
+            file_hash: SHA256 hash of PO file content
+            extracted_data: Extracted PO data dictionary
+            metadata: Metadata dictionary
+            document_text: Full document text
+            filename: Original filename
+        """
+        try:
+            cache_data = {
+                "file_hash": file_hash,
+                "filename": filename,
+                "document_type": "PURCHASE_ORDER",
+                "cached_at": datetime.now().isoformat(),
+                "extracted_data": extracted_data,
+                "metadata": metadata,
+                "document_text": document_text
+            }
+            
+            # Save to GCS if enabled
+            if self.use_gcs:
+                gcs_path = self._get_gcs_po_cache_path(file_hash)
+                self._save_to_gcs(gcs_path, cache_data)
+            
+            # Also save locally (for faster access and as fallback)
+            cache_path = self.get_po_cache_path(file_hash)
+            with open(cache_path, 'w', encoding='utf-8') as f:
+                json.dump(cache_data, f, indent=2, ensure_ascii=False, default=str)
+            
+            print(f"[CACHE] Saved PO cache for hash: {file_hash[:16]}...")
+            
+            # Update PO index for fast lookup
+            self._update_po_index(file_hash, extracted_data, filename)
+            
+        except Exception as e:
+            print(f"[CACHE] Error saving PO cache: {e}")
+    
+    def _update_po_index(self, file_hash: str, extracted_data: Dict[str, Any], filename: str):
+        """
+        Update PO index for fast lookup by PO number, vendor, customer, etc.
+        
+        Args:
+            file_hash: SHA256 hash of PO file
+            extracted_data: Extracted PO data
+            filename: Original filename
+        """
+        try:
+            # Load existing index
+            po_index = self._load_po_index()
+            
+            # Extract key fields for indexing
+            doc_ids = extracted_data.get("document_ids", {})
+            party_names = extracted_data.get("party_names", {})
+            
+            po_number = doc_ids.get("po_number", "") or doc_ids.get("order_number", "") or ""
+            vendor = party_names.get("vendor", "") or party_names.get("party_1", "") or ""
+            customer = party_names.get("customer", "") or party_names.get("party_2", "") or ""
+            
+            # Get line items for matching
+            line_items = extracted_data.get("line_items", [])
+            item_descriptions = [item.get("description", "") for item in line_items if item.get("description")]
+            
+            # Get amounts
+            total_amount = extracted_data.get("amount", "") or extracted_data.get("amounts", {}).get("total", "")
+            
+            # Add to index
+            index_entry = {
+                "file_hash": file_hash,
+                "filename": filename,
+                "po_number": po_number,
+                "vendor": vendor,
+                "customer": customer,
+                "item_descriptions": item_descriptions,
+                "total_amount": total_amount,
+                "indexed_at": datetime.now().isoformat()
+            }
+            
+            # Update index (use file_hash as key to avoid duplicates)
+            po_index[file_hash] = index_entry
+            
+            # Save index
+            self._save_po_index(po_index)
+            
+            print(f"[CACHE] Updated PO index: PO#{po_number or 'N/A'}, Vendor: {vendor[:30] if vendor else 'N/A'}...")
+            
+        except Exception as e:
+            print(f"[CACHE] Error updating PO index: {e}")
+    
+    def _load_po_index(self) -> Dict[str, Any]:
+        """Load PO index from GCS or local storage."""
+        # Try GCS first if enabled
+        if self.use_gcs:
+            gcs_path = self._get_gcs_po_index_path()
+            gcs_data = self._load_from_gcs(gcs_path)
+            if gcs_data:
+                return gcs_data
+        
+        # Fall back to local
+        local_path = self.po_cache_dir / "po_index.json"
+        if local_path.exists():
+            try:
+                with open(local_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"[CACHE] Error loading PO index: {e}")
+        
+        return {}
+    
+    def _save_po_index(self, po_index: Dict[str, Any]):
+        """Save PO index to GCS and local storage."""
+        try:
+            # Save to GCS if enabled
+            if self.use_gcs:
+                gcs_path = self._get_gcs_po_index_path()
+                self._save_to_gcs(gcs_path, po_index)
+            
+            # Also save locally
+            local_path = self.po_cache_dir / "po_index.json"
+            with open(local_path, 'w', encoding='utf-8') as f:
+                json.dump(po_index, f, indent=2, ensure_ascii=False, default=str)
+                
+        except Exception as e:
+            print(f"[CACHE] Error saving PO index: {e}")
+    
+    def get_all_pos(self) -> Dict[str, Any]:
+        """
+        Get all POs from the index for matching.
+        
+        Returns:
+            Dictionary with all PO index entries
+        """
+        return self._load_po_index()
+    
+    def find_po_by_number(self, po_number: str) -> Optional[Dict[str, Any]]:
+        """
+        Find a PO by its PO number.
+        Supports exact match and partial/fuzzy matching.
+        
+        Args:
+            po_number: The PO number to search for
+            
+        Returns:
+            PO index entry if found, None otherwise
+        """
+        if not po_number or not po_number.strip():
+            return None
+        
+        po_index = self._load_po_index()
+        normalized_po = po_number.strip().lower()
+        
+        # Remove common prefixes/suffixes for flexible matching
+        import re
+        # Extract numeric/alphanumeric core from PO number
+        po_core = re.sub(r'[^a-z0-9]', '', normalized_po)
+        
+        print(f"[PO_MATCH] Searching for PO number: '{po_number}' (core: '{po_core}')")
+        
+        best_match = None
+        best_score = 0
+        
+        for file_hash, entry in po_index.items():
+            entry_po = (entry.get("po_number", "") or "").strip().lower()
+            if not entry_po:
+                continue
+            
+            entry_po_core = re.sub(r'[^a-z0-9]', '', entry_po)
+            
+            # Exact match (100 points)
+            if entry_po == normalized_po:
+                print(f"[PO_MATCH] ✓ Exact match: '{entry_po}'")
+                full_data = self.load_po_cache(file_hash)
+                if full_data:
+                    return {**entry, "full_data": full_data}
+                return entry
+            
+            # Core match (contains or is contained) - 90 points
+            if po_core and entry_po_core:
+                if po_core in entry_po_core or entry_po_core in po_core:
+                    score = 90
+                    if score > best_score:
+                        best_score = score
+                        best_match = entry
+                        print(f"[PO_MATCH]   Partial match: '{entry_po}' (core: '{entry_po_core}') - Score: {score}")
+            
+            # One contains the other
+            if normalized_po in entry_po or entry_po in normalized_po:
+                score = 85
+                if score > best_score:
+                    best_score = score
+                    best_match = entry
+                    print(f"[PO_MATCH]   Substring match: '{entry_po}' - Score: {score}")
+        
+        # Return best partial match if score is high enough
+        if best_score >= 85 and best_match:
+            print(f"[PO_MATCH] ✓ Best PO number match: '{best_match.get('po_number')}' with score {best_score}")
+            full_data = self.load_po_cache(best_match["file_hash"])
+            if full_data:
+                return {**best_match, "full_data": full_data}
+            return best_match
+        
+        print(f"[PO_MATCH] ✗ No PO number match found")
+        return None
+    
+    def find_po_by_details(self, vendor: str = "", customer: str = "", 
+                           items: list = None, amount: str = "") -> Optional[Dict[str, Any]]:
+        """
+        Find a PO by vendor, customer, or amount (fallback matching).
+        Does NOT use item matching as item descriptions may vary between PO and Invoice.
+        
+        Args:
+            vendor: Vendor name to match
+            customer: Customer name to match
+            items: (IGNORED) List of item descriptions - not used for matching
+            amount: Amount to match
+            
+        Returns:
+            Best matching PO index entry if found, None otherwise
+        """
+        po_index = self._load_po_index()
+        
+        if not po_index:
+            print(f"[PO_MATCH] No PO index found")
+            return None
+        
+        print(f"[PO_MATCH] Searching {len(po_index)} POs for match...")
+        print(f"[PO_MATCH]   Invoice Vendor: '{vendor}'")
+        print(f"[PO_MATCH]   Invoice Customer: '{customer}'")
+        print(f"[PO_MATCH]   Invoice Amount: '{amount}'")
+        
+        best_match = None
+        best_score = 0
+        
+        for file_hash, entry in po_index.items():
+            score = 0
+            match_details = []
+            
+            entry_vendor = (entry.get("vendor", "") or "").strip().lower()
+            entry_customer = (entry.get("customer", "") or "").strip().lower()
+            entry_amount = (entry.get("total_amount", "") or "").strip()
+            
+            # Vendor matching (highest weight - 50 points)
+            if vendor and entry_vendor:
+                vendor_lower = vendor.strip().lower()
+                # Check if vendor names match (either contains the other)
+                if vendor_lower in entry_vendor or entry_vendor in vendor_lower:
+                    score += 50
+                    match_details.append(f"Vendor exact: +50")
+                elif self._fuzzy_match(vendor, entry_vendor, threshold=0.5):
+                    score += 40
+                    match_details.append(f"Vendor fuzzy: +40")
+                # Also check if invoice customer matches PO vendor (reversed roles)
+                elif customer and customer.strip().lower() in entry_vendor:
+                    score += 45
+                    match_details.append(f"Customer matches PO Vendor: +45")
+            
+            # Customer matching (40 points)
+            if customer and entry_customer:
+                customer_lower = customer.strip().lower()
+                if customer_lower in entry_customer or entry_customer in customer_lower:
+                    score += 40
+                    match_details.append(f"Customer exact: +40")
+                elif self._fuzzy_match(customer, entry_customer, threshold=0.5):
+                    score += 30
+                    match_details.append(f"Customer fuzzy: +30")
+                # Also check if invoice vendor matches PO customer (reversed roles)
+                elif vendor and vendor.strip().lower() in entry_customer:
+                    score += 35
+                    match_details.append(f"Vendor matches PO Customer: +35")
+            
+            # Amount matching (30 points - important confirmation)
+            if amount and entry_amount:
+                if self._amounts_match(amount, entry_amount):
+                    score += 30
+                    match_details.append(f"Amount match: +30")
+            
+            if score > 0:
+                print(f"[PO_MATCH]   PO '{entry.get('filename', 'unknown')}' - Score: {score} ({', '.join(match_details)})")
+            
+            if score > best_score:
+                best_score = score
+                best_match = entry
+        
+        # Require minimum score for a match (vendor OR customer match)
+        # 40 points = at least a customer or fuzzy vendor match
+        if best_score >= 40 and best_match:
+            print(f"[PO_MATCH] ✓ Best match: '{best_match.get('filename')}' with score {best_score}")
+            # Load full PO data
+            full_data = self.load_po_cache(best_match["file_hash"])
+            if full_data:
+                return {**best_match, "full_data": full_data, "match_score": best_score}
+            return {**best_match, "match_score": best_score}
+        
+        print(f"[PO_MATCH] ✗ No match found (best score: {best_score}, required: 40)")
+        return None
+    
+    def _fuzzy_match(self, str1: str, str2: str, threshold: float = 0.6) -> bool:
+        """Simple fuzzy string matching based on common words."""
+        words1 = set(str1.lower().split())
+        words2 = set(str2.lower().split())
+        
+        if not words1 or not words2:
+            return False
+        
+        common = words1 & words2
+        similarity = len(common) / max(len(words1), len(words2))
+        
+        return similarity >= threshold
+    
+    def _amounts_match(self, amount1: str, amount2: str) -> bool:
+        """Check if two amount strings represent the same value."""
+        try:
+            # Extract numeric values
+            import re
+            num1 = re.sub(r'[^\d.]', '', str(amount1))
+            num2 = re.sub(r'[^\d.]', '', str(amount2))
+            
+            if num1 and num2:
+                return abs(float(num1) - float(num2)) < 0.01
+        except:
+            pass
+        return False
+    
+    def upload_po_pdf_to_gcs(self, local_file_path: str, filename: str) -> Optional[str]:
+        """
+        Upload PO PDF to GCS for storage.
+        
+        Args:
+            local_file_path: Path to local PO PDF file
+            filename: Filename to use in GCS
+            
+        Returns:
+            GCS URI if successful, None otherwise
+        """
+        if not self.use_gcs:
+            print("[CACHE] GCS not enabled, skipping PO PDF upload")
+            return None
+        
+        try:
+            from urllib.parse import urlparse
+            from gcs_utils import upload_file_to_gcs
+            
+            gcs_uri = self._get_gcs_po_pdf_path(filename)
+            upload_file_to_gcs(local_file_path, gcs_uri, None)
+            
+            print(f"[CACHE] Uploaded PO PDF to GCS: {filename}")
+            return gcs_uri
+            
+        except Exception as e:
+            print(f"[CACHE] Error uploading PO PDF to GCS: {e}")
+            return None
+    
+    # ========================================================================
     # INDIVIDUAL EXTRACTION FILE MANAGEMENT (New approach)
     # ========================================================================
     
@@ -475,6 +892,9 @@ class CacheManager:
                             try:
                                 json_content = blob.download_as_text()
                                 data = json.loads(json_content)
+                                # Get document_type from results
+                                results = data.get("results", {})
+                                document_type = results.get("contract_type", "Unknown") if results else "Unknown"
                                 records.append({
                                     "extraction_id": extraction_id,
                                     "file_name": data.get("file_name", "Unknown"),
@@ -482,6 +902,7 @@ class CacheManager:
                                     "extracted_at": data.get("extracted_at", ""),
                                     "uploaded_at": data.get("uploaded_at", ""),
                                     "status": data.get("status", ""),
+                                    "document_type": document_type,
                                     "location": "gcs",
                                     "size": blob.size or 0,
                                     "modified": blob.updated.isoformat() if blob.updated else ""
@@ -490,6 +911,7 @@ class CacheManager:
                                 records.append({
                                     "extraction_id": extraction_id,
                                     "file_name": "Unknown",
+                                    "document_type": "Unknown",
                                     "location": "gcs",
                                     "size": blob.size or 0
                                 })
@@ -506,6 +928,9 @@ class CacheManager:
                     stat = json_file.stat()
                     with open(json_file, 'r', encoding='utf-8') as f:
                         data = json.load(f)
+                    # Get document_type from results
+                    results = data.get("results", {})
+                    document_type = results.get("contract_type", "Unknown") if results else "Unknown"
                     records.append({
                         "extraction_id": extraction_id,
                         "file_name": data.get("file_name", "Unknown"),
@@ -513,6 +938,7 @@ class CacheManager:
                         "extracted_at": data.get("extracted_at", ""),
                         "uploaded_at": data.get("uploaded_at", ""),
                         "status": data.get("status", ""),
+                        "document_type": document_type,
                         "location": "local",
                         "size": stat.st_size,
                         "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
@@ -521,6 +947,7 @@ class CacheManager:
                     records.append({
                         "extraction_id": extraction_id,
                         "file_name": "Unknown",
+                        "document_type": "Unknown",
                         "location": "local"
                     })
         
@@ -831,6 +1258,7 @@ class CacheManager:
         """
         result = {
             "extraction_cache": [],
+            "po_cache": [],
             "chatbot_cache": [],
             "extractions_data": [],
             "exports": [],
@@ -864,6 +1292,34 @@ class CacheManager:
                 })
             except Exception as e:
                 print(f"[CACHE] Error reading file info: {e}")
+        
+        # List local PO cache files
+        for cache_file in self.po_cache_dir.glob("*.json"):
+            try:
+                stat = cache_file.stat()
+                filename = "Unknown"
+                po_number = "Unknown"
+                file_hash = cache_file.stem.replace("_po", "")
+                try:
+                    with open(cache_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        filename = data.get("filename", "Unknown")
+                        po_number = data.get("extracted_data", {}).get("document_ids", {}).get("po_number", "")
+                except:
+                    pass
+                
+                result["po_cache"].append({
+                    "name": cache_file.name,
+                    "path": str(cache_file),
+                    "file_hash": file_hash,
+                    "original_filename": filename,
+                    "po_number": po_number,
+                    "size": stat.st_size,
+                    "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                    "location": "local"
+                })
+            except Exception as e:
+                print(f"[CACHE] Error reading PO cache file info: {e}")
         
         # List local chatbot cache files
         for cache_file in self.chatbot_cache_dir.glob("*.json"):
@@ -1012,6 +1468,13 @@ class CacheManager:
             if location == "local":
                 path = Path(file_path)
                 if path.exists():
+                    # Check if this is a PO cache file and extract hash for index cleanup
+                    file_name = path.name
+                    if file_name.endswith("_po.json"):
+                        file_hash = file_name.replace("_po.json", "")
+                        # Remove from PO index
+                        self._remove_from_po_index(file_hash)
+                    
                     path.unlink()
                     print(f"[CACHE] Deleted local file: {file_path}")
                     return True, f"Deleted: {path.name}"
@@ -1024,6 +1487,13 @@ class CacheManager:
                 parsed = urlparse(file_path)
                 bucket_name = parsed.netloc
                 blob_name = parsed.path.lstrip('/')
+                
+                # Check if this is a PO cache file and extract hash for index cleanup
+                file_name = blob_name.split('/')[-1]
+                if file_name.endswith("_po.json"):
+                    file_hash = file_name.replace("_po.json", "")
+                    # Remove from PO index
+                    self._remove_from_po_index(file_hash)
                 
                 client = get_gcs_client()
                 bucket = client.bucket(bucket_name)
@@ -1060,6 +1530,7 @@ class CacheManager:
             "deleted": [],
             "failed": [],
             "extraction_deleted": False,
+            "po_deleted": False,
             "chatbot_deleted": False
         }
         
@@ -1073,6 +1544,18 @@ class CacheManager:
                     results["extraction_deleted"] = True
                 except Exception as e:
                     results["failed"].append(f"local:{extraction_path.name} - {e}")
+            
+            # Delete local PO cache
+            po_path = self.get_po_cache_path(file_hash)
+            if po_path.exists():
+                try:
+                    po_path.unlink()
+                    results["deleted"].append(f"local:{po_path.name}")
+                    results["po_deleted"] = True
+                    # Also remove from PO index
+                    self._remove_from_po_index(file_hash)
+                except Exception as e:
+                    results["failed"].append(f"local:{po_path.name} - {e}")
             
             # Delete local chatbot cache
             chatbot_path = self.get_chatbot_cache_path(file_hash)
@@ -1096,6 +1579,13 @@ class CacheManager:
                     results["deleted"].append(f"gcs:extraction_cache/{file_hash}_extraction.json")
                     results["extraction_deleted"] = True
                 
+                # Delete PO cache from GCS
+                gcs_po_path = self._get_gcs_po_cache_path(file_hash)
+                success, msg = self.delete_file(gcs_po_path, "gcs")
+                if success:
+                    results["deleted"].append(f"gcs:po_cache/{file_hash}_po.json")
+                    results["po_deleted"] = True
+                
                 # Delete chatbot cache from GCS
                 gcs_chatbot_path = self._get_gcs_chatbot_path(file_hash)
                 success, msg = self.delete_file(gcs_chatbot_path, "gcs")
@@ -1107,6 +1597,17 @@ class CacheManager:
                 results["failed"].append(f"gcs: {e}")
         
         return results
+    
+    def _remove_from_po_index(self, file_hash: str):
+        """Remove a PO from the index by file hash."""
+        try:
+            po_index = self._load_po_index()
+            if file_hash in po_index:
+                del po_index[file_hash]
+                self._save_po_index(po_index)
+                print(f"[CACHE] Removed PO from index: {file_hash[:16]}...")
+        except Exception as e:
+            print(f"[CACHE] Error removing PO from index: {e}")
     
     def delete_extraction_record(self, extraction_id: str) -> Tuple[bool, str]:
         """

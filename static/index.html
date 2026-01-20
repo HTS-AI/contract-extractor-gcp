@@ -53,10 +53,6 @@
                         <p>Extract structured information from Invoice</p>
                     </div>
                     <div class="header-buttons">
-                        <a href="/dashboard" class="header-btn dashboard-header-btn">
-                            <span class="btn-icon">📊</span>
-                            <span>View JSON Dashboard</span>
-                        </a>
                         <a href="/selected-factors" class="header-btn factors-header-btn">
                             <span class="btn-icon">📋</span>
                             <span>Selected Factors</span>
@@ -118,7 +114,7 @@
                     <!-- Invoice Details & Invoice Dates (shown only for invoices) -->
                     <div class="info-card" id="invoiceDetailsCard" style="display: none;">
                         <div class="card-header">
-                            <h3>🧾 Invoice Details & Invoice Dates</h3>
+                            <h3>🧾 Invoice Details</h3>
                         </div>
                         <div class="info-grid">
                             <div class="info-item">
@@ -295,7 +291,15 @@
                         <div id="internationalAccountDetails" style="display: none;">
                             <div class="info-grid">
                                 <div class="info-item">
-                                    <label>Account No/IBAN:</label>
+                                    <label>Account Name:</label>
+                                    <span id="intlAccountHolderName" class="info-value">-</span>
+                                </div>
+                                <div class="info-item" id="intlAccountNumberItem">
+                                    <label>Account Number:</label>
+                                    <span id="intlAccountNumber" class="info-value">-</span>
+                                </div>
+                                <div class="info-item" id="ibanItem">
+                                    <label>IBAN:</label>
                                     <span id="accountNumberIban" class="info-value">-</span>
                                 </div>
                                 <div class="info-item">
@@ -345,10 +349,10 @@
 
                 <!-- Right Side: Upload & Dashboard -->
                 <div class="right-side-panel">
-                    <!-- Upload Section - Right Side, Above Dashboard -->
+                    <!-- Invoice Upload Section - Right Side, Above Dashboard -->
                     <section class="upload-section">
                         <div class="section-header">
-                            <h2>📤 Upload Document</h2>
+                            <h2>📤 Upload Invoice</h2>
                         </div>
                         
                         <!-- Document Selector -->
@@ -381,6 +385,14 @@
                             </div>
                         </div>
                         <div id="uploadStatus" class="status-message"></div>
+                        
+                        <!-- Simple Progress Bar -->
+                        <div id="simpleProgressBar" class="simple-progress-container" style="display: none;">
+                            <div class="simple-progress-bar">
+                                <div id="simpleProgressFill" class="simple-progress-fill" style="width: 0%;"></div>
+                            </div>
+                            <div id="simpleProgressText" class="simple-progress-text">Processing...</div>
+                        </div>
                     </section>
 
                     <!-- Dashboard Section - Right Side, Below Upload -->
@@ -389,32 +401,41 @@
                     <h2>📊 Dashboard</h2>
                 </div>
                 <div class="dashboard-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📄</div>
-                        <div class="stat-value" id="totalDocuments">0</div>
-                        <div class="stat-label">Total Documents</div>
+                    <div class="stat-card stat-card-invoice">
+                        <div class="stat-icon">🧾</div>
+                        <div class="stat-value" id="totalInvoices">0</div>
+                        <div class="stat-label">Total Invoices</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">⚠️</div>
-                        <div class="stat-value" id="avgRiskScore">0</div>
-                        <div class="stat-label">Avg Risk Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">❌</div>
-                        <div class="stat-value" id="missingClauses">0</div>
-                        <div class="stat-label">Missing Clauses</div>
-                    </div>
-                    <div class="stat-card">
+                    <div class="stat-card stat-card-po">
                         <div class="stat-icon">📋</div>
-                        <div class="stat-value" id="contractTypes">0</div>
-                        <div class="stat-label">Document Types</div>
+                        <div class="stat-value" id="totalPOs">0</div>
+                        <div class="stat-label">Total POs</div>
+                    </div>
+                    <div class="stat-card stat-card-success">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="matchedInvoices">0</div>
+                        <div class="stat-label">Matched</div>
+                    </div>
+                    <div class="stat-card stat-card-warning">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-value" id="unmatchedInvoices">0</div>
+                        <div class="stat-label">Not Matched</div>
                     </div>
                 </div>
 
-                <!-- Document Types Chart -->
-                <div class="chart-card">
-                    <h3>Document Types Distribution</h3>
-                    <div id="contractTypesChart" class="chart-container"></div>
+                <!-- Matching Status Summary -->
+                <div class="matching-summary-card">
+                    <h3>📈 PO Matching Status</h3>
+                    <div class="matching-progress-container">
+                        <div class="matching-progress-bar">
+                            <div id="matchedProgressFill" class="matching-progress-fill matched" style="width: 0%;"></div>
+                            <div id="unmatchedProgressFill" class="matching-progress-fill unmatched" style="width: 0%;"></div>
+                        </div>
+                        <div class="matching-progress-labels">
+                            <span class="matched-label"><span class="dot matched"></span> Matched: <span id="matchedPercent">0%</span></span>
+                            <span class="unmatched-label"><span class="dot unmatched"></span> Not Matched: <span id="unmatchedPercent">0%</span></span>
+                        </div>
+                    </div>
                 </div>
                 </section>
                 </div>
@@ -559,6 +580,44 @@
         </div>
     </div>
 
+    <!-- PO Not Found Warning Modal -->
+    <div id="poWarningModal" class="po-warning-modal-overlay" style="display: none;">
+        <div class="po-warning-modal-container">
+            <div class="po-warning-modal-header">
+                <div class="po-warning-icon">⚠️</div>
+                <h2 class="po-warning-modal-title">PURCHASE ORDER NOT FOUND</h2>
+            </div>
+            
+            <div class="po-warning-modal-body">
+                <div class="po-warning-message">
+                    <p><strong>No matching Purchase Order was found for this invoice.</strong></p>
+                    <p>The invoice will not be saved to the data table until a matching PO is uploaded.</p>
+                </div>
+                
+                <div class="po-warning-details">
+                    <h4>Invoice Details:</h4>
+                    <ul>
+                        <li id="poWarningPoNumberItem" style="display: none;"><strong>PO Number on Invoice:</strong> <span id="poWarningPoNumber">-</span></li>
+                        <li><strong>Invoice File:</strong> <span id="poWarningInvoiceFile">-</span></li>
+                        <li><strong>Vendor:</strong> <span id="poWarningVendor">-</span></li>
+                        <li><strong>Customer:</strong> <span id="poWarningCustomer">-</span></li>
+                        <li><strong>Amount:</strong> <span id="poWarningAmount">-</span></li>
+                    </ul>
+                </div>
+                
+                <div class="duplicate-alert-box" style="background: #fef3c7; border-color: #fcd34d;">
+                    <strong>💡 Tip:</strong> Please upload the corresponding Purchase Order first, then re-upload this invoice.
+                </div>
+            </div>
+            
+            <div class="po-warning-modal-footer">
+                <button id="poWarningModalOkBtn" class="po-warning-btn po-warning-btn-ok">
+                    <span>OK</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- File Manager Modal -->
     <div id="fileManagerModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 900px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
@@ -596,7 +655,8 @@
                 <!-- Loading State -->
                 <div id="fileManagerLoading" style="text-align: center; padding: 40px;">
                     <div class="loading-spinner"></div>
-                    <p>Loading files...</p>
+                    <p id="fileManagerLoadingText" style="margin-top: 15px; color: #4b5563; font-weight: 500;">🔌 Please wait, connecting to GCS...</p>
+                    <p id="fileManagerLoadingSubtext" style="margin-top: 8px; color: #9ca3af; font-size: 0.85em;">Loading your files from cloud storage</p>
                 </div>
                 
                 <!-- Delete Progress Section -->

@@ -7,7 +7,10 @@ Updated with JSON and Excel data endpoints
 import os
 import json
 import uuid
+import re
 import tempfile
+import time
+import asyncio
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any, List
@@ -32,6 +35,9 @@ from docx_to_pdf_converter import convert_docx_to_pdf, should_convert_to_pdf
 from excel_export import update_contract_excel
 from document_chat import get_chatbot
 from cache_manager import get_cache_manager
+from po_extractor import POExtractor, get_po_extractor
+from po_matcher import get_po_matcher, match_invoice
+import extraction_status_manager
 
 # Cache chatbot instance to avoid repeated get_chatbot() calls
 _cached_chatbot = None
@@ -76,12 +82,132 @@ print(f"[STARTUP] Chatbot validation folder: {VALIDATION_FOLDER.absolute()}")
 
 # In-memory storage for extractions and dashboard data
 extractions_store: Dict[str, Dict[str, Any]] = {}
+
+# Status tracking for progress updates - use shared module
+extraction_status = extraction_status_manager.extraction_status
 dashboard_data = {
     "total_documents": 0,
+    "total_invoices": 0,
+    "total_pos": 0,
+    "matched_invoices": 0,
+    "unmatched_invoices": 0,
     "average_risk_score": 0,
     "total_missing_clauses": 0,
     "contract_types": {}
 }
+
+
+def recalculate_dashboard_from_extractions():
+    """Recalculate dashboard data from all stored extractions."""
+    global dashboard_data
+    
+    # Reset dashboard data
+    dashboard_data["total_documents"] = 0
+    dashboard_data["total_invoices"] = 0
+    dashboard_data["matched_invoices"] = 0
+    dashboard_data["unmatched_invoices"] = 0
+    dashboard_data["average_risk_score"] = 0
+    dashboard_data["total_missing_clauses"] = 0
+    dashboard_data["contract_types"] = {}
+    
+    # Get PO count from cache
+    try:
+        po_matcher = get_po_matcher()
+        dashboard_data["total_pos"] = po_matcher.get_po_count()
+    except Exception as e:
+        print(f"[DASHBOARD] Error getting PO count: {e}")
+        dashboard_data["total_pos"] = 0
+    
+    if not extractions_store:
+        print(f"[DASHBOARD] No extractions in store. Dashboard reset.")
+        return
+    
+    total_risk = 0
+    
+    print(f"[DASHBOARD] Recalculating from {len(extractions_store)} extractions...")
+    
+    for extraction_id, extraction in extractions_store.items():
+        dashboard_data["total_documents"] += 1
+        
+        # Get extracted_data which contains the actual document data
+        extracted_data = extraction.get("extracted_data", {})
+        
+        # Also check results for document type (some extractions store it there)
+        results_data = extraction.get("results", {})
+        
+        # Check if it's an invoice - look in multiple places
+        doc_type = (
+            extracted_data.get("document_type") or 
+            results_data.get("contract_type") or
+            extraction.get("document_type") or 
+            extracted_data.get("contract_type") or 
+            extraction.get("contract_type") or 
+            "Unknown"
+        )
+        
+        # Get status (could be "completed", "po_not_found", etc.)
+        status = extraction.get("status", "")
+        
+        if doc_type and doc_type.upper() == "INVOICE":
+            dashboard_data["total_invoices"] += 1
+            
+            # Check PO matching status - look in extracted_data first, then extraction, then results
+            po_match = (
+                extracted_data.get("_po_match") or 
+                extraction.get("_po_match") or 
+                results_data.get("_po_match") or 
+                {}
+            )
+            
+            # Determine if matched based on _po_match or status
+            if po_match.get("matched") == True:
+                dashboard_data["matched_invoices"] += 1
+                print(f"   - {extraction.get('file_name', extraction_id)}: MATCHED")
+            elif po_match.get("matched") == False or status == "po_not_found":
+                # Explicitly marked as unmatched OR has po_not_found status
+                dashboard_data["unmatched_invoices"] += 1
+                print(f"   - {extraction.get('file_name', extraction_id)}: NOT MATCHED (status={status})")
+            elif "_po_match" in extracted_data or "_po_match" in extraction:
+                # Has _po_match but matched is not explicitly True, count as unmatched
+                dashboard_data["unmatched_invoices"] += 1
+                print(f"   - {extraction.get('file_name', extraction_id)}: NOT MATCHED (has _po_match)")
+            else:
+                # Legacy invoice (before PO matching feature) - count as matched
+                dashboard_data["matched_invoices"] += 1
+                print(f"   - {extraction.get('file_name', extraction_id)}: MATCHED (legacy)")
+        
+        # Sum up risk scores - check all places
+        risk_score = (
+            extracted_data.get("risk_score") or 
+            results_data.get("risk_score") or
+            extraction.get("risk_score", 0)
+        )
+        if isinstance(risk_score, dict):
+            risk_score = risk_score.get("score", 0)
+        if risk_score:
+            total_risk += risk_score
+        
+        # Count missing clauses - check all places
+        missing = (
+            extracted_data.get("missing_clauses") or 
+            results_data.get("missing_clauses") or
+            extraction.get("missing_clauses", [])
+        )
+        if missing:
+            dashboard_data["total_missing_clauses"] += len(missing)
+        
+        # Count contract types
+        if doc_type:
+            if doc_type in dashboard_data["contract_types"]:
+                dashboard_data["contract_types"][doc_type] += 1
+            else:
+                dashboard_data["contract_types"][doc_type] = 1
+    
+    # Calculate average risk score
+    if dashboard_data["total_documents"] > 0:
+        dashboard_data["average_risk_score"] = int(total_risk / dashboard_data["total_documents"])
+    
+    print(f"[DASHBOARD] Updated: {dashboard_data['total_invoices']} invoices, {dashboard_data['total_pos']} POs, {dashboard_data['matched_invoices']} matched, {dashboard_data['unmatched_invoices']} unmatched")
 
 
 def load_extractions_from_file():
@@ -95,12 +221,20 @@ def load_extractions_from_file():
         if gcs_data:
             # GCS data is a list of extractions, convert to dict
             if isinstance(gcs_data, list):
-                extractions_store = {item.get("extraction_id", str(i)): item for i, item in enumerate(gcs_data)}
+                extractions_store = {}
+                for i, item in enumerate(gcs_data):
+                    ext_id = item.get("extraction_id", str(i))
+                    extractions_store[ext_id] = item
+                    print(f"   - Loaded: {item.get('file_name', 'Unknown')} (ID: {ext_id}, Status: {item.get('status', 'unknown')})")
             elif isinstance(gcs_data, dict) and "extractions" in gcs_data:
                 extractions_store = gcs_data.get("extractions", {})
+                for ext_id, item in extractions_store.items():
+                    print(f"   - Loaded: {item.get('file_name', 'Unknown')} (ID: {ext_id}, Status: {item.get('status', 'unknown')})")
             else:
                 extractions_store = gcs_data if isinstance(gcs_data, dict) else {}
             print(f"[STARTUP] Loaded {len(extractions_store)} extractions from cache (GCS/local)")
+            # Recalculate dashboard from loaded extractions
+            recalculate_dashboard_from_extractions()
             return
         
         # Fallback to local file
@@ -109,6 +243,8 @@ def load_extractions_from_file():
                 data = json.load(f)
                 extractions_store = data.get("extractions", {})
                 print(f"[STARTUP] Loaded {len(extractions_store)} extractions from {EXTRACTIONS_JSON_FILE.name}")
+                # Recalculate dashboard from loaded extractions
+                recalculate_dashboard_from_extractions()
         else:
             print(f"[STARTUP] No existing extractions file found. Starting fresh.")
             extractions_store = {}
@@ -268,6 +404,13 @@ async def upload_file(file: UploadFile = File(...)):
             "extracted_at": None
         }
         
+        # Initialize status tracking
+        extraction_status[extraction_id] = {
+            "current_step": "uploaded",
+            "step_description": "File uploaded successfully",
+            "progress_percent": 0
+        }
+        
         print(f"[SUCCESS] Upload completed successfully!")
         print("="*80 + "\n")
         
@@ -306,8 +449,11 @@ async def extract_document(extraction_id: str):
         return {"results": extraction["results"]}
     
     try:
+        # Initialize status tracking (but don't set extraction_started yet - wait for cache check)
+        extraction["status"] = "processing"
+        
         print("\n" + "="*80)
-        print(f"[EXTRACT] EXTRACTION PROCESS STARTED")
+        print(f"[EXTRACT] STARTING EXTRACTION PROCESS")
         print("="*80)
         print(f"  Extraction ID: {extraction_id}")
         print(f"  Document: {extraction['file_name']}")
@@ -321,6 +467,7 @@ async def extract_document(extraction_id: str):
         cached_result = None
         
         if file_hash:
+            # Check cache silently (no progress bar needed - it's instant)
             print(f"\n[STEP 0] Checking extraction cache...")
             cached_result = cache_manager.load_extraction_cache(file_hash)
             if cached_result:
@@ -353,8 +500,21 @@ async def extract_document(extraction_id: str):
                             print(f"   - Processed on: {duplicate['extracted_at']}")
                             print(f"   [ACTION] Blocking save - returning warning to user")
                             
-                            # Update extraction status to show duplicate
+                            # Update extraction status to show duplicate - skip progress bar
                             extraction["status"] = "duplicate"
+                            extraction_status[extraction_id] = {
+                                "current_step": "duplicate",
+                                "step_description": "Duplicate invoice detected",
+                                "progress_percent": 100,
+                                "skip_progress": True,
+                                "is_duplicate": True,
+                                "is_complete": True,
+                                "duplicate_info": {
+                                    "invoice_id": invoice_id,
+                                    "existing_file": duplicate['file_name'],
+                                    "processed_date": duplicate['extracted_at']
+                                }
+                            }
                             
                             # Clean up temp file if exists
                             if os.path.exists(file_path):
@@ -383,6 +543,92 @@ async def extract_document(extraction_id: str):
                         print(f"   [WARNING] No invoice ID found in extracted data, skipping duplicate check")
                 # ============== END DUPLICATE CHECK ==============
                 
+                # ============== PO MATCHING CHECK (FOR INVOICES FROM CACHE) ==============
+                if doc_type == "INVOICE":
+                    print(f"\n[PO CHECK] Checking PO matching for cached invoice...")
+                    
+                    # Match invoice with PO
+                    po_matched, po_data, po_message = match_invoice(extracted_data)
+                    
+                    if not po_matched:
+                        # No matching PO found! Don't save to Excel, but store for dashboard tracking
+                        print(f"   [PO NOT FOUND] {po_message}")
+                        print(f"   [ACTION] Storing extraction for dashboard (NOT saving to Excel)")
+                        
+                        # Mark as unmatched
+                        extracted_data["_po_match"] = {
+                            "matched": False,
+                            "po_number": "",
+                            "po_filename": "",
+                            "match_message": po_message
+                        }
+                        
+                        # Store in extraction store for dashboard tracking
+                        extraction["extracted_data"] = extracted_data
+                        extraction["metadata"] = metadata
+                        extraction["status"] = "po_not_found"
+                        
+                        # Transform to frontend format
+                        results = transform_to_frontend_format(extracted_data, metadata)
+                        extraction["results"] = results
+                        extraction["extracted_at"] = datetime.now().isoformat()
+                        
+                        # Update extraction status
+                        extraction_status[extraction_id] = {
+                            "current_step": "po_not_found",
+                            "step_description": "No matching Purchase Order found",
+                            "progress_percent": 100,
+                            "skip_progress": True,
+                            "is_po_missing": True,
+                            "is_complete": True,
+                            "po_message": po_message
+                        }
+                        
+                        # Update dashboard for unmatched invoice
+                        update_dashboard(results, po_matched=False)
+                        
+                        # Save to extraction cache (so re-upload loads from cache)
+                        file_hash = extraction.get("file_hash")
+                        if file_hash:
+                            document_text = metadata.get("document_text", "")
+                            cache_manager.save_extraction_cache(file_hash, extracted_data, metadata, document_text)
+                            print(f"   [OK] Saved unmatched invoice to extraction cache for future use")
+                        
+                        # Save to file for persistence (so dashboard survives restart)
+                        save_extractions_to_file()
+                        
+                        # Clean up temp file if exists
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+                        
+                        # Return warning response (DON'T SAVE TO EXCEL, but show in dashboard)
+                        return {
+                            "status": "po_not_found",
+                            "success": False,
+                            "warning": True,
+                            "message": f"⚠️ {po_message}",
+                            "details": {
+                                "invoice_file": extraction["file_name"],
+                                "po_number_in_invoice": extracted_data.get("document_ids", {}).get("po_number", ""),
+                                "vendor": extracted_data.get("party_names", {}).get("vendor", ""),
+                                "customer": extracted_data.get("party_names", {}).get("customer", ""),
+                                "amount": extracted_data.get("amount", "")
+                            },
+                            "suggestion": "Please upload the corresponding Purchase Order first, then re-upload this invoice.",
+                            "extracted_data": extracted_data,
+                            "results": results  # Include results for dashboard display
+                        }
+                    else:
+                        print(f"   [OK] PO matched: {po_message}")
+                        # Store PO matching info in extracted data for Excel export
+                        extracted_data["_po_match"] = {
+                            "matched": True,
+                            "po_number": po_data.get("po_number", "") if po_data else "",
+                            "po_filename": po_data.get("filename", "") if po_data else "",
+                            "match_message": po_message
+                        }
+                # ============== END PO MATCHING CHECK ==============
+                
                 # Store in extraction store
                 extraction["extracted_data"] = extracted_data
                 extraction["metadata"] = metadata
@@ -394,6 +640,16 @@ async def extract_document(extraction_id: str):
                 extraction["status"] = "completed"
                 extraction["results"] = results
                 extraction["extracted_at"] = datetime.now().isoformat()
+                
+                # Update status for cache hit - skip progress bar
+                extraction_status[extraction_id] = {
+                    "current_step": "completed",
+                    "step_description": "Retrieved from cache",
+                    "progress_percent": 100,
+                    "skip_progress": True,
+                    "from_cache": True,
+                    "is_complete": True
+                }
                 
                 # Update dashboard
                 update_dashboard(results)
@@ -427,6 +683,15 @@ async def extract_document(extraction_id: str):
                 print(f"   [CACHE MISS] No cached results found, proceeding with extraction...")
         
         # If no cache, proceed with normal extraction
+        # NOW set extraction_started status (after confirming it's not cache/duplicate)
+        extraction_status[extraction_id] = {
+            "current_step": "extraction_started",
+            "step_description": "EXTRACTION PROCESS STARTED",
+            "progress_percent": 15,
+            "skip_progress": False,  # Explicitly show progress bar
+            "is_complete": False
+        }
+        time.sleep(0.5)  # Give frontend time to capture this status (matches 500ms polling interval)
         
         # Convert DOCX to PDF with page numbers if needed
         if should_convert_to_pdf(file_path):
@@ -468,16 +733,14 @@ async def extract_document(extraction_id: str):
             )
         print(f"   [OK] Orchestrator initialized (reusing instance)")
         
-        # Extract data
         print(f"\n[STEP 3] Extracting data from document...")
-        print(f"   - Parsing document text...")
-        print(f"   - Classifying document type...")
-        print(f"   - Extracting key information...")
-        print(f"   - Analyzing risk factors...")
-        
-        # Auto-detect if OCR is needed (scanned PDF detection happens in document_parser)
-        # The parser will automatically use OCR if it detects a scanned PDF
-        extracted_data, metadata = orchestrator.extract_from_file(file_path, use_ocr=False)
+        # Run extraction in a thread so server can respond to status polling requests
+        extracted_data, metadata = await asyncio.to_thread(
+            orchestrator.extract_from_file, 
+            file_path, 
+            use_ocr=False, 
+            extraction_id=extraction_id
+        )
         
         # Check if OCR was actually used (from metadata)
         if metadata.get("extraction_method") == "vision_api" or metadata.get("used_ocr"):
@@ -507,8 +770,21 @@ async def extract_document(extraction_id: str):
                     print(f"   - Processed on: {duplicate['extracted_at']}")
                     print(f"   [ACTION] Blocking save - returning warning to user")
                     
-                    # Update extraction status to show duplicate
+                    # Update extraction status to show duplicate - skip progress bar
                     extraction["status"] = "duplicate"
+                    extraction_status[extraction_id] = {
+                        "current_step": "duplicate",
+                        "step_description": "Duplicate invoice detected",
+                        "progress_percent": 100,
+                        "skip_progress": True,
+                        "is_duplicate": True,
+                        "is_complete": True,
+                        "duplicate_info": {
+                            "invoice_id": invoice_id,
+                            "existing_file": duplicate['file_name'],
+                            "processed_date": duplicate['extracted_at']
+                        }
+                    }
                     
                     # Clean up temp file
                     if os.path.exists(file_path):
@@ -546,6 +822,102 @@ async def extract_document(extraction_id: str):
                 print(f"   [WARNING] No invoice ID found in extracted data, skipping duplicate check")
         # ============== END DUPLICATE CHECK ==============
         
+        # ============== PO MATCHING CHECK (FOR INVOICES ONLY) ==============
+        if doc_type == "INVOICE":
+            print(f"\n[STEP 3.6] Checking PO matching for invoice...")
+            
+            # Match invoice with PO
+            po_matched, po_data, po_message = match_invoice(extracted_data)
+            
+            if not po_matched:
+                # No matching PO found! Don't save to Excel, but store for dashboard tracking
+                print(f"   [PO NOT FOUND] {po_message}")
+                print(f"   [ACTION] Storing extraction for dashboard (NOT saving to Excel)")
+                
+                # Mark as unmatched
+                extracted_data["_po_match"] = {
+                    "matched": False,
+                    "po_number": "",
+                    "po_filename": "",
+                    "match_message": po_message
+                }
+                
+                # Store in extraction store for dashboard tracking
+                extraction["extracted_data"] = extracted_data
+                extraction["metadata"] = metadata
+                extraction["status"] = "po_not_found"
+                
+                # Transform to frontend format
+                results = transform_to_frontend_format(extracted_data, metadata)
+                extraction["results"] = results
+                extraction["extracted_at"] = datetime.now().isoformat()
+                
+                # Update extraction status
+                extraction_status[extraction_id] = {
+                    "current_step": "po_not_found",
+                    "step_description": "No matching Purchase Order found",
+                    "progress_percent": 100,
+                    "skip_progress": True,
+                    "is_po_missing": True,
+                    "is_complete": True,
+                    "po_message": po_message
+                }
+                
+                # Update dashboard for unmatched invoice
+                update_dashboard(results, po_matched=False)
+                
+                # Save to extraction cache (so re-upload loads from cache and chatbot can use it)
+                file_hash = extraction.get("file_hash")
+                if file_hash:
+                    document_text = metadata.get("document_text", "")
+                    cache_manager.save_extraction_cache(file_hash, extracted_data, metadata, document_text)
+                    print(f"   [OK] Saved unmatched invoice to extraction cache")
+                
+                # Save to file for persistence (so dashboard survives restart)
+                save_extractions_to_file()
+                
+                # Clean up temp file
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                
+                print(f"\n" + "="*80)
+                print(f"[PO NOT FOUND] NO MATCHING PURCHASE ORDER - STORED FOR DASHBOARD")
+                print(f"="*80)
+                print(f"  Invoice Document: {extraction['file_name']}")
+                print(f"  Message: {po_message}")
+                print(f"  Dashboard: Counted as unmatched invoice")
+                print(f"  Cached: Yes (for future re-uploads and chatbot)")
+                print(f"  Suggestion: Please upload the corresponding Purchase Order first")
+                print("="*80 + "\n")
+                
+                # Return warning response (DON'T SAVE TO EXCEL, but show in dashboard)
+                return {
+                    "status": "po_not_found",
+                    "success": False,
+                    "warning": True,
+                    "message": f"⚠️ {po_message}",
+                    "details": {
+                        "invoice_file": extraction["file_name"],
+                        "po_number_in_invoice": extracted_data.get("document_ids", {}).get("po_number", ""),
+                        "vendor": extracted_data.get("party_names", {}).get("vendor", ""),
+                        "customer": extracted_data.get("party_names", {}).get("customer", ""),
+                        "amount": extracted_data.get("amount", "")
+                    },
+                    "suggestion": "Please upload the corresponding Purchase Order first, then re-upload this invoice.",
+                    "extracted_data": extracted_data,
+                    "results": results  # Include results for dashboard display
+                }
+            else:
+                print(f"   [OK] PO matched: {po_message}")
+                # Store PO matching info in extracted data for Excel export
+                extracted_data["_po_match"] = {
+                    "matched": True,
+                    "po_number": po_data.get("po_number", "") if po_data else "",
+                    "po_filename": po_data.get("filename", "") if po_data else "",
+                    "match_message": po_message
+                }
+        # ============== END PO MATCHING CHECK ==============
+        
         # Get document text from metadata for caching
         document_text = metadata.get("document_text", "")
         
@@ -559,7 +931,6 @@ async def extract_document(extraction_id: str):
         extraction["extracted_data"] = extracted_data
         extraction["metadata"] = metadata
         
-        # Transform to frontend expected format
         print(f"\n[STEP 5] Transforming data for frontend...")
         results = transform_to_frontend_format(extracted_data, metadata)
         print(f"   [OK] Data transformation completed")
@@ -574,6 +945,13 @@ async def extract_document(extraction_id: str):
         extraction["status"] = "completed"
         extraction["results"] = results
         extraction["extracted_at"] = datetime.now().isoformat()
+        
+        # Final status update
+        extraction_status[extraction_id] = {
+            "current_step": "completed",
+            "step_description": "Extraction completed",
+            "progress_percent": 100
+        }
         
         # Update dashboard data
         print(f"\n[STEP 6] Updating dashboard statistics...")
@@ -638,7 +1016,14 @@ async def extract_document(extraction_id: str):
 
 @app.get("/api/dashboard")
 async def get_dashboard():
-    """Get dashboard statistics."""
+    """Get dashboard statistics with fresh PO count."""
+    # Always get fresh PO count
+    try:
+        po_matcher = get_po_matcher()
+        dashboard_data["total_pos"] = po_matcher.get_po_count()
+    except Exception as e:
+        print(f"[DASHBOARD] Error getting PO count: {e}")
+    
     return dashboard_data
 
 
@@ -668,43 +1053,157 @@ async def get_json_data():
 
 @app.get("/api/extractions-list")
 async def get_extractions_list():
-    """Get list of all extracted documents."""
+    """Get list of all extracted documents from memory and cache."""
     try:
         extractions_list = []
+        seen_ids = set()
+        
+        # Valid statuses for showing in dropdown (completed or po_not_found)
+        valid_statuses = ["completed", "po_not_found"]
+        
+        # First, add from in-memory store
         for extraction_id, extraction in extractions_store.items():
-            if extraction.get("status") == "completed" and extraction.get("results"):
+            status = extraction.get("status", "")
+            if status in valid_statuses and extraction.get("results"):
+                seen_ids.add(extraction_id)
+                # Get extracted_at, fall back to uploaded_at or file modification info
+                extracted_at = extraction.get("extracted_at") or extraction.get("uploaded_at") or ""
+                # Add status indicator to document type for unmatched invoices
+                doc_type = extraction.get("results", {}).get("contract_type", "Unknown")
+                if status == "po_not_found":
+                    doc_type = f"{doc_type} ⚠️"  # Add warning indicator
                 extractions_list.append({
                     "extraction_id": extraction_id,
                     "file_name": extraction.get("file_name", "Unknown"),
-                    "extracted_at": extraction.get("extracted_at", ""),
-                    "document_type": extraction.get("results", {}).get("contract_type", "Unknown")
+                    "extracted_at": extracted_at,
+                    "document_type": doc_type,
+                    "status": status
                 })
         
-        # Sort by extracted_at (newest first)
-        extractions_list.sort(key=lambda x: x.get("extracted_at", ""), reverse=True)
+        # Also check cache manager for any extractions not in memory
+        try:
+            cache_manager = get_cache_manager()
+            cached_records = cache_manager.list_extraction_records()
+            
+            for record in cached_records:
+                extraction_id = record.get("extraction_id")
+                if extraction_id and extraction_id not in seen_ids:
+                    status = record.get("status", "")
+                    # Include both completed and po_not_found
+                    if status in valid_statuses:
+                        seen_ids.add(extraction_id)
+                        extracted_at = record.get("extracted_at") or record.get("uploaded_at") or record.get("modified", "")
+                        doc_type = record.get("document_type", "Unknown")
+                        if status == "po_not_found":
+                            doc_type = f"{doc_type} ⚠️"  # Add warning indicator
+                        extractions_list.append({
+                            "extraction_id": extraction_id,
+                            "file_name": record.get("file_name", "Unknown"),
+                            "extracted_at": extracted_at,
+                            "document_type": doc_type,
+                            "status": status
+                        })
+        except Exception as cache_error:
+            print(f"[API] Note: Could not load from cache: {cache_error}")
         
+        # Sort by extracted_at (newest first), with fallback for empty dates
+        extractions_list.sort(key=lambda x: x.get("extracted_at", "") or "0", reverse=True)
+        
+        print(f"[API] Returning {len(extractions_list)} extractions for dropdown")
         return {"success": True, "extractions": extractions_list}
     except Exception as e:
+        print(f"[API] Error in extractions-list: {e}")
         return {"success": False, "extractions": [], "message": str(e)}
 
 
 @app.get("/api/extraction/{extraction_id}")
 async def get_extraction_by_id(extraction_id: str):
-    """Get extraction data by extraction ID."""
-    if extraction_id not in extractions_store:
+    """Get extraction data by extraction ID from memory or cache."""
+    extraction = None
+    
+    # First check in-memory store
+    if extraction_id in extractions_store:
+        extraction = extractions_store[extraction_id]
+    else:
+        # Try loading from cache
+        try:
+            cache_manager = get_cache_manager()
+            cached_data = cache_manager.load_extraction_record(extraction_id)
+            if cached_data:
+                extraction = cached_data
+                # Also add to memory store for future requests
+                extractions_store[extraction_id] = extraction
+                print(f"[API] Loaded extraction {extraction_id} from cache into memory")
+        except Exception as e:
+            print(f"[API] Error loading from cache: {e}")
+    
+    if not extraction:
         raise HTTPException(status_code=404, detail="Extraction not found")
     
-    extraction = extractions_store[extraction_id]
+    # Accept both "completed" and "po_not_found" status (both have valid results)
+    valid_statuses = ["completed", "po_not_found"]
+    status = extraction.get("status", "")
     
-    if extraction.get("status") != "completed" or not extraction.get("results"):
-        raise HTTPException(status_code=404, detail="Extraction not completed or no results available")
+    if status not in valid_statuses or not extraction.get("results"):
+        raise HTTPException(status_code=404, detail=f"Extraction not completed or no results available (status: {status})")
     
     return {
         "success": True,
         "extraction_id": extraction_id,
         "file_name": extraction.get("file_name", "Unknown"),
-        "extracted_at": extraction.get("extracted_at", ""),
+        "extracted_at": extraction.get("extracted_at") or extraction.get("uploaded_at", ""),
+        "status": status,  # Include status so frontend knows if it's matched or not
         "results": extraction.get("results")
+    }
+
+
+@app.get("/api/extraction-status/{extraction_id}")
+async def get_extraction_status(extraction_id: str):
+    """Get current processing status for an extraction."""
+    # Check if extraction exists
+    if extraction_id not in extractions_store:
+        # Return default status if not found (might be polling before upload completes)
+        return {
+            "extraction_id": extraction_id,
+            "status": "not_found",
+            "current_step": "waiting",
+            "step_description": "Waiting for extraction to start...",
+            "progress_percent": 0,
+            "is_complete": False
+        }
+    
+    extraction = extractions_store[extraction_id]
+    status_info = extraction_status.get(extraction_id, {})
+    
+    # If status info is empty but extraction exists, provide default based on status
+    if not status_info and extraction.get("status") == "uploaded":
+        status_info = {
+            "current_step": "uploaded",
+            "step_description": "File uploaded, waiting to start extraction...",
+            "progress_percent": 0,
+            "skip_progress": False,  # Show progress bar for fresh uploads
+            "is_complete": False
+        }
+    elif not status_info and extraction.get("status") == "completed":
+        status_info = {
+            "current_step": "completed",
+            "step_description": "Extraction completed successfully!",
+            "progress_percent": 100
+        }
+    elif not status_info:
+        status_info = {
+            "current_step": extraction.get("status", "unknown"),
+            "step_description": f"Status: {extraction.get('status', 'unknown')}",
+            "progress_percent": 0
+        }
+    
+    return {
+        "extraction_id": extraction_id,
+        "status": extraction.get("status", "unknown"),
+        "current_step": status_info.get("current_step", ""),
+        "step_description": status_info.get("step_description", ""),
+        "progress_percent": status_info.get("progress_percent", 0),
+        "is_complete": extraction.get("status") == "completed"
     }
 
 
@@ -827,7 +1326,7 @@ async def extract_from_file(
                     use_semantic_search=use_semantic_search
                 )
             
-            extracted_data, metadata = orchestrator.extract_from_file(temp_path, use_ocr=use_ocr)
+            extracted_data, metadata = orchestrator.extract_from_file(temp_path, use_ocr=use_ocr, extraction_id=None)
             
             # Save to cache for future use
             document_text = metadata.get("document_text", "")
@@ -963,8 +1462,97 @@ def _is_bank_address(address: str) -> bool:
     if not address or not isinstance(address, str):
         return False
     address_lower = address.lower()
-    bank_keywords = ['bank', 'branch', 'iban', 'swift', 'account no', 'account number', 'a/c no']
+    bank_keywords = ['bank', 'branch', 'iban', 'swift', 'account no', 'account number', 'a/c no', 'bank a/c no', 'bank account']
     return any(keyword in address_lower for keyword in bank_keywords)
+
+
+def _validate_tax_ids(tax_ids: dict) -> dict:
+    """
+    Validate tax IDs and remove invalid values (like company names).
+    Returns cleaned tax_ids dict with only valid values.
+    """
+    if not tax_ids or not isinstance(tax_ids, dict):
+        return {}
+    
+    validated = {}
+    
+    for key, value in tax_ids.items():
+        if not value or not isinstance(value, str):
+            validated[key] = ""
+            continue
+        
+        value = value.strip()
+        
+        # PAN validation: exactly 10 chars, format AAAAA9999A (5 letters + 4 digits + 1 letter)
+        if key == "pan":
+            pan_pattern = r'^[A-Z]{5}[0-9]{4}[A-Z]$'
+            if re.match(pan_pattern, value.upper()):
+                validated[key] = value.upper()
+            else:
+                print(f"   [VALIDATION] Invalid PAN '{value}' - doesn't match format AAAAA9999A, clearing")
+                validated[key] = ""
+            continue
+        
+        # GSTIN validation: 15 chars (2 digits + 10 char PAN + 1 digit + Z + 1 alphanumeric)
+        if key == "gstin":
+            gstin_pattern = r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$'
+            if re.match(gstin_pattern, value.upper()):
+                validated[key] = value.upper()
+            else:
+                # Also accept simpler 15-char alphanumeric GSTIN
+                if len(value) == 15 and value.replace(" ", "").isalnum():
+                    validated[key] = value.upper()
+                else:
+                    print(f"   [VALIDATION] Invalid GSTIN '{value}' - doesn't match expected format, clearing")
+                    validated[key] = ""
+            continue
+        
+        # VAT validation: starts with 2-letter country code followed by numbers/alphanumeric
+        if key == "vat":
+            # UAE TRN format: 15 digits starting with 100
+            trn_pattern = r'^100[0-9]{12}$'
+            # EU VAT format: 2 letters + numbers
+            vat_pattern = r'^[A-Z]{2}[0-9A-Z]+$'
+            if re.match(trn_pattern, value) or re.match(vat_pattern, value.upper()):
+                validated[key] = value
+            elif value.isdigit() and len(value) >= 8:
+                # Accept numeric VAT/TRN numbers
+                validated[key] = value
+            else:
+                print(f"   [VALIDATION] Invalid VAT '{value}' - doesn't match expected format, clearing")
+                validated[key] = ""
+            continue
+        
+        # EIN validation: format XX-XXXXXXX
+        if key in ["ein", "tax_id"]:
+            ein_pattern = r'^[0-9]{2}-[0-9]{7}$'
+            if re.match(ein_pattern, value):
+                validated[key] = value
+            elif value.replace("-", "").isdigit() and len(value.replace("-", "")) >= 7:
+                # Accept numeric tax IDs
+                validated[key] = value
+            else:
+                # Check if it looks like a company name (has spaces and multiple words)
+                if " " in value and len(value.split()) > 2:
+                    print(f"   [VALIDATION] Invalid {key} '{value}' - looks like company name, clearing")
+                    validated[key] = ""
+                else:
+                    validated[key] = value
+            continue
+        
+        # For other fields, check if it looks like a company name
+        if " " in value and len(value.split()) > 3:
+            # Likely a company name - too many words
+            print(f"   [VALIDATION] Invalid {key} '{value}' - looks like company name (too many words), clearing")
+            validated[key] = ""
+        elif len(value) > 50:
+            # Too long for a tax ID
+            print(f"   [VALIDATION] Invalid {key} '{value[:30]}...' - too long for tax ID, clearing")
+            validated[key] = ""
+        else:
+            validated[key] = value
+    
+    return validated
 
 
 def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
@@ -1112,6 +1700,10 @@ def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
                 "gstin": party_names.get("customer_gstin", "")
             }
         
+        # Validate tax IDs - remove invalid values like company names
+        vendor_tax_ids = _validate_tax_ids(vendor_tax_ids)
+        customer_tax_ids = _validate_tax_ids(customer_tax_ids)
+        
         results["invoice_details"] = {
             "invoice_id": invoice_id,
             "invoice_type": extracted_data.get("invoice_type", ""),
@@ -1140,11 +1732,20 @@ def transform_to_frontend_format(extracted_data: dict, metadata: dict) -> dict:
     return results
 
 
-def update_dashboard(results: dict):
+def update_dashboard(results: dict, po_matched: bool = True):
     """Update dashboard statistics."""
     global dashboard_data
     
     dashboard_data["total_documents"] += 1
+    
+    # Check if it's an invoice and update invoice-specific stats
+    doc_type = results.get("contract_type", results.get("document_type", "Unknown"))
+    if doc_type and doc_type.upper() == "INVOICE":
+        dashboard_data["total_invoices"] += 1
+        if po_matched:
+            dashboard_data["matched_invoices"] += 1
+        else:
+            dashboard_data["unmatched_invoices"] += 1
     
     # Update average risk score
     current_total = dashboard_data["average_risk_score"] * (dashboard_data["total_documents"] - 1)
@@ -1373,20 +1974,37 @@ async def load_chat_from_extraction(extraction_id: str):
         Session information
     """
     try:
-        # Check if extraction exists
-        if extraction_id not in extractions_store:
+        extraction = None
+        
+        # Check if extraction exists in memory
+        if extraction_id in extractions_store:
+            extraction = extractions_store[extraction_id]
+        else:
+            # Try loading from cache
+            try:
+                cache_manager = get_cache_manager()
+                cached_data = cache_manager.load_extraction_record(extraction_id)
+                if cached_data:
+                    extraction = cached_data
+                    # Also add to memory store for future requests
+                    extractions_store[extraction_id] = extraction
+                    print(f"[CHATBOT] Loaded extraction {extraction_id} from cache into memory")
+            except Exception as e:
+                print(f"[CHATBOT] Error loading from cache: {e}")
+        
+        if not extraction:
             return JSONResponse(
                 status_code=404,
                 content={"success": False, "error": "Extraction not found"}
             )
         
-        extraction = extractions_store[extraction_id]
-        
-        # Check if extraction is completed
-        if extraction.get("status") != "completed":
+        # Check if extraction is completed or po_not_found (both have valid results)
+        valid_statuses = ["completed", "po_not_found"]
+        status = extraction.get("status", "")
+        if status not in valid_statuses:
             return JSONResponse(
                 status_code=400,
-                content={"success": False, "error": "Extraction not completed yet"}
+                content={"success": False, "error": f"Extraction not completed yet (status: {status})"}
             )
         
         # Get document text from metadata (already parsed during extraction)
@@ -1547,6 +2165,344 @@ async def delete_chat_session(session_id: str):
 
 
 # ============================================================================
+# PURCHASE ORDER APIs - PO Upload and Matching
+# ============================================================================
+
+# In-memory store for PO extractions (similar to extractions_store)
+po_extractions_store: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/api/upload-po")
+async def upload_purchase_order(file: UploadFile = File(...)):
+    """
+    Upload a Purchase Order PDF for extraction.
+    PO data is automatically extracted and cached for matching with invoices.
+    
+    Args:
+        file: The PO file (PDF, DOCX, TXT)
+        
+    Returns:
+        Extraction results with PO details
+    """
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+    
+    # Validate file extension
+    file_ext = Path(file.filename).suffix.lower()
+    if file_ext not in ['.pdf', '.docx', '.doc', '.txt']:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: {file_ext}. Supported: .pdf, .docx, .doc, .txt"
+        )
+    
+    try:
+        # Generate extraction ID
+        extraction_id = str(uuid.uuid4())
+        
+        print("\n" + "="*80)
+        print(f"[PO UPLOAD] PURCHASE ORDER UPLOAD INITIATED")
+        print("="*80)
+        print(f"  File Name: {file.filename}")
+        print(f"  File Type: {file_ext}")
+        print(f"  Extraction ID: {extraction_id}")
+        
+        # Read file content
+        content = await file.read()
+        file_size = len(content)
+        
+        # Compute file hash for caching
+        cache_manager = get_cache_manager()
+        file_hash = cache_manager.compute_content_hash(content)
+        print(f"  File Size: {file_size:,} bytes ({file_size/1024:.2f} KB)")
+        print(f"  File Hash: {file_hash[:16]}...")
+        
+        # Check PO cache first
+        print(f"\n[STEP 1] Checking PO cache...")
+        cached_result = cache_manager.load_po_cache(file_hash)
+        
+        if cached_result:
+            print(f"   [CACHE HIT] Found cached PO extraction!")
+            print(f"   - Cached at: {cached_result.get('cached_at', 'Unknown')}")
+            
+            extracted_data = cached_result.get("extracted_data", {})
+            metadata = cached_result.get("metadata", {})
+            po_number = extracted_data.get("document_ids", {}).get("po_number", "N/A")
+            
+            # Transform to frontend format for dashboard display
+            results = transform_to_frontend_format(extracted_data, metadata)
+            
+            print(f"\n" + "="*80)
+            print(f"[SUCCESS] PO LOADED FROM CACHE!")
+            print(f"="*80)
+            print(f"  PO Number: {po_number}")
+            print(f"  Document: {file.filename}")
+            print("="*80 + "\n")
+            
+            return {
+                "success": True,
+                "extraction_id": extraction_id,
+                "file_name": file.filename,
+                "file_hash": file_hash,
+                "from_cache": True,
+                "cached": True,
+                "extracted_data": extracted_data,
+                "results": results,  # For dashboard display
+                "po_number": po_number,
+                "message": f"PO loaded from cache: {po_number}"
+            }
+        
+        print(f"   [CACHE MISS] PO not in cache, proceeding with extraction...")
+        
+        # Save to temp file for processing
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as temp_file:
+            temp_file.write(content)
+            temp_path = temp_file.name
+        
+        print(f"  Temp Path: {temp_path}")
+        
+        try:
+            # Extract PO data
+            print(f"\n[STEP 2] Extracting PO data...")
+            po_extractor = get_po_extractor(api_key=api_key, use_gcs_vision=True)
+            extracted_data, metadata = po_extractor.extract_from_file(temp_path)
+            
+            # Get PO number for display
+            doc_ids = extracted_data.get("document_ids", {})
+            po_number = doc_ids.get("po_number", "") or doc_ids.get("order_number", "") or "N/A"
+            
+            print(f"   [OK] Extraction completed!")
+            print(f"   - PO Number: {po_number}")
+            print(f"   - Fields Extracted: {len(extracted_data)} fields")
+            
+            # Upload PO PDF to GCS
+            print(f"\n[STEP 3] Uploading PO PDF to GCS...")
+            gcs_uri = cache_manager.upload_po_pdf_to_gcs(temp_path, file.filename)
+            if gcs_uri:
+                print(f"   [OK] Uploaded to: {gcs_uri}")
+                metadata["gcs_uri"] = gcs_uri
+            else:
+                print(f"   [SKIP] GCS upload skipped (local mode)")
+            
+            # Save to PO cache
+            print(f"\n[STEP 4] Saving to PO cache...")
+            document_text = metadata.get("document_text", "")
+            cache_manager.save_po_cache(file_hash, extracted_data, metadata, document_text, file.filename)
+            print(f"   [OK] Saved to cache")
+            
+            # Store in memory for quick access
+            po_extractions_store[extraction_id] = {
+                "file_path": temp_path,
+                "file_name": file.filename,
+                "file_hash": file_hash,
+                "status": "completed",
+                "extracted_data": extracted_data,
+                "metadata": metadata,
+                "uploaded_at": datetime.now().isoformat(),
+                "extracted_at": datetime.now().isoformat()
+            }
+            
+            # Transform to frontend format for dashboard display
+            results = transform_to_frontend_format(extracted_data, metadata)
+            
+            print(f"\n" + "="*80)
+            print(f"[SUCCESS] PO EXTRACTION COMPLETED!")
+            print(f"="*80)
+            print(f"  Summary:")
+            print(f"   - Document: {file.filename}")
+            print(f"   - PO Number: {po_number}")
+            print(f"   - Status: Completed")
+            print(f"   - Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print("="*80 + "\n")
+            
+            return {
+                "success": True,
+                "extraction_id": extraction_id,
+                "file_name": file.filename,
+                "file_hash": file_hash,
+                "from_cache": False,
+                "cached": False,
+                "extracted_data": extracted_data,
+                "results": results,  # For dashboard display
+                "po_number": po_number,
+                "gcs_uri": gcs_uri,
+                "message": f"PO extracted successfully: {po_number}"
+            }
+            
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
+    except Exception as e:
+        print(f"\n" + "="*80)
+        print(f"[ERROR] PO UPLOAD FAILED!")
+        print("="*80)
+        print(f"  File: {file.filename if file else 'Unknown'}")
+        print(f"  Error: {str(e)}")
+        print("="*80 + "\n")
+        
+        import traceback
+        traceback.print_exc()
+        
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/po/list")
+async def list_purchase_orders():
+    """
+    List all available Purchase Orders.
+    
+    Returns:
+        List of PO summaries from the index
+    """
+    try:
+        cache_manager = get_cache_manager()
+        po_index = cache_manager.get_all_pos()
+        
+        # Convert to list format
+        po_list = []
+        for file_hash, entry in po_index.items():
+            po_list.append({
+                "file_hash": file_hash,
+                "po_number": entry.get("po_number", "N/A"),
+                "filename": entry.get("filename", "Unknown"),
+                "vendor": entry.get("vendor", ""),
+                "customer": entry.get("customer", ""),
+                "total_amount": entry.get("total_amount", ""),
+                "indexed_at": entry.get("indexed_at", "")
+            })
+        
+        # Sort by indexed_at (newest first)
+        po_list.sort(key=lambda x: x.get("indexed_at", ""), reverse=True)
+        
+        return {
+            "success": True,
+            "count": len(po_list),
+            "purchase_orders": po_list
+        }
+        
+    except Exception as e:
+        print(f"[ERROR] List POs failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.get("/api/po/{file_hash}")
+async def get_purchase_order(file_hash: str):
+    """
+    Get full details of a specific Purchase Order.
+    
+    Args:
+        file_hash: SHA256 hash of the PO file
+        
+    Returns:
+        Full PO extraction data with frontend-formatted results
+    """
+    try:
+        cache_manager = get_cache_manager()
+        po_data = cache_manager.load_po_cache(file_hash)
+        
+        if not po_data:
+            raise HTTPException(status_code=404, detail="Purchase Order not found")
+        
+        # Extract data for frontend display
+        extracted_data = po_data.get("extracted_data", {})
+        metadata = po_data.get("metadata", {})
+        filename = po_data.get("filename", "Unknown")
+        po_number = extracted_data.get("document_ids", {}).get("po_number", "N/A")
+        
+        # Transform to frontend format for dashboard display
+        results = transform_to_frontend_format(extracted_data, metadata)
+        
+        return {
+            "success": True,
+            "file_hash": file_hash,
+            "filename": filename,
+            "po_number": po_number,
+            "po_data": po_data,
+            "results": results  # Frontend-formatted results for dashboard display
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Get PO failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.post("/api/po/match")
+async def match_invoice_with_po_endpoint(request: Request):
+    """
+    Match an invoice with a Purchase Order.
+    
+    Request body:
+    {
+        "invoice_data": { ... extracted invoice data ... }
+    }
+    
+    Returns:
+        Matching result with PO details if found
+    """
+    try:
+        body = await request.json()
+        invoice_data = body.get("invoice_data", {})
+        
+        if not invoice_data:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "invoice_data is required"}
+            )
+        
+        # Match with PO
+        matched, po_data, message = match_invoice(invoice_data)
+        
+        return {
+            "success": True,
+            "matched": matched,
+            "message": message,
+            "po_data": po_data
+        }
+        
+    except Exception as e:
+        print(f"[ERROR] PO matching failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.get("/api/po/count")
+async def get_po_count():
+    """
+    Get the count of available Purchase Orders.
+    
+    Returns:
+        Number of POs in the system
+    """
+    try:
+        po_matcher = get_po_matcher()
+        count = po_matcher.get_po_count()
+        
+        return {
+            "success": True,
+            "count": count
+        }
+        
+    except Exception as e:
+        print(f"[ERROR] Get PO count failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+# ============================================================================
 # FILE MANAGEMENT APIs - Cache and Storage Management
 # ============================================================================
 
@@ -1563,6 +2519,7 @@ async def list_cached_files():
         # Add summary counts
         files["summary"] = {
             "total_extraction_cache": len(files.get("extraction_cache", [])),
+            "total_po_cache": len(files.get("po_cache", [])),
             "total_chatbot_cache": len(files.get("chatbot_cache", [])),
             "total_extractions_data": len(files.get("extractions_data", [])),
             "total_exports": len(files.get("exports", []))
@@ -1594,7 +2551,20 @@ async def delete_files(request: Request):
     }
     """
     try:
-        body = await request.json()
+        # Handle empty or invalid JSON body
+        try:
+            body = await request.json()
+        except Exception as json_error:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Invalid or empty request body. Expected JSON with 'files', 'file_hashes', or 'extraction_ids' array."}
+            )
+        
+        if not body:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Empty request body. Provide 'files', 'file_hashes', or 'extraction_ids'."}
+            )
         
         results = {
             "deleted": [],
@@ -1643,9 +2613,9 @@ async def delete_files(request: Request):
             else:
                 results["failed"].append(message)
         
-        # Save updated extractions store
+        # Recalculate dashboard data after deletions
         if extraction_ids:
-            save_extractions_to_json()
+            recalculate_dashboard_from_extractions()
         
         return JSONResponse(content={"success": True, "results": results})
         
@@ -1671,7 +2641,11 @@ async def clear_all_cache(request: Request):
     }
     """
     try:
-        body = await request.json()
+        # Handle empty or invalid JSON body - use defaults if empty
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}  # Use defaults if no body provided
         
         clear_local = body.get("clear_local", True)
         clear_gcs = body.get("clear_gcs", True)
@@ -1691,6 +2665,8 @@ async def clear_all_cache(request: Request):
             global extractions_store
             extractions_store.clear()
             results["in_memory_cleared"] = True
+            # Recalculate dashboard (will reset to 0 since store is empty)
+            recalculate_dashboard_from_extractions()
         
         return JSONResponse(content={"success": True, "results": results})
         
@@ -1736,8 +2712,8 @@ async def delete_extraction_complete(extraction_id: str):
             results["deleted"].extend(hash_result.get("deleted", []))
             results["failed"].extend(hash_result.get("failed", []))
         
-        # Save updated extractions
-        save_extractions_to_json()
+        # Recalculate dashboard data after deletion
+        recalculate_dashboard_from_extractions()
         
         return JSONResponse(content={"success": True, "results": results})
         

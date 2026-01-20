@@ -569,18 +569,47 @@ def vision_ocr_pdf(gcs_input_uri, gcs_output_uri, gcs_input_path=None, service_a
         logger.error(f"Failed to submit annotation request: {e}")
         raise
 
-    # Wait for operation to complete
+    # Wait for operation to complete with progress polling
     logger.info("=" * 60)
     logger.info("Waiting for Vision OCR to complete...")
     logger.info("This may take several minutes depending on document size...")
     logger.info("=" * 60)
     
+    import time
+    max_wait_time = 300  # 5 minutes max wait
+    poll_interval = 10   # Check every 10 seconds
+    elapsed_time = 0
+    
     try:
-        operation.result(timeout=600)
-        logger.info("=" * 60)
-        logger.info("✅ OCR processing completed successfully!")
-        logger.info(f"Results stored at: {gcs_output_uri}")
-        logger.info("=" * 60)
+        while elapsed_time < max_wait_time:
+            # Check if operation is done
+            if operation.done():
+                logger.info("=" * 60)
+                logger.info("✅ OCR processing completed successfully!")
+                logger.info(f"Results stored at: {gcs_output_uri}")
+                logger.info(f"Total time: {elapsed_time} seconds")
+                logger.info("=" * 60)
+                break
+            
+            # Log progress
+            elapsed_time += poll_interval
+            logger.info(f"   ⏳ Still processing... ({elapsed_time}s elapsed, max {max_wait_time}s)")
+            time.sleep(poll_interval)
+        else:
+            # Timeout reached
+            logger.error("=" * 60)
+            logger.error("❌ Vision OCR timed out after 5 minutes")
+            logger.error("   The GCP Vision API is responding slowly.")
+            logger.error("   Possible causes:")
+            logger.error("   1. GCP regional issues or maintenance")
+            logger.error("   2. Large document taking longer than expected")
+            logger.error("   3. Network connectivity issues")
+            logger.error("   Try again in a few minutes or check GCP status.")
+            logger.error("=" * 60)
+            raise TimeoutError(f"Vision OCR did not complete within {max_wait_time} seconds")
+        
+        # Get the result (should be instant now since operation.done() was True)
+        operation.result(timeout=30)
     except RefreshError as e:
         logger.error("=" * 60)
         logger.error("AUTHENTICATION ERROR during operation")

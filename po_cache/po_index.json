@@ -1,0 +1,45 @@
+{
+  "de61734539045309529a55f6b081ec74798cd58477589d03aa125afe831dd8a4": {
+    "file_hash": "de61734539045309529a55f6b081ec74798cd58477589d03aa125afe831dd8a4",
+    "filename": "doc2_po.pdf",
+    "po_number": "PO-NEX-2026-11",
+    "vendor": "Chromatic Digital Solutions Pvt. Ltd.",
+    "customer": "Nexus Healthcare Systems",
+    "item_descriptions": [
+      "Enterprise ERP License - Annual Subscription (Jan 26-Dec 26)",
+      "Implementation Support - Consulting Hours",
+      "Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM)"
+    ],
+    "total_amount": "815527.50",
+    "indexed_at": "2026-01-19T17:15:39.060048"
+  },
+  "c267dd1668ed4c6718d6bb1496a2ee985e7fb8a055423ae00d1983a32d65803f": {
+    "file_hash": "c267dd1668ed4c6718d6bb1496a2ee985e7fb8a055423ae00d1983a32d65803f",
+    "filename": "doc3_po.pdf",
+    "po_number": "PO-GLO-2026-8841",
+    "vendor": "Global T ech Manufacturing Ltd.",
+    "customer": "EuroT ech Solutions GmbH",
+    "item_descriptions": [
+      "Industrial Sensor Module V4",
+      "High-Speed Fiber Optic Cable (50m)",
+      "Interface Controller Cards"
+    ],
+    "total_amount": "9,550.00",
+    "indexed_at": "2026-01-19T17:17:22.967232"
+  },
+  "1100c80ed1962315f70c3380ddc7cddfa3a47153a35d94eba2a52dc3b6260601": {
+    "file_hash": "1100c80ed1962315f70c3380ddc7cddfa3a47153a35d94eba2a52dc3b6260601",
+    "filename": "doc5_po.pdf",
+    "po_number": "PO-SPC-2026-0091",
+    "vendor": "Blue Horizon Solar Systems",
+    "customer": "Sustainable Power Corp",
+    "item_descriptions": [
+      "Photovoltaic Panels (400W Monocrystalline - Tier 1)",
+      "Smart Grid Hybrid Inverter (10kW Dual MPPT Tracking)",
+      "Lithium-Ion Battery Storage (5kWh Scalable Unit)",
+      "Aluminum Mounting Rail Kit (Full Roof Installation Set)"
+    ],
+    "total_amount": "22770.00",
+    "indexed_at": "2026-01-19T17:18:27.927096"
+  }
+}
