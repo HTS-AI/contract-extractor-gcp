@@ -177,6 +177,10 @@ class DocumentParser:
                     if text_density < 500:  # Less than 500 chars per page on average
                         should_use_ocr = True
                         print(f"[PARSER] Hybrid document detected (low text density: {text_density:.0f} chars/page) - will combine native text with OCR")
+                    else:
+                        # Good text density - text-based PDF, skip OCR for fast processing
+                        should_use_ocr = False
+                        print(f"[PARSER] Text-based PDF detected ({text_density:.0f} chars/page) - skipping OCR (fast mode)")
             
             if should_use_ocr and self.use_gcs_vision:
                 # Use OCR to supplement native text (for hybrid documents)
@@ -258,25 +262,32 @@ class DocumentParser:
             should_use_ocr = False
             
             if self.use_gcs_vision:
-                # Always check for OCR text if Vision API is available
-                # This ensures we capture OCR content (like vendor address) that might be missing from native text
+                # Smart OCR detection - only use Vision API when truly needed
                 if use_ocr:
                     # Explicitly requested OCR
                     should_use_ocr = True
                     print("[PARSER] OCR explicitly requested - will extract and check for OCR text")
                 elif self._is_scanned_pdf(file_path):
-                    # Detected as scanned PDF
+                    # Detected as scanned PDF (no embedded text layer)
                     should_use_ocr = True
                     print("[PARSER] Scanned PDF detected - will use OCR")
                 elif len(native_text.strip()) < 100:
                     # Very little native text - likely needs OCR
                     should_use_ocr = True
-                    print("[PARSER] Very little native text extracted - will check OCR text")
+                    print("[PARSER] Very little native text extracted (<100 chars) - will use OCR")
                 else:
-                    # For hybrid documents: Always try OCR to detect if there's additional OCR text
-                    # This is important because some parts (like vendor address) might only be in OCR
-                    should_use_ocr = True
-                    print("[PARSER] Checking for OCR text in document (hybrid detection)...")
+                    # Check text density per page - if good density, skip OCR
+                    num_pages = len(native_page_map) if native_page_map else 1
+                    text_density = len(native_text.strip()) / max(1, num_pages)
+                    
+                    if text_density >= 500:
+                        # Good text density - this is likely a text-based PDF, skip OCR
+                        should_use_ocr = False
+                        print(f"[PARSER] Text-based PDF detected ({text_density:.0f} chars/page) - skipping OCR (fast mode)")
+                    else:
+                        # Low text density - might be hybrid, check with OCR
+                        should_use_ocr = True
+                        print(f"[PARSER] Hybrid/sparse document detected ({text_density:.0f} chars/page) - will use OCR")
             
             if should_use_ocr and self.use_gcs_vision:
                 # Extract OCR text to detect if it exists and has additional content

@@ -1,0 +1,170 @@
+{
+  "file_hash": "1100c80ed1962315f70c3380ddc7cddfa3a47153a35d94eba2a52dc3b6260601",
+  "filename": "doc5_po.pdf",
+  "document_type": "PURCHASE_ORDER",
+  "cached_at": "2026-01-19T17:18:26.020728",
+  "extracted_data": {
+    "document_type": "PURCHASE_ORDER",
+    "po_type": "",
+    "party_names": {
+      "vendor": "Blue Horizon Solar Systems",
+      "vendor_address": "102 Industry Park, Suite B, Melbourne, VIC 3000, Australia",
+      "vendor_tax_ids": {
+        "gstin": "",
+        "pan": "",
+        "vat": "",
+        "tax_id": "",
+        "tin": "",
+        "trn": "",
+        "cr_number": "44 991 223 004"
+      },
+      "customer": "Sustainable Power Corp",
+      "customer_address": "88 Energy W ay, CBD, Auckland 1010, New Zealand",
+      "customer_tax_ids": {
+        "gstin": "",
+        "pan": "",
+        "vat": "",
+        "tax_id": "",
+        "tin": "",
+        "trn": "",
+        "cr_number": ""
+      },
+      "party_1": "Sustainable Power Corp",
+      "party_2": "Blue Horizon Solar Systems",
+      "additional_parties": []
+    },
+    "document_ids": {
+      "po_number": "PO-SPC-2026-0091",
+      "order_number": "",
+      "reference_id": "Mr . David Chen",
+      "document_number": "",
+      "quotation_number": "PI/2026/0091-REV",
+      "contract_id": "",
+      "project_id": "",
+      "other_ids": []
+    },
+    "dates": {
+      "po_date": "2026-01-12",
+      "delivery_date": "",
+      "due_date": "",
+      "valid_until": "",
+      "ship_date": ""
+    },
+    "start_date": "2026-01-12",
+    "due_date": "",
+    "amounts": {
+      "subtotal": "21920.00",
+      "additional_charges": [
+        {
+          "label": "Shipping & Handling",
+          "amount": "850.00"
+        }
+      ],
+      "taxes": [],
+      "discount": "",
+      "discount_percent": "",
+      "total": "22770.00",
+      "advance_payment": "",
+      "balance_due": ""
+    },
+    "amount": "22770.00",
+    "amount_explanation": "Subtotal plus Shipping & Handling",
+    "currency": "USD",
+    "line_items": [
+      {
+        "item_number": "",
+        "description": "Photovoltaic Panels (400W Monocrystalline - Tier 1)",
+        "sku": "",
+        "hsn_sac_code": "",
+        "quantity": "50.00",
+        "unit": "",
+        "rate": "185.00",
+        "amount": "9250.00",
+        "tax_rate": "",
+        "delivery_date": ""
+      },
+      {
+        "item_number": "",
+        "description": "Smart Grid Hybrid Inverter (10kW Dual MPPT Tracking)",
+        "sku": "",
+        "hsn_sac_code": "",
+        "quantity": "2.00",
+        "unit": "",
+        "rate": "1450.00",
+        "amount": "2900.00",
+        "tax_rate": "",
+        "delivery_date": ""
+      },
+      {
+        "item_number": "",
+        "description": "Lithium-Ion Battery Storage (5kWh Scalable Unit)",
+        "sku": "",
+        "hsn_sac_code": "",
+        "quantity": "4.00",
+        "unit": "",
+        "rate": "2100.00",
+        "amount": "8400.00",
+        "tax_rate": "",
+        "delivery_date": ""
+      },
+      {
+        "item_number": "",
+        "description": "Aluminum Mounting Rail Kit (Full Roof Installation Set)",
+        "sku": "",
+        "hsn_sac_code": "",
+        "quantity": "10.00",
+        "unit": "",
+        "rate": "95.00",
+        "amount": "950.00",
+        "tax_rate": "",
+        "delivery_date": ""
+      }
+    ],
+    "tax_details": {
+      "gst": "",
+      "cgst": "",
+      "sgst": "",
+      "igst": "",
+      "vat": "",
+      "other_taxes": []
+    },
+    "shipping_details": {
+      "ship_to_address": "",
+      "ship_to_contact": "",
+      "shipping_method": "Sea Freight",
+      "shipping_terms": "30 Days",
+      "incoterms": ""
+    },
+    "payment_details": {
+      "payment_terms": "50% Advance Deposit Required to initiate production.",
+      "payment_method": "",
+      "bank_name": "Commonwealth Bank of Australia",
+      "account_number": "11223344",
+      "ifsc_code": "",
+      "swift_code": "CTBAAU2S",
+      "iban": "AU44 CTBA 0620 0011 2233 44"
+    },
+    "frequency": "",
+    "account_type": "Accounts Payable",
+    "notes": "Lead time is 4-6 weeks from confirmation of deposit.",
+    "terms_and_conditions": "",
+    "special_instructions": "",
+    "approval_status": "",
+    "authorized_signatory": "",
+    "rules_and_compliance_violation": "",
+    "risk_score": null
+  },
+  "metadata": {
+    "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpgsi0cuvx.pdf",
+    "file_name": "tmpgsi0cuvx.pdf",
+    "document_text": "PURCHASE ORDER\nSustainable Power Corp\n88 Energy W ay, CBD\nAuckland 1010, New Zealand\nRef: Mr . David ChenPO Number:  PO-SPC-2026-0091\nDate:  12 Jan 2026\nCurrency:  USD\nVENDOR\nBlue Horizon Solar Systems\n102 Industry Park, Suite B\nMelbourne, VIC 3000, Australia\nABN: 44 991 223 004SHIPPING DETAILS\nMethod:  Sea Freight\nTerms:  30 Days\nInsurance:  Standard Ocean Included\nDescription Qty Rate (USD) Amount (USD)\nPhotovoltaic Panels (400W Monocrystalline - Tier 1) 50.00 185.00 9,250.00\nSmart Grid Hybrid Inverter (10kW Dual MPPT Tracking) 2.00 1,450.00 2,900.00\nLithium-Ion Battery Storage (5kWh Scalable Unit) 4.00 2,100.00 8,400.00\nAluminum Mounting Rail Kit (Full Roof Installation Set) 10.00 95.00 950.00\nSubtotal: 21,920.00\nShipping & Handling: 850.00\nTotal Order: $22,770.00\nAmount in W ords:  Twenty Two Thousand Seven Hundred Seventy US Dollars Only .\nPayment Instructions:\n50% Advance Deposit Required to initiate production.\nBank: Commonwealth Bank of Australia | BSB: 062-000 | ACC: 11223344\nSWIFT: CTBAAU2S | IBAN: AU44 CTBA 0620 0011 2233 44\nNotes:\n1. Lead time is 4-6 weeks from confirmation of deposit.\n2. Based on Proforma Invoice #PI/2026/0091-REV.\n__________________________\nAuthorized Signature\nSustainable Power CorpDate: ____/____/2026",
+    "page_map": {
+      "1": "PURCHASE ORDER\nSustainable Power Corp\n88 Energy W ay, CBD\nAuckland 1010, New Zealand\nRef: Mr . David ChenPO Number:  PO-SPC-2026-0091\nDate:  12 Jan 2026\nCurrency:  USD\nVENDOR\nBlue Horizon Solar Systems\n102 Industry Park, Suite B\nMelbourne, VIC 3000, Australia\nABN: 44 991 223 004SHIPPING DETAILS\nMethod:  Sea Freight\nTerms:  30 Days\nInsurance:  Standard Ocean Included\nDescription Qty Rate (USD) Amount (USD)\nPhotovoltaic Panels (400W Monocrystalline - Tier 1) 50.00 185.00 9,250.00\nSmart Grid Hybrid Inverter (10kW Dual MPPT Tracking) 2.00 1,450.00 2,900.00\nLithium-Ion Battery Storage (5kWh Scalable Unit) 4.00 2,100.00 8,400.00\nAluminum Mounting Rail Kit (Full Roof Installation Set) 10.00 95.00 950.00\nSubtotal: 21,920.00\nShipping & Handling: 850.00\nTotal Order: $22,770.00\nAmount in W ords:  Twenty Two Thousand Seven Hundred Seventy US Dollars Only .\nPayment Instructions:\n50% Advance Deposit Required to initiate production.\nBank: Commonwealth Bank of Australia | BSB: 062-000 | ACC: 11223344\nSWIFT: CTBAAU2S | IBAN: AU44 CTBA 0620 0011 2233 44\nNotes:\n1. Lead time is 4-6 weeks from confirmation of deposit.\n2. Based on Proforma Invoice #PI/2026/0091-REV.\n__________________________\nAuthorized Signature\nSustainable Power CorpDate: ____/____/2026"
+    },
+    "total_pages": 1,
+    "total_characters": 1253,
+    "extraction_method": "vision_api",
+    "gcs_uri": "gs://data-pdf-extractor/cache/purchase_orders/doc5_po.pdf"
+  },
+  "document_text": "PURCHASE ORDER\nSustainable Power Corp\n88 Energy W ay, CBD\nAuckland 1010, New Zealand\nRef: Mr . David ChenPO Number:  PO-SPC-2026-0091\nDate:  12 Jan 2026\nCurrency:  USD\nVENDOR\nBlue Horizon Solar Systems\n102 Industry Park, Suite B\nMelbourne, VIC 3000, Australia\nABN: 44 991 223 004SHIPPING DETAILS\nMethod:  Sea Freight\nTerms:  30 Days\nInsurance:  Standard Ocean Included\nDescription Qty Rate (USD) Amount (USD)\nPhotovoltaic Panels (400W Monocrystalline - Tier 1) 50.00 185.00 9,250.00\nSmart Grid Hybrid Inverter (10kW Dual MPPT Tracking) 2.00 1,450.00 2,900.00\nLithium-Ion Battery Storage (5kWh Scalable Unit) 4.00 2,100.00 8,400.00\nAluminum Mounting Rail Kit (Full Roof Installation Set) 10.00 95.00 950.00\nSubtotal: 21,920.00\nShipping & Handling: 850.00\nTotal Order: $22,770.00\nAmount in W ords:  Twenty Two Thousand Seven Hundred Seventy US Dollars Only .\nPayment Instructions:\n50% Advance Deposit Required to initiate production.\nBank: Commonwealth Bank of Australia | BSB: 062-000 | ACC: 11223344\nSWIFT: CTBAAU2S | IBAN: AU44 CTBA 0620 0011 2233 44\nNotes:\n1. Lead time is 4-6 weeks from confirmation of deposit.\n2. Based on Proforma Invoice #PI/2026/0091-REV.\n__________________________\nAuthorized Signature\nSustainable Power CorpDate: ____/____/2026"
+}

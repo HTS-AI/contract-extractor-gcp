@@ -511,10 +511,6 @@
                         <h2>Contract Extractions Data</h2>
                     </div>
                     <div class="table-actions">
-                        <button class="table-btn dashboard-btn" onclick="openDashboard()">
-                            <span>📊</span>
-                            <span>Dashboard</span>
-                        </button>
                         <button class="table-btn refresh-btn" onclick="refreshTable()">
                             <span>🔄</span>
                             <span>Refresh</span>
@@ -536,6 +532,7 @@
                             <tr>
                                 <th>Extracted At</th>
                                 <th>Document Name</th>
+                                <th>Unique ID</th>
                                 <th>IDs</th>
                                 <th>Type</th>
                                 <th>Account Type</th>
@@ -545,6 +542,7 @@
                                 <th>Amount</th>
                                 <th>Currency</th>
                                 <th>Risk Score</th>
+                                <th>Matched PO</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">

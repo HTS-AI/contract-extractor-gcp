@@ -12,6 +12,10 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
+# Cached GCS client (singleton pattern for faster connections)
+_gcs_client_instance = None
+_gcs_credentials_instance = None
+
 
 def _get_gcp_credentials():
     """
@@ -72,21 +76,31 @@ def _get_gcp_credentials():
         raise
 
 
-def get_gcs_client(service_account_file: str = None):
+def get_gcs_client(service_account_file: str = None, force_new: bool = False):
     """
-    Create and return a GCS client using credentials from environment variable.
+    Get or create a GCS client using credentials from environment variable.
+    
+    Uses singleton pattern to reuse the client connection, making subsequent
+    calls much faster (avoids re-authenticating on every call).
     
     Args:
         service_account_file: DEPRECATED - This parameter is ignored.
                              Credentials are now loaded from GCP_CREDENTIALS_JSON environment variable.
+        force_new: If True, create a new client even if one exists (for reconnection)
         
     Returns:
-        storage.Client: GCS client instance
+        storage.Client: GCS client instance (cached for efficiency)
         
     Raises:
         ValueError: If GCP_CREDENTIALS_JSON is not set or invalid
         RefreshError: If credentials are invalid
     """
+    global _gcs_client_instance, _gcs_credentials_instance
+    
+    # Return cached client if available
+    if _gcs_client_instance is not None and not force_new:
+        return _gcs_client_instance
+    
     if service_account_file:
         logger.warning(
             "service_account_file parameter is deprecated. "
@@ -97,9 +111,18 @@ def get_gcs_client(service_account_file: str = None):
     old_creds_env = os.environ.pop('GOOGLE_APPLICATION_CREDENTIALS', None)
     
     try:
-        credentials = _get_gcp_credentials()
+        # Reuse cached credentials if available
+        if _gcs_credentials_instance is None or force_new:
+            _gcs_credentials_instance = _get_gcp_credentials()
+        
+        credentials = _gcs_credentials_instance
         # Explicitly pass credentials to prevent any fallback to default credentials
         client = storage.Client(credentials=credentials, project=credentials.project_id)
+        
+        # Cache the client for reuse
+        _gcs_client_instance = client
+        logger.info("[GCS] Client connected and cached for fast access")
+        
         return client
     except (ValueError, RefreshError) as e:
         # Re-raise credential errors as-is
@@ -119,6 +142,19 @@ def get_gcs_client(service_account_file: str = None):
         # Restore environment variable if it was set
         if old_creds_env:
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = old_creds_env
+
+
+def reconnect_gcs():
+    """
+    Force reconnection to GCS. Useful if connection becomes stale.
+    
+    Returns:
+        storage.Client: New GCS client instance
+    """
+    global _gcs_client_instance, _gcs_credentials_instance
+    _gcs_client_instance = None
+    _gcs_credentials_instance = None
+    return get_gcs_client(force_new=True)
 
 
 def upload_file_to_gcs(

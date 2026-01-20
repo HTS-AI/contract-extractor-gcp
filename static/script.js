@@ -194,6 +194,12 @@ function setupEventListeners() {
     }
 }
 
+// Helper function for delays
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
 // Handle file selection
 function handleFileSelect(event) {
     const file = event.target.files[0];
@@ -239,6 +245,8 @@ function handleFileSelect(event) {
 }
 
 // Handle extract button click
+let statusPollInterval = null;
+
 async function handleExtract() {
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
@@ -249,6 +257,12 @@ async function handleExtract() {
     }
     
     const btn = document.getElementById('extractBtn');
+    
+    // Clear any existing polling
+    if (statusPollInterval) {
+        clearInterval(statusPollInterval);
+        statusPollInterval = null;
+    }
     
     try {
         // Disable button and show loading
@@ -287,7 +301,13 @@ async function handleExtract() {
             console.log('[MAIN] Added has-document indicator to chatbot button');
         }
         
-        showStatus('File uploaded. Extracting information... (This may take 10-30 seconds)', 'info');
+        showStatus('File uploaded. Processing...', 'info');
+        
+        // Don't show progress bar yet - wait to see if it's cache/duplicate
+        // Progress bar will be shown by polling function only if needed for fresh extraction
+        
+        // Start polling for status updates
+        const statusPollInterval = startStatusPolling(currentExtractionId);
         
         // Step 2: Extract information with timeout
         console.log('Starting extraction...');
@@ -309,6 +329,14 @@ async function handleExtract() {
         
         const extractData = await extractResponse.json();
         console.log('Extraction completed. Results:', extractData);
+        
+        // Stop polling
+        if (statusPollInterval) {
+            clearInterval(statusPollInterval);
+        }
+        
+        // Update progress to completed
+        updateSimpleProgress('Extraction completed', 100);
         
         // Check if it's a duplicate invoice warning
         if (extractData.status === 'duplicate_invoice' && extractData.warning === true) {
@@ -335,6 +363,33 @@ async function handleExtract() {
             window.currentExtractionId = null;
             
             return; // Stop here - don't display results
+        }
+        
+        // Check if it's a PO not found warning (invoice not matched with any PO)
+        if (extractData.status === 'po_not_found' && extractData.warning === true) {
+            console.log('PO not found for invoice:', extractData);
+            
+            // Show PO not found warning modal
+            showPONotFoundModal(extractData);
+            
+            // Show status warning - use vendor name or file name instead of invoice ID
+            const invoiceFile = extractData.details?.invoice_file || 'invoice';
+            const vendor = extractData.details?.vendor || '';
+            const statusMsg = vendor 
+                ? `⚠️ PO not found: Invoice from "${vendor}" not saved to Excel`
+                : `⚠️ PO not found: ${invoiceFile} not saved to Excel`;
+            showStatus(statusMsg, 'error');
+            
+            // Still display the extraction results (so user can see what was extracted)
+            if (extractData.results) {
+                displayResults(extractData.results, currentExtractionId);
+            }
+            
+            // Reset button
+            btn.disabled = false;
+            btn.innerHTML = '<span class="btn-icon">⚡</span><span>Extract</span>';
+            
+            return; // Stop here - don't save to Excel
         }
         
         if (!extractData.results) {
@@ -376,6 +431,14 @@ async function handleExtract() {
         const errorMessage = error.message || 'An unknown error occurred';
         showStatus('Error: ' + errorMessage, 'error');
         
+        // Stop polling on error
+        if (statusPollInterval) {
+            clearInterval(statusPollInterval);
+        }
+        
+        // Hide progress bar on error
+        hideSimpleProgress();
+        
         // Show error in console for debugging
         if (error.stack) {
             console.error('Error stack:', error.stack);
@@ -384,6 +447,167 @@ async function handleExtract() {
         btn.disabled = false;
         btn.innerHTML = '<span class="btn-icon">⚡</span><span>Extract</span>';
     }
+}
+
+// Simple Progress Bar Functions
+function showSimpleProgress(text, percent) {
+    const progressBar = document.getElementById('simpleProgressBar');
+    const progressFill = document.getElementById('simpleProgressFill');
+    const progressText = document.getElementById('simpleProgressText');
+    
+    if (progressBar) {
+        progressBar.style.display = 'block';
+    }
+    if (progressFill) {
+        progressFill.style.width = `${percent}%`;
+    }
+    if (progressText) {
+        progressText.textContent = text;
+    }
+}
+
+function updateSimpleProgress(text, percent) {
+    const progressFill = document.getElementById('simpleProgressFill');
+    const progressText = document.getElementById('simpleProgressText');
+    
+    if (progressFill) {
+        progressFill.style.width = `${percent}%`;
+    }
+    if (progressText) {
+        progressText.textContent = text;
+    }
+}
+
+function hideSimpleProgress() {
+    const progressBar = document.getElementById('simpleProgressBar');
+    if (progressBar) {
+        progressBar.style.display = 'none';
+    }
+}
+
+// Step mapping from backend to frontend display (Agent Nodes)
+const stepMapping = {
+    'uploaded': { text: 'Upload completed successfully!', percent: 5 },
+    'extraction_started': { text: 'extraction process started', percent: 10 },
+    'parse_document': { text: 'Parsing document text', percent: 25 },
+    'classify_document': { text: 'Classifying document type', percent: 40 },
+    'extract_data': { text: 'Extracting using document extractor', percent: 55 },
+    'enhance_data': { text: 'Enhancing extracted data', percent: 70 },
+    'calculate_risk': { text: 'Calculating risk score', percent: 85 },
+    'finalize': { text: 'Finalizing extraction', percent: 95 },
+    'completed': { text: 'Extraction completed', percent: 100 }
+};
+
+function startStatusPolling(extractionId) {
+    let notFoundCount = 0;
+    const maxNotFoundCount = 10; // Stop after 10 seconds if not found
+    let progressBarShown = false; // Track if we've shown the progress bar
+    
+    // Poll every 500ms for faster updates
+    statusPollInterval = setInterval(async () => {
+        try {
+            const response = await fetch(`/api/extraction-status/${extractionId}`);
+            if (response.ok) {
+                const statusData = await response.json();
+                
+                console.log('Status update:', statusData.current_step, statusData.progress_percent + '%');
+                
+                // Handle not_found status
+                if (statusData.status === "not_found") {
+                    notFoundCount++;
+                    if (notFoundCount >= maxNotFoundCount) {
+                        clearInterval(statusPollInterval);
+                        statusPollInterval = null;
+                        // Only hide progress if it was shown
+                        if (progressBarShown) {
+                            hideSimpleProgress();
+                        }
+                        console.warn('Extraction ID not found, stopping status polling');
+                        return;
+                    }
+                    return;
+                }
+                
+                // Reset not found count if we found it
+                notFoundCount = 0;
+                
+                // Check if we should skip progress bar (cache hit or duplicate)
+                if (statusData.skip_progress) {
+                    clearInterval(statusPollInterval);
+                    statusPollInterval = null;
+                    // Don't hide progress bar since we never showed it
+                    
+                    // Handle cache hit
+                    if (statusData.from_cache) {
+                        console.log('Data retrieved from cache');
+                        showStatus('✓ Data retrieved from cache', 'success');
+                        return;
+                    }
+                    
+                    // Handle duplicate invoice
+                    if (statusData.is_duplicate && statusData.duplicate_info) {
+                        const dupInfo = statusData.duplicate_info;
+                        const alertMessage = `⚠️ Duplicate Invoice Detected!\n\n` +
+                            `Invoice ID: ${dupInfo.invoice_id}\n` +
+                            `This invoice already exists in the system.\n\n` +
+                            `Existing File: ${dupInfo.existing_file}\n` +
+                            `Processed Date: ${dupInfo.processed_date}\n\n` +
+                            `The document was NOT saved to prevent duplicates.`;
+                        
+                        const statusMessage = `⚠️ Duplicate Invoice: ${dupInfo.invoice_id} already exists (File: ${dupInfo.existing_file})`;
+                        
+                        console.warn('Duplicate invoice detected:', dupInfo);
+                        showStatus(statusMessage, 'warning');
+                        
+                        // Show alert with full details for better visibility
+                        alert(alertMessage);
+                        return;
+                    }
+                    
+                    return;
+                }
+                
+                // Show progress bar only for fresh extractions (not cache/duplicate)
+                if (!progressBarShown) {
+                    showSimpleProgress('Upload completed successfully!', 10);
+                    progressBarShown = true;
+                }
+                
+                // Map backend step to frontend display
+                const stepInfo = stepMapping[statusData.current_step] || {
+                    text: statusData.step_description || 'Processing...',
+                    percent: statusData.progress_percent || 0
+                };
+                
+                updateSimpleProgress(stepInfo.text, stepInfo.percent);
+                
+                // Stop polling if completed
+                if (statusData.is_complete) {
+                    clearInterval(statusPollInterval);
+                    statusPollInterval = null;
+                    // Hide progress bar after 2 seconds
+                    setTimeout(() => {
+                        hideSimpleProgress();
+                    }, 2000);
+                }
+            } else if (response.status === 404) {
+                notFoundCount++;
+                if (notFoundCount >= maxNotFoundCount) {
+                    clearInterval(statusPollInterval);
+                    statusPollInterval = null;
+                    // Only hide progress if it was shown
+                    if (progressBarShown) {
+                        hideSimpleProgress();
+                    }
+                    console.warn('Extraction ID not found (404), stopping status polling');
+                }
+            }
+        } catch (error) {
+            console.error('Error polling status:', error);
+        }
+    }, 500);  // Poll every 500ms instead of 1 second
+    
+    return statusPollInterval;
 }
 
 // Display extraction results
@@ -504,7 +728,9 @@ function displayResults(results, extractionId = null) {
             indianAccountDetails.style.display = 'none';
             internationalAccountDetails.style.display = 'block';
             
-            document.getElementById('accountNumberIban').textContent = paymentDetails.account_number_iban || paymentDetails.account_number || '-';
+            document.getElementById('intlAccountHolderName').textContent = paymentDetails.account_holder_name || '-';
+            document.getElementById('intlAccountNumber').textContent = paymentDetails.account_number || '-';
+            document.getElementById('accountNumberIban').textContent = paymentDetails.account_number_iban || '-';
             document.getElementById('swiftCode').textContent = paymentDetails.swift_code || '-';
         } else {
             // Fallback: show Indian format if account_number exists
@@ -936,39 +1162,50 @@ async function loadDashboard() {
         const response = await fetch('/api/dashboard');
         const data = await response.json();
         
-        // Update statistics
-        document.getElementById('totalDocuments').textContent = data.total_documents || 0;
-        document.getElementById('avgRiskScore').textContent = data.average_risk_score || 0;
-        document.getElementById('missingClauses').textContent = data.total_missing_clauses || 0;
-        document.getElementById('contractTypes').textContent = Object.keys(data.contract_types || {}).length;
+        // Update invoice and PO statistics
+        const totalInvoices = data.total_invoices || 0;
+        const totalPOs = data.total_pos || 0;
+        const matchedInvoices = data.matched_invoices || 0;
+        const unmatchedInvoices = data.unmatched_invoices || 0;
         
-        // Update contract types chart
-        updateContractTypesChart(data.contract_types || {});
+        document.getElementById('totalInvoices').textContent = totalInvoices;
+        document.getElementById('totalPOs').textContent = totalPOs;
+        document.getElementById('matchedInvoices').textContent = matchedInvoices;
+        document.getElementById('unmatchedInvoices').textContent = unmatchedInvoices;
+        
+        // Update progress bar
+        updateMatchingProgressBar(matchedInvoices, unmatchedInvoices, totalInvoices);
         
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
 }
 
-// Update contract types chart
-function updateContractTypesChart(contractTypes) {
-    const chartContainer = document.getElementById('contractTypesChart');
-    chartContainer.innerHTML = '';
+// Update matching progress bar
+function updateMatchingProgressBar(matched, unmatched, total) {
+    const matchedFill = document.getElementById('matchedProgressFill');
+    const unmatchedFill = document.getElementById('unmatchedProgressFill');
+    const matchedPercent = document.getElementById('matchedPercent');
+    const unmatchedPercent = document.getElementById('unmatchedPercent');
     
-    if (Object.keys(contractTypes).length === 0) {
-        chartContainer.innerHTML = '<p style="text-align: center; color: #666;">No data available</p>';
+    if (!matchedFill || !unmatchedFill) return;
+    
+    if (total === 0) {
+        matchedFill.style.width = '0%';
+        unmatchedFill.style.width = '0%';
+        if (matchedPercent) matchedPercent.textContent = '0%';
+        if (unmatchedPercent) unmatchedPercent.textContent = '0%';
         return;
     }
     
-    Object.entries(contractTypes).forEach(([type, count]) => {
-        const bar = document.createElement('div');
-        bar.className = 'chart-bar';
-        bar.innerHTML = `
-            <div class="chart-bar-label">${type}</div>
-            <div class="chart-bar-value">${count}</div>
-        `;
-        chartContainer.appendChild(bar);
-    });
+    const matchedPct = Math.round((matched / total) * 100);
+    const unmatchedPct = Math.round((unmatched / total) * 100);
+    
+    matchedFill.style.width = matchedPct + '%';
+    unmatchedFill.style.width = unmatchedPct + '%';
+    
+    if (matchedPercent) matchedPercent.textContent = matchedPct + '%';
+    if (unmatchedPercent) unmatchedPercent.textContent = unmatchedPct + '%';
 }
 
 // Display extraction metadata
@@ -1008,6 +1245,10 @@ async function restoreLastViewedExtraction() {
                 if (data.success && data.results) {
                     console.log('Successfully restored extraction:', data.file_name);
                     
+                    // Update global extraction ID
+                    currentExtractionId = lastExtractionId;
+                    window.currentExtractionId = lastExtractionId;
+                    
                     // Set the dropdown to this document
                     const documentSelector = document.getElementById('documentSelector');
                     if (documentSelector) {
@@ -1016,6 +1257,14 @@ async function restoreLastViewedExtraction() {
                     
                     // Display the results
                     displayResults(data.results, lastExtractionId);
+                    
+                    // Load the file into chatbot
+                    if (window.chatbot) {
+                        console.log('[MAIN] Restored extraction, loading into chatbot:', lastExtractionId);
+                        setTimeout(() => {
+                            window.chatbot.autoLoadFromExtraction(lastExtractionId);
+                        }, 500);
+                    }
                     
                     // Show subtle notification
                     setTimeout(() => {
@@ -1066,8 +1315,11 @@ window.checkLocalStorage = checkLocalStorage;
 // Load list of previously extracted documents
 async function loadExtractionsList() {
     try {
+        console.log('[LoadExtractions] Fetching extractions list...');
         const response = await fetch('/api/extractions-list');
         const data = await response.json();
+        
+        console.log('[LoadExtractions] API Response:', data);
         
         if (data.success && data.extractions && data.extractions.length > 0) {
             const selectorContainer = document.getElementById('documentSelectorContainer');
@@ -1076,6 +1328,9 @@ async function loadExtractionsList() {
             // Show the selector container
             if (selectorContainer) {
                 selectorContainer.style.display = 'block';
+                console.log('[LoadExtractions] Dropdown container shown');
+            } else {
+                console.error('[LoadExtractions] Dropdown container not found in DOM!');
             }
             
             // Clear existing options except the first one
@@ -1090,7 +1345,7 @@ async function loadExtractionsList() {
                     option.value = extraction.extraction_id;
                     
                     // Format the display text
-                    const date = extraction.extracted_at ? new Date(extraction.extracted_at).toLocaleString() : 'Unknown date';
+                    const date = extraction.extracted_at ? new Date(extraction.extracted_at).toLocaleString() : 'Recent';
                     const fileName = extraction.file_name || 'Unknown file';
                     const docType = extraction.document_type || '';
                     
@@ -1098,13 +1353,18 @@ async function loadExtractionsList() {
                     documentSelector.appendChild(option);
                 });
                 
-                console.log(`Loaded ${data.extractions.length} previous extractions`);
+                console.log(`[LoadExtractions] Added ${data.extractions.length} extractions to dropdown`);
+            } else {
+                console.error('[LoadExtractions] Dropdown select element not found!');
             }
         } else {
-            console.log('No previous extractions found');
+            console.log('[LoadExtractions] No extractions found or API returned empty list');
+            if (data.message) {
+                console.log('[LoadExtractions] API Message:', data.message);
+            }
         }
     } catch (error) {
-        console.error('Error loading extractions list:', error);
+        console.error('[LoadExtractions] Error loading extractions list:', error);
     }
 }
 
@@ -1142,9 +1402,23 @@ async function handleDocumentSelection(event) {
         
         if (data.success && data.results) {
             console.log('Loaded extraction:', data.file_name);
+            
+            // Update global extraction ID
+            currentExtractionId = extractionId;
+            window.currentExtractionId = extractionId;
+            
             // Display the extraction results and save the extraction ID
             displayResults(data.results, extractionId);
             showStatus(`✓ Loaded: ${data.file_name}`, 'success');
+            
+            // Load the file into chatbot
+            if (window.chatbot) {
+                console.log('[MAIN] Selected extraction from dropdown, loading into chatbot:', extractionId);
+                setTimeout(() => {
+                    window.chatbot.autoLoadFromExtraction(extractionId);
+                }, 500);
+            }
+            
             setTimeout(() => {
                 const statusDiv = document.getElementById('uploadStatus');
                 if (statusDiv) {
@@ -1272,6 +1546,114 @@ function closeDuplicateInvoiceModal() {
     if (modal) {
         modal.style.display = 'none';
         console.log('[DUPLICATE MODAL] Modal closed');
+    }
+}
+
+// ============================================================================
+// PURCHASE ORDER NOT FOUND WARNING MODAL
+// ============================================================================
+
+/**
+ * Show the PO not found warning modal with invoice details
+ * @param {Object} data - The PO not found response data
+ */
+function showPONotFoundModal(data) {
+    const modal = document.getElementById('poWarningModal');
+    if (!modal) {
+        console.error('PO warning modal not found in DOM');
+        return;
+    }
+    
+    const details = data.details || {};
+    
+    // Populate modal data - use PO-related fields, not invoice ID
+    const invoiceFile = details.invoice_file || 'Unknown';
+    const vendor = details.vendor || 'Unknown';
+    const customer = details.customer || 'Unknown';
+    const amount = details.amount || '-';
+    const currency = details.currency || '';
+    const poNumber = details.po_number_in_invoice || '';
+    
+    // Set invoice file
+    const invoiceFileEl = document.getElementById('poWarningInvoiceFile');
+    if (invoiceFileEl) {
+        invoiceFileEl.textContent = invoiceFile;
+    }
+    
+    // Set vendor
+    const vendorEl = document.getElementById('poWarningVendor');
+    if (vendorEl) {
+        vendorEl.textContent = vendor || 'Not found';
+    }
+    
+    // Set customer
+    const customerEl = document.getElementById('poWarningCustomer');
+    if (customerEl) {
+        customerEl.textContent = customer || 'Not found';
+    }
+    
+    // Set amount
+    const amountEl = document.getElementById('poWarningAmount');
+    if (amountEl) {
+        amountEl.textContent = amount ? formatAmountWithCurrency(amount, currency) : 'Not found';
+    }
+    
+    // Set PO number from invoice (show/hide based on availability)
+    const poNumberItem = document.getElementById('poWarningPoNumberItem');
+    const poNumberEl = document.getElementById('poWarningPoNumber');
+    if (poNumber && poNumber.trim()) {
+        if (poNumberItem) poNumberItem.style.display = 'list-item';
+        if (poNumberEl) poNumberEl.textContent = poNumber;
+    } else {
+        if (poNumberItem) poNumberItem.style.display = 'none';
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    
+    // Add event listeners for closing modal
+    setupPOModalCloseListeners();
+    
+    // Log for debugging
+    console.log('[PO MODAL] Showing PO not found warning:', {
+        invoiceFile,
+        vendor,
+        customer,
+        amount,
+        currency,
+        poNumber
+    });
+}
+
+/**
+ * Close the PO not found warning modal
+ */
+function closePONotFoundModal() {
+    const modal = document.getElementById('poWarningModal');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('[PO MODAL] Modal closed');
+    }
+}
+
+/**
+ * Setup event listeners for closing the PO modal
+ */
+function setupPOModalCloseListeners() {
+    // OK button
+    const okBtn = document.getElementById('poWarningModalOkBtn');
+    if (okBtn) {
+        okBtn.onclick = closePONotFoundModal;
+    }
+    
+    // Click outside modal to close
+    const modal = document.getElementById('poWarningModal');
+    if (modal) {
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                closePONotFoundModal();
+            }
+        };
     }
 }
 
@@ -1474,7 +1856,12 @@ function openFileManager() {
                 refreshFileListInBackground();
             }
         } else {
-            // First time opening - load data
+            // First time opening - show loading state and load data
+            const loading = document.getElementById('fileManagerLoading');
+            const tableContainer = document.getElementById('filesTableContainer');
+            if (loading) loading.style.display = 'block';
+            if (tableContainer) tableContainer.style.display = 'none';
+            resetFileManagerLoading();
             loadFileList();
         }
     }
@@ -1523,15 +1910,70 @@ async function loadFileList(forceRefresh = false) {
     await fetchFileListFromServer();
 }
 
+function updateFileManagerLoadingText(mainText, subText) {
+    const loadingText = document.getElementById('fileManagerLoadingText');
+    const loadingSubtext = document.getElementById('fileManagerLoadingSubtext');
+    if (loadingText) loadingText.textContent = mainText;
+    if (loadingSubtext) loadingSubtext.textContent = subText;
+}
+
+function showFileManagerError(errorMessage) {
+    const loading = document.getElementById('fileManagerLoading');
+    const loadingText = document.getElementById('fileManagerLoadingText');
+    const loadingSubtext = document.getElementById('fileManagerLoadingSubtext');
+    const spinner = loading ? loading.querySelector('.loading-spinner') : null;
+    
+    if (spinner) spinner.style.display = 'none';
+    if (loadingText) {
+        loadingText.textContent = '❌ Connection Failed';
+        loadingText.style.color = '#dc2626';
+    }
+    if (loadingSubtext) {
+        loadingSubtext.textContent = errorMessage + ' - Click Refresh to try again';
+        loadingSubtext.style.color = '#ef4444';
+    }
+}
+
+function resetFileManagerLoading() {
+    const loading = document.getElementById('fileManagerLoading');
+    const loadingText = document.getElementById('fileManagerLoadingText');
+    const loadingSubtext = document.getElementById('fileManagerLoadingSubtext');
+    const spinner = loading ? loading.querySelector('.loading-spinner') : null;
+    
+    if (spinner) spinner.style.display = 'block';
+    if (loadingText) {
+        loadingText.textContent = '🔌 Please wait, connecting to GCS...';
+        loadingText.style.color = '#4b5563';
+    }
+    if (loadingSubtext) {
+        loadingSubtext.textContent = 'Loading your files from cloud storage';
+        loadingSubtext.style.color = '#9ca3af';
+    }
+}
+
 async function fetchFileListFromServer() {
     const loading = document.getElementById('fileManagerLoading');
     const tableContainer = document.getElementById('filesTableContainer');
     
     fileManagerData.isLoading = true;
     
+    // Reset and show loading state
+    if (loading) {
+        loading.style.display = 'block';
+        resetFileManagerLoading();
+    }
+    if (tableContainer) tableContainer.style.display = 'none';
+    
     try {
+        // Update loading text
+        updateFileManagerLoadingText('🔌 Connecting to GCS...', 'Establishing connection to cloud storage');
+        
         // Load files from API
         const response = await fetch('/api/files/list');
+        
+        // Update loading text after connection
+        updateFileManagerLoadingText('📂 Loading files...', 'Fetching your files from storage');
+        
         const result = await response.json();
         
         if (result.success) {
@@ -1552,21 +1994,19 @@ async function fetchFileListFromServer() {
             updateGCSStatus();
             
             console.log('[FileManager] Data loaded from server');
+            
+            // Hide loading and show table
+            if (loading) loading.style.display = 'none';
+            if (tableContainer) tableContainer.style.display = 'block';
         } else {
             console.error('Failed to load files:', result.error);
-            if (!fileManagerData.isLoaded) {
-                alert('Failed to load files: ' + result.error);
-            }
+            showFileManagerError(result.error || 'Failed to load files');
         }
     } catch (error) {
         console.error('Error loading files:', error);
-        if (!fileManagerData.isLoaded) {
-            alert('Error loading files: ' + error.message);
-        }
+        showFileManagerError(error.message || 'Network error');
     } finally {
         fileManagerData.isLoading = false;
-        if (loading) loading.style.display = 'none';
-        if (tableContainer) tableContainer.style.display = 'block';
     }
 }
 
@@ -1858,32 +2298,37 @@ async function deleteSingleFile(id, type, location, fileHash) {
     updateDeleteProgress(0, 1, fileName, 'deleting');
     
     try {
-        let body = {};
+        let response;
         
         if (type === 'extraction') {
-            // Delete individual extraction record and associated cache
-            body.extraction_ids = [id];
-            if (fileHash) {
-                body.file_hashes = [fileHash];
-            }
-        } else if (type === 'legacy_extractions_data') {
-            // Delete legacy extractions_data.json file
-            body.files = [{
-                path: id,
-                location: location
-            }];
+            // Use DELETE endpoint for extractions (more reliable)
+            response = await fetch(`/api/files/extraction/${encodeURIComponent(id)}`, {
+                method: 'DELETE'
+            });
         } else {
-            body.files = [{
-                path: id,
-                location: location
-            }];
+            // Use POST endpoint for other file types
+            let body = {};
+            if (type === 'legacy_extractions_data') {
+                body.files = [{
+                    path: id,
+                    location: location
+                }];
+            } else {
+                body.files = [{
+                    path: id,
+                    location: location
+                }];
+                if (fileHash) {
+                    body.file_hashes = [fileHash];
+                }
+            }
+            
+            response = await fetch('/api/files/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
         }
-        
-        const response = await fetch('/api/files/delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
         
         const result = await response.json();
         
@@ -1892,6 +2337,8 @@ async function deleteSingleFile(id, type, location, fileHash) {
             completeDeleteProgress(1, 0);
             invalidateFileManagerCache();
             loadFileList(true);
+            // Refresh dashboard to update counts after deletion
+            loadDashboard();
         } else {
             updateDeleteProgress(1, 1, fileName, 'error');
             completeDeleteProgress(0, 1);
@@ -1926,29 +2373,31 @@ async function deleteSelectedFiles() {
         updateDeleteProgress(current, total, fileName, 'deleting');
         
         try {
-            const body = {
-                files: [],
-                extraction_ids: [],
-                file_hashes: []
-            };
+            let response;
             
             if (file.type === 'extraction') {
-                body.extraction_ids.push(file.id);
-                if (file.file_hash) {
-                    body.file_hashes.push(file.file_hash);
-                }
+                // Use DELETE endpoint for extractions (more reliable)
+                response = await fetch(`/api/files/extraction/${encodeURIComponent(file.id)}`, {
+                    method: 'DELETE'
+                });
             } else {
-                body.files.push({
-                    path: file.id,
-                    location: file.location
+                // Use POST endpoint for other file types
+                const body = {
+                    files: [{
+                        path: file.id,
+                        location: file.location
+                    }]
+                };
+                if (file.file_hash) {
+                    body.file_hashes = [file.file_hash];
+                }
+                
+                response = await fetch('/api/files/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
                 });
             }
-            
-            const response = await fetch('/api/files/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
             
             const result = await response.json();
             
@@ -1972,6 +2421,9 @@ async function deleteSelectedFiles() {
     selectedFiles.clear();
     invalidateFileManagerCache();
     loadFileList(true);
+    
+    // Refresh dashboard to update counts after deletion
+    loadDashboard();
 }
 
 function showConfirmDelete(action) {

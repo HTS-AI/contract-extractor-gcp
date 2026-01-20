@@ -31,6 +31,7 @@ class ExtractionState(TypedDict):
     page_map: Dict[int, str]
     use_ocr: bool
     use_gcs_vision: bool
+    extraction_id: Optional[str]  # For status tracking
     
     # Processing state
     document_type: Optional[str]
@@ -71,24 +72,30 @@ def create_extraction_tools(api_key: str):
         # Truncate text if too long
         text_sample = document_text[:3000] if len(document_text) > 3000 else document_text
         
-        prompt = f"""Analyze the following document and classify it as one of these four types:
-1. INVOICE - A bill or invoice for goods/services (includes purchase invoices, sales invoices, tax invoices, proforma invoices, etc.)
-2. LEASE - A lease agreement for property, equipment, or assets
-3. NDA - A Non-Disclosure Agreement (also known as Confidentiality Agreement)
-4. CONTRACT - A general contract or agreement (service agreement, employment contract, etc.)
+        prompt = f"""Analyze the following document and classify it as one of these five types:
+1. PURCHASE_ORDER - A purchase order document (PO) requesting goods/services from a vendor
+2. INVOICE - A bill or invoice for goods/services (includes purchase invoices, sales invoices, tax invoices, proforma invoices, etc.)
+3. LEASE - A lease agreement for property, equipment, or assets
+4. NDA - A Non-Disclosure Agreement (also known as Confidentiality Agreement)
+5. CONTRACT - A general contract or agreement (service agreement, employment contract, etc.)
 
 DOCUMENT TEXT (sample):
 {text_sample}
 
 CLASSIFICATION GUIDELINES:
+- If the document contains "Purchase Order", "PO", "P.O.", "Order Number" with items to be ordered/purchased → classify as PURCHASE_ORDER
 - If the document contains invoice number, bill number, itemized charges, tax details, GST/VAT, or payment due information → classify as INVOICE
 - If the document discusses rental/lease terms, lessor/lessee, rental payments → classify as LEASE
 - If the document is about confidentiality, non-disclosure, protecting information → classify as NDA
 - For other agreements, service contracts, employment contracts → classify as CONTRACT
 
+IMPORTANT: Distinguish between PURCHASE_ORDER and INVOICE:
+- PURCHASE_ORDER: Document from buyer to vendor requesting goods/services (before delivery)
+- INVOICE: Document from vendor to buyer billing for goods/services (after delivery)
+
 Return your response in JSON format:
 {{
-    "document_type": "INVOICE" | "LEASE" | "NDA" | "CONTRACT",
+    "document_type": "PURCHASE_ORDER" | "INVOICE" | "LEASE" | "NDA" | "CONTRACT",
     "confidence": "HIGH" | "MEDIUM" | "LOW",
     "reasoning": "Brief explanation of why this classification was chosen"
 }}"""
@@ -109,7 +116,7 @@ Return your response in JSON format:
             
             result = json.loads(content.strip())
             doc_type = result.get("document_type", "CONTRACT").upper()
-            if doc_type not in ["INVOICE", "LEASE", "NDA", "CONTRACT"]:
+            if doc_type not in ["PURCHASE_ORDER", "INVOICE", "LEASE", "NDA", "CONTRACT"]:
                 doc_type = "CONTRACT"
             
             return {
@@ -609,20 +616,32 @@ EXTRACTION INSTRUCTIONS:
    - CRITICAL: If an address contains the word "bank" (case-insensitive), it is a BANK ADDRESS, NOT a vendor address. Do NOT extract it as vendor_address.
    - CRITICAL: Vendor address often appears in the footer with contact information (Tel, Fax, Email, Phone numbers). Extract the full address including office number, building, street, city, country, and PO Box if present.
    - Example: "Risin Ventures W.L.L, Office No 12, 3rd Floor, Al Reem Tower, West Bay, Doha, Qatar, PO Box- 4969" would be a vendor address
-3. Customer/Buyer: Extract company/person being billed (look for "TO", "BILL TO", "BILLED TO", "CUSTOMER", "BUYER")
-   - Customer Address: Extract customer address from "Bill To", "Ship To", or "Customer" sections
+3. Customer/Buyer: Extract company/person being billed - this is who PAYS the invoice
+   - PRIORITY ORDER: "BILL TO" > "BILLED TO" > "SOLD TO" > "CUSTOMER" > "BUYER" > "TO"
+   - CRITICAL: If BOTH "BILL TO" and "SHIP TO" exist, ALWAYS use "BILL TO" as the customer (the one paying)
+   - "SHIP TO" is just the delivery address, NOT the customer - ignore it for customer name extraction
+   - Customer Address: Extract from "BILL TO" section ONLY (not "Ship To")
    - CRITICAL: If an address contains the word "bank" (case-insensitive), it is a BANK ADDRESS, NOT a customer address. Do NOT extract it as customer_address.
-4. Tax Identifiers (CRITICAL - Extract for BOTH vendor and customer):
-   - vendor_tax_ids and customer_tax_ids: Extract ALL tax/registration numbers found
-   - Different countries use different identifiers:
-     * India: GSTIN (15-digit), PAN (10-character)
-     * UK/EU: VAT Number (starts with country code like GB, DE, FR), EORI Number
-     * USA: Tax ID, EIN (Employer Identification Number, format XX-XXXXXXX)
-     * UAE: TRN (Tax Registration Number)
-     * General: TIN (Tax Identification Number), CR Number (Commercial Registration)
+4. Tax Identifiers (CRITICAL - Extract for BOTH vendor and customer with VALIDATION):
+   - vendor_tax_ids and customer_tax_ids: Extract ONLY VALID tax/registration numbers
+   - VALIDATION RULES - Do NOT extract if format is invalid:
+     * India PAN: MUST be exactly 10 characters in format AAAAA9999A (5 letters + 4 digits + 1 letter)
+       - Valid examples: ABCDE1234F, AAACW8419Q, HDCPL9876K
+       - INVALID: Company names, addresses, any text that doesn't match this exact pattern
+       - If a value labeled "PAN" is not 10 alphanumeric chars matching this pattern, DO NOT EXTRACT IT
+     * India GSTIN: MUST be exactly 15 characters (2 digits + 10 char PAN + 1 digit + Z + 1 alphanumeric)
+       - Valid example: 27AAACW8419Q1ZV
+     * UK/EU VAT Number: Starts with 2-letter country code (GB, DE, FR, etc.) followed by numbers
+       - Valid examples: GB998231005, DE123456789
+     * USA EIN: Format XX-XXXXXXX (2 digits, hyphen, 7 digits)
+       - Valid example: 45-0992215
+     * UAE TRN: 15 digits starting with 100
+       - Valid example: 100123456789012
+     * General TIN/CR: Numeric or alphanumeric codes, NOT company names
+   - CRITICAL: If a value next to a tax label is clearly a COMPANY NAME or ADDRESS, DO NOT extract it as a tax ID
    - Look for labels like: "VAT", "VAT No", "VAT/EORI", "Tax ID", "EIN", "TIN", "TRN", "GSTIN", "PAN", "CR No", "Registration No"
    - If you find a tax ID not matching the above categories, use "other_id" and set "other_id_label" to the label found
-   - Extract the EXACT value (e.g., "GB998231005" for VAT, "EIN-45-099221" for Tax ID)
+   - Extract the EXACT value ONLY if it matches the expected format
 5. Document IDs (CRITICAL - Extract ALL of these if present):
    - invoice_id: Main invoice identifier. Look for:
      * "INVOICE ID", "INVOICE NO", "INVOICE #", "INV NO", "INV #", "INVOICE NUMBER"
@@ -638,7 +657,11 @@ EXTRACTION INSTRUCTIONS:
      * NEVER extract labels like "Quote No", "Invoice No", "Quotation Number" - only extract the actual alphanumeric identifier
    - invoice_number: Same as invoice_id if not separately specified. Extract the ACTUAL VALUE, not the label. If invoice and quote numbers are identical, extract only once
    - bill_number: Bill identifier (look for "BILL NO", "BILL #", "BILL NUMBER")
-   - po_number: Purchase order number (look for "PO", "P.O.", "PURCHASE ORDER", "PO NUMBER", "PO #")
+   - po_number: Purchase order reference number on the invoice (CRITICAL for PO matching)
+     * Look for: "PO", "P.O.", "PO Number", "PO #", "PO No", "Purchase Order", "P.O. No", "Your PO"
+     * EXTRACT THE COMPLETE VALUE including prefixes like "PO-"
+     * Examples: "PO Number: PO-NEX-2026-11" → "PO-NEX-2026-11", "PO #: PO-2025-0092" → "PO-2025-0092"
+     * This links the invoice to a Purchase Order for validation
    - order_number: Order reference (look for "ORDER NO", "ORDER #", "ORDER NUMBER", "ORD NO")
    - reference_id: Any reference number (look for "REF", "REF NO", "REFERENCE", "REF #")
    - document_number: Generic document number (look for "DOC NO", "DOCUMENT NO", "DOC #")
@@ -701,9 +724,24 @@ EXTRACTION INSTRUCTIONS:
    - Tax rate (if shown per item)
 8. Tax Details: Extract GST, VAT, CGST, SGST, IGST as applicable (may be shown as percentage or amount)
 9. Payment Details: Extract ALL bank and account details:
-   - Account Holder Name: Name of the account holder (look for "Account Name", "Name", "Beneficiary Name", "Payee Name", "Payment in the name of")
-   - Account Number: For Indian accounts, extract account number (look for "Account No", "A/C No", "Account Number", "A/C Number")
-   - Account Number/IBAN: For international accounts, extract IBAN or account number (look for "IBAN", "Account No/IBAN", "Account Number", "A/C No")
+   - Account Holder Name (IMPORTANT - ALWAYS EXTRACT): This is the name of the person or company receiving payment. Look for:
+     * "Account Name", "A/C Name", "Account Holder", "Account Holder Name"
+     * "Beneficiary Name", "Beneficiary", "Payee Name", "Payee"
+     * "Name" appearing near bank/payment details
+     * "Payment in the name of", "Pay to", "Remit to"
+     * The name appearing on the same line or just before/after IBAN, account number, or bank details
+     * Often appears at the end of invoices near bank details (e.g., "Industrial Robotics Ltd." or person name like "James Sterling")
+     * If no explicit label, look for company/person name in the payment instructions section
+   - Account Number (account_number): Standard bank account number - ONLY DIGITS, no letters
+     * Look for: "Account No", "A/C No", "Account Number", "A/C Number", "Bank A/C No", "Bank A/C No.", "Bank Account No", "Bank Account Number"
+     * This is a numeric-only field (e.g., "0101198022", "123456789012")
+     * Do NOT put IBAN here - IBAN goes in a separate field
+   - IBAN (account_number_iban): International Bank Account Number - ALWAYS starts with 2-letter country code
+     * Look for: "IBAN", "IBAN No", "IBAN Number"  
+     * Format: 2-letter country code + check digits + bank code + account number (e.g., "AE120211000000101198022", "GB82WEST12345698765432")
+     * CRITICAL: If the value starts with letters like AE, GB, DE, FR, SA, QA, etc. - it's an IBAN, put it in account_number_iban
+     * If the value is ONLY digits - it's an Account Number, put it in account_number
+     * Some invoices may have BOTH - extract both separately
    - IFSC Code: For Indian accounts, extract IFSC code (look for "IFSC", "IFSC Code", "IFSC CODE")
    - SWIFT Code: For international accounts, extract SWIFT code (look for "SWIFT", "SWIFT Code", "BIC", "BIC Code")
    - Branch: Extract branch name/location (look for "Branch", "Branch Name", "Branch Location")
@@ -762,7 +800,7 @@ IMPORTANT NOTES:
     - Example format: "Company Name, Office No X, Floor Y, Building Name, Area, City, Country, PO Box- Z"
     - Example: "Risin Ventures W.L.L, Office No 12, 3rd Floor, Al Reem Tower, West Bay, Doha, Qatar, PO Box- 4969"
     - IMPORTANT: If you see multiple addresses, the one with contact details (Tel, Fax, Email) in the footer is usually the vendor address
-  * Customer address: Look in "Bill To", "Ship To", or "Customer" sections
+  * Customer address: Look in "BILL TO" section ONLY (NOT "Ship To" - that's just delivery address)
   * Bank address: Any address containing "bank" (case-insensitive) or appearing near payment/account details should go to bank_address, NOT vendor_address or customer_address
   * If an address contains words like "Bank", "Branch", "IBAN", "SWIFT", "Account", it's likely a bank address
   * Bank addresses often appear in payment instruction sections, near account numbers, or below payment details
@@ -807,17 +845,35 @@ def parse_document_node(state: ExtractionState) -> ExtractionState:
     """Node: Parse the document and extract text."""
     print("\n[AGENT NODE] Parsing document...")
     
+    # Update status for tracking
+    extraction_id = state.get("extraction_id")
+    if extraction_id:
+        try:
+            import extraction_status_manager
+            extraction_status_manager.update_status(extraction_id, {
+                "current_step": "parse_document",
+                "step_description": "Parse Document - Parsing document text",
+                "progress_percent": 25,
+                "skip_progress": False,
+                "is_complete": False
+            })
+        except Exception as e:
+            print(f"   [WARNING] Could not update status: {e}")
+    
     try:
         # Use the use_gcs_vision setting from state
         use_gcs = state.get("use_gcs_vision", False)
         parser = DocumentParser(use_gcs_vision=use_gcs)
         
         if state.get("file_path"):
-            # For hybrid documents, always try OCR to detect OCR text
-            # The parser will intelligently combine native text with OCR text
+            # Let the parser auto-detect if OCR is needed based on:
+            # - Scanned PDF detection
+            # - Text density (chars per page)
+            # - Native text availability
+            # This avoids slow Vision API calls for text-based PDFs
             document_text, page_map = parser.parse_with_pages(
                 state["file_path"], 
-                use_ocr=True  # Always enable OCR detection for hybrid documents
+                use_ocr=False  # Let parser auto-detect - will use OCR only when needed
             )
             state["document_text"] = document_text
             state["page_map"] = page_map
@@ -846,6 +902,21 @@ def parse_document_node(state: ExtractionState) -> ExtractionState:
 def classify_document_node(state: ExtractionState) -> ExtractionState:
     """Node: Classify the document type."""
     print("\n[AGENT NODE] Classifying document type...")
+    
+    # Update status for tracking
+    extraction_id = state.get("extraction_id")
+    if extraction_id:
+        try:
+            import extraction_status_manager
+            extraction_status_manager.update_status(extraction_id, {
+                "current_step": "classify_document",
+                "step_description": "Classify Document - Classifying document type",
+                "progress_percent": 40,
+                "skip_progress": False,
+                "is_complete": False
+            })
+        except Exception as e:
+            print(f"   [WARNING] Could not update status: {e}")
     
     if state.get("error"):
         return state
@@ -880,6 +951,21 @@ def extract_data_node(state: ExtractionState) -> ExtractionState:
     """Node: Extract data based on document type."""
     print(f"\n[AGENT NODE] Extracting data using {state.get('document_type', 'CONTRACT')} extractor...")
     
+    # Update status for tracking
+    extraction_id = state.get("extraction_id")
+    if extraction_id:
+        try:
+            import extraction_status_manager
+            extraction_status_manager.update_status(extraction_id, {
+                "current_step": "extract_data",
+                "step_description": "Extract Data - Extracting using document extractor",
+                "progress_percent": 55,
+                "skip_progress": False,
+                "is_complete": False
+            })
+        except Exception as e:
+            print(f"   [WARNING] Could not update status: {e}")
+    
     if state.get("error"):
         return state
     
@@ -897,6 +983,16 @@ def extract_data_node(state: ExtractionState) -> ExtractionState:
             extract_tool = tools[2]  # extract_nda_data
         elif doc_type == "INVOICE":
             extract_tool = tools[4]  # extract_invoice_data
+        elif doc_type == "PURCHASE_ORDER":
+            # Use dedicated PO extractor
+            from po_extractor import extract_po_data
+            result = extract_po_data(state["document_text"], api_key)
+            state["extracted_data"] = result
+            state["status"] = "extracted"
+            non_empty = sum(1 for k, v in result.items() if v and v != "null" and v != {})
+            state["messages"] = [AIMessage(content=f"Extracted {non_empty} fields from PURCHASE_ORDER document.")]
+            print(f"    → Extracted {non_empty} fields (PO)")
+            return state
         else:
             extract_tool = tools[3]  # extract_contract_data
         
@@ -924,6 +1020,21 @@ def extract_data_node(state: ExtractionState) -> ExtractionState:
 
 def enhance_data_node(state: ExtractionState) -> ExtractionState:
     """Node: Enhance extracted data with additional processing."""
+    
+    # Update status for tracking
+    extraction_id = state.get("extraction_id")
+    if extraction_id:
+        try:
+            import extraction_status_manager
+            extraction_status_manager.update_status(extraction_id, {
+                "current_step": "enhance_data",
+                "step_description": "Enhance Data - Enhancing extracted data",
+                "progress_percent": 70,
+                "skip_progress": False,
+                "is_complete": False
+            })
+        except Exception as e:
+            print(f"   [WARNING] Could not update status: {e}")
     print("\n[AGENT NODE] Enhancing extracted data...")
     
     if state.get("error"):
@@ -965,6 +1076,21 @@ def enhance_data_node(state: ExtractionState) -> ExtractionState:
 def calculate_risk_node(state: ExtractionState) -> ExtractionState:
     """Node: Calculate risk score."""
     print("\n[AGENT NODE] Calculating risk score...")
+    
+    # Update status for tracking
+    extraction_id = state.get("extraction_id")
+    if extraction_id:
+        try:
+            import extraction_status_manager
+            extraction_status_manager.update_status(extraction_id, {
+                "current_step": "calculate_risk",
+                "step_description": "Calculate Risk - Calculating risk score",
+                "progress_percent": 85,
+                "skip_progress": False,
+                "is_complete": False
+            })
+        except Exception as e:
+            print(f"   [WARNING] Could not update status: {e}")
     
     if state.get("error"):
         return state
@@ -1327,6 +1453,21 @@ def _find_page_references(extracted_data: Dict[str, Any], page_map: Dict[int, st
 def finalize_node(state: ExtractionState) -> ExtractionState:
     """Node: Finalize extraction and add metadata."""
     print("\n[AGENT NODE] Finalizing extraction...")
+    
+    # Update status for tracking
+    extraction_id = state.get("extraction_id")
+    if extraction_id:
+        try:
+            import extraction_status_manager
+            extraction_status_manager.update_status(extraction_id, {
+                "current_step": "finalize",
+                "step_description": "Finalize - Finalizing extraction",
+                "progress_percent": 95,
+                "skip_progress": False,
+                "is_complete": False
+            })
+        except Exception as e:
+            print(f"   [WARNING] Could not update status: {e}")
     
     extracted_data = state.get("extracted_data", {})
     
@@ -2144,7 +2285,8 @@ class ExtractionAgent:
     def extract_from_file(
         self,
         file_path: str,
-        use_ocr: bool = False
+        use_ocr: bool = False,
+        extraction_id: Optional[str] = None
     ) -> tuple[Dict[str, Any], Dict[str, Any]]:
         """
         Extract data from a file.
@@ -2152,6 +2294,7 @@ class ExtractionAgent:
         Args:
             file_path: Path to the document file
             use_ocr: Whether to use OCR for scanned PDFs
+            extraction_id: Optional extraction ID for status tracking
             
         Returns:
             Tuple of (extracted_data, metadata)
@@ -2168,6 +2311,7 @@ class ExtractionAgent:
             "page_map": {},
             "use_ocr": use_ocr,
             "use_gcs_vision": self.use_gcs_vision,
+            "extraction_id": extraction_id,
             "document_type": None,
             "classification_confidence": None,
             "classification_reasoning": None,

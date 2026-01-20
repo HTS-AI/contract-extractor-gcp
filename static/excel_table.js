@@ -44,11 +44,15 @@ async function loadExcelData() {
             console.log('No data found in Excel file');
             showMessage('📋 No data available yet. Upload and extract some documents to see them here!', 'info');
             displayEmptyTable();
-            // Set info cards to zero
-            document.getElementById('totalCount').textContent = '0';
-            document.getElementById('leaseCount').textContent = '0';
-            document.getElementById('ndaCount').textContent = '0';
-            document.getElementById('contractCount').textContent = '0';
+            // Set info cards to zero if they exist
+            const totalCountEl = document.getElementById('totalCount');
+            const leaseCountEl = document.getElementById('leaseCount');
+            const ndaCountEl = document.getElementById('ndaCount');
+            const contractCountEl = document.getElementById('contractCount');
+            if (totalCountEl) totalCountEl.textContent = '0';
+            if (leaseCountEl) leaseCountEl.textContent = '0';
+            if (ndaCountEl) ndaCountEl.textContent = '0';
+            if (contractCountEl) contractCountEl.textContent = '0';
         }
     } catch (error) {
         console.error('Error loading Excel data:', error);
@@ -82,10 +86,15 @@ function displayTable(data) {
         const extractedRaw = row['Extracted At'] || '';
         const extractedOrder = Date.parse(extractedRaw) || 0;
         
-        // Format each cell
+        // Format each cell - handle both old format (without Unique ID/Matched PO) and new format
+        // Check if new columns exist in data
+        const hasUniqueId = 'Unique ID' in row;
+        const hasMatchedPO = 'Matched PO' in row;
+        
         tr.innerHTML = `
             <td data-order="${extractedOrder}">${formatDateTime(extractedRaw)}</td>
             <td>${escapeHtml(row['Document Name'] || '-')}</td>
+            <td style="font-weight: 600; color: #667eea;">${hasUniqueId ? escapeHtml(row['Unique ID'] || '-') : '-'}</td>
             <td style="max-width: 200px; word-wrap: break-word; font-size: 12px;">${escapeHtml(row['ID'] || '-')}</td>
             <td>${formatDocumentType(row['Document Type'])}</td>
             <td style="max-width: 150px; word-wrap: break-word;">${escapeHtml(row['Account Type (Head)'] || '-')}</td>
@@ -95,6 +104,7 @@ function displayTable(data) {
             <td>${formatAmount(row['Amount'], row['Currency'])}</td>
             <td>${escapeHtml(row['Currency'] || '-')}</td>
             <td>${formatRiskScore(row['Risk Score'])}</td>
+            <td style="color: #10b981; font-weight: 500;">${hasMatchedPO ? escapeHtml(row['Matched PO'] || '-') : '-'}</td>
         `;
         
         tbody.appendChild(tr);
@@ -166,7 +176,7 @@ function displayEmptyTable() {
     }
     
     const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: #999; font-size: 16px;">📋 No data available. Extract some documents to see them here!</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 40px; color: #999; font-size: 16px;">📋 No data available. Extract some documents to see them here!</td></tr>';
     
     // Initialize empty DataTable with error suppression
     try {
@@ -199,11 +209,16 @@ function updateInfoCards(data) {
     
     console.log('Updating info cards:', { total, leaseCount, ndaCount, contractCount });
     
-    // Update cards
-    document.getElementById('totalCount').textContent = total;
-    document.getElementById('leaseCount').textContent = leaseCount;
-    document.getElementById('ndaCount').textContent = ndaCount;
-    document.getElementById('contractCount').textContent = contractCount;
+    // Update cards only if elements exist (dashboard modal might not be visible)
+    const totalCountEl = document.getElementById('totalCount');
+    const leaseCountEl = document.getElementById('leaseCount');
+    const ndaCountEl = document.getElementById('ndaCount');
+    const contractCountEl = document.getElementById('contractCount');
+    
+    if (totalCountEl) totalCountEl.textContent = total;
+    if (leaseCountEl) leaseCountEl.textContent = leaseCount;
+    if (ndaCountEl) ndaCountEl.textContent = ndaCount;
+    if (contractCountEl) contractCountEl.textContent = contractCount;
 }
 
 /**
