@@ -2695,7 +2695,9 @@ async def delete_extraction_complete(extraction_id: str):
         # Get file hash from in-memory store or extractions_data
         file_hash = None
         if extraction_id in extractions_store:
-            file_hash = extractions_store[extraction_id].get("file_hash")
+            extraction_data = extractions_store[extraction_id]
+            if extraction_data and isinstance(extraction_data, dict):
+                file_hash = extraction_data.get("file_hash")
             del extractions_store[extraction_id]
             results["deleted"].append("Removed from in-memory store")
         
