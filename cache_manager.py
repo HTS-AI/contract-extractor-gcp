@@ -1636,7 +1636,7 @@ class CacheManager:
                         data = json.load(f)
                     if isinstance(data, list):
                         original_count = len(data)
-                        data = [item for item in data if item.get("extraction_id") != extraction_id]
+                        data = [item for item in data if item and isinstance(item, dict) and item.get("extraction_id") != extraction_id]
                         if len(data) < original_count:
                             with open(local_path, 'w', encoding='utf-8') as f:
                                 json.dump(data, f, indent=2, ensure_ascii=False, default=str)
@@ -1648,7 +1648,7 @@ class CacheManager:
                     gcs_data = self._load_from_gcs(gcs_path)
                     if gcs_data and isinstance(gcs_data, list):
                         original_count = len(gcs_data)
-                        gcs_data = [item for item in gcs_data if item.get("extraction_id") != extraction_id]
+                        gcs_data = [item for item in gcs_data if item and isinstance(item, dict) and item.get("extraction_id") != extraction_id]
                         if len(gcs_data) < original_count:
                             self._save_to_gcs(gcs_path, gcs_data)
                             deleted_items.append("legacy gcs")

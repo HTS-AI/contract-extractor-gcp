@@ -678,6 +678,37 @@ function displayResults(results, extractionId = null) {
         formatAmountWithCurrency(payment.amount, payment.currency) : '-';
     document.getElementById('paymentCurrency').textContent = payment.currency || '-';
     
+    // Local Currency (for invoices with multiple currencies like USD and AED)
+    const invoicePaymentDetails = results.invoice_details?.payment_details || {};
+    const localCurrency = invoicePaymentDetails.local_currency || '';
+    const localAmount = invoicePaymentDetails.local_amount || '';
+    const exchangeRate = invoicePaymentDetails.exchange_rate || '';
+    
+    const localAmountItem = document.getElementById('localAmountItem');
+    const localCurrencyItem = document.getElementById('localCurrencyItem');
+    const exchangeRateItem = document.getElementById('exchangeRateItem');
+    
+    if (localCurrency && localAmount) {
+        // Show local currency fields
+        if (localAmountItem) {
+            localAmountItem.style.display = 'flex';
+            document.getElementById('localAmount').textContent = formatAmountWithCurrency(localAmount, localCurrency);
+        }
+        if (localCurrencyItem) {
+            localCurrencyItem.style.display = 'flex';
+            document.getElementById('localCurrency').textContent = localCurrency;
+        }
+        if (exchangeRate && exchangeRateItem) {
+            exchangeRateItem.style.display = 'flex';
+            document.getElementById('exchangeRate').textContent = exchangeRate;
+        }
+    } else {
+        // Hide local currency fields if not present
+        if (localAmountItem) localAmountItem.style.display = 'none';
+        if (localCurrencyItem) localCurrencyItem.style.display = 'none';
+        if (exchangeRateItem) exchangeRateItem.style.display = 'none';
+    }
+    
     // Amount Explanation (shows how total was calculated based on document)
     const amountExplanationEl = document.getElementById('amountExplanation');
     if (amountExplanationEl) {
@@ -889,7 +920,7 @@ function displayResults(results, extractionId = null) {
         let hasPaymentInfo = false;
         
         if (paymentTerms && paymentTerms.trim() !== '') {
-            paymentTermsItem.style.display = 'block';
+            paymentTermsItem.style.display = 'flex';
             document.getElementById('invoicePaymentTerms').textContent = paymentTerms;
             hasPaymentInfo = true;
         } else {
@@ -897,7 +928,7 @@ function displayResults(results, extractionId = null) {
         }
         
         if (paymentMethod && paymentMethod.trim() !== '') {
-            paymentMethodItem.style.display = 'block';
+            paymentMethodItem.style.display = 'flex';
             document.getElementById('invoicePaymentMethod').textContent = paymentMethod;
             hasPaymentInfo = true;
         } else {
@@ -1762,10 +1793,6 @@ function initFileManager() {
     const selectAllFilesBtn = document.getElementById('selectAllFilesBtn');
     const deselectAllFilesBtn = document.getElementById('deselectAllFilesBtn');
     const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-    const clearAllCacheBtn = document.getElementById('clearAllCacheBtn');
-    const clearEverythingBtn = document.getElementById('clearEverythingBtn');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     
     if (fileManagerBtn) {
         fileManagerBtn.addEventListener('click', openFileManager);
@@ -1795,22 +1822,6 @@ function initFileManager() {
     
     if (deleteSelectedBtn) {
         deleteSelectedBtn.addEventListener('click', deleteSelectedFiles);
-    }
-    
-    if (clearAllCacheBtn) {
-        clearAllCacheBtn.addEventListener('click', () => showConfirmDelete('cache'));
-    }
-    
-    if (clearEverythingBtn) {
-        clearEverythingBtn.addEventListener('click', () => showConfirmDelete('everything'));
-    }
-    
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', executeConfirmedDelete);
-    }
-    
-    if (cancelDeleteBtn) {
-        cancelDeleteBtn.addEventListener('click', closeConfirmDeleteModal);
     }
     
     // Tab switching
@@ -2427,20 +2438,8 @@ async function deleteSelectedFiles() {
 }
 
 function showConfirmDelete(action) {
-    pendingDeleteAction = action;
-    const modal = document.getElementById('confirmDeleteModal');
-    const title = document.getElementById('confirmDeleteTitle');
-    const message = document.getElementById('confirmDeleteMessage');
-    
-    if (action === 'cache') {
-        title.textContent = 'Clear All Cache?';
-        message.innerHTML = 'This will delete all extraction cache and chatbot cache files from <strong>both local storage and GCS</strong>.<br><br>Extraction records will be preserved.';
-    } else if (action === 'everything') {
-        title.textContent = '⚠️ Clear Everything?';
-        message.innerHTML = 'This will delete <strong>ALL</strong> files including:<br>• All extraction cache<br>• All chatbot cache<br>• All extraction records<br>• All exports<br><br><strong style="color: #dc2626;">This action cannot be undone!</strong>';
-    }
-    
-    if (modal) modal.style.display = 'flex';
+    // Function kept for compatibility but actions removed
+    pendingDeleteAction = null;
 }
 
 function closeConfirmDeleteModal() {
@@ -2450,84 +2449,9 @@ function closeConfirmDeleteModal() {
 }
 
 async function executeConfirmedDelete() {
+    // Function kept for compatibility but actions removed
     if (!pendingDeleteAction) return;
-    
     closeConfirmDeleteModal();
-    
-    const actionTitle = pendingDeleteAction === 'everything' ? 'Clearing all data...' : 'Clearing cache...';
-    showDeleteProgress(actionTitle);
-    
-    // Show initial progress steps
-    const steps = pendingDeleteAction === 'everything' 
-        ? ['Local extraction cache', 'Local chatbot cache', 'Local extraction records', 'GCS extraction cache', 'GCS chatbot cache', 'GCS extraction records', 'Legacy data']
-        : ['Local extraction cache', 'Local chatbot cache', 'GCS extraction cache', 'GCS chatbot cache'];
-    
-    let currentStep = 0;
-    updateDeleteProgress(currentStep, steps.length, steps[0], 'deleting');
-    
-    try {
-        const body = {
-            clear_local: true,
-            clear_gcs: true,
-            clear_extractions_data: pendingDeleteAction === 'everything',
-            clear_in_memory: pendingDeleteAction === 'everything'
-        };
-        
-        const response = await fetch('/api/files/clear-all', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            const r = result.results;
-            let totalDeleted = 0;
-            
-            // Update progress for each category
-            updateDeleteProgress(1, steps.length, `Local extraction cache: ${r.local_extraction_deleted} files`, r.local_extraction_deleted > 0 ? 'success' : 'success');
-            totalDeleted += r.local_extraction_deleted || 0;
-            
-            updateDeleteProgress(2, steps.length, `Local chatbot cache: ${r.local_chatbot_deleted} files`, r.local_chatbot_deleted > 0 ? 'success' : 'success');
-            totalDeleted += r.local_chatbot_deleted || 0;
-            
-            if (pendingDeleteAction === 'everything') {
-                updateDeleteProgress(3, steps.length, `Local extraction records: ${r.local_extraction_records_deleted || 0} files`, 'success');
-                totalDeleted += r.local_extraction_records_deleted || 0;
-            }
-            
-            if (fileManagerData.gcs_enabled) {
-                const gcsStep = pendingDeleteAction === 'everything' ? 4 : 3;
-                updateDeleteProgress(gcsStep, steps.length, `GCS extraction cache: ${r.gcs_extraction_deleted} files`, 'success');
-                totalDeleted += r.gcs_extraction_deleted || 0;
-                
-                updateDeleteProgress(gcsStep + 1, steps.length, `GCS chatbot cache: ${r.gcs_chatbot_deleted} files`, 'success');
-                totalDeleted += r.gcs_chatbot_deleted || 0;
-                
-                if (pendingDeleteAction === 'everything' && r.gcs_extraction_records_deleted > 0) {
-                    updateDeleteProgress(gcsStep + 2, steps.length, `GCS extraction records: ${r.gcs_extraction_records_deleted} files`, 'success');
-                    totalDeleted += r.gcs_extraction_records_deleted || 0;
-                }
-            }
-            
-            if (r.extractions_data_cleared) {
-                updateDeleteProgress(steps.length, steps.length, 'Legacy extractions_data.json cleared', 'success');
-            }
-            
-            completeDeleteProgress(totalDeleted, 0);
-            invalidateFileManagerCache();
-            loadFileList(true);
-        } else {
-            updateDeleteProgress(steps.length, steps.length, 'Operation failed', 'error');
-            completeDeleteProgress(0, 1);
-        }
-    } catch (error) {
-        console.error('Clear error:', error);
-        updateDeleteProgress(steps.length, steps.length, error.message, 'error');
-        completeDeleteProgress(0, 1);
-    }
-    
     pendingDeleteAction = null;
 }
 

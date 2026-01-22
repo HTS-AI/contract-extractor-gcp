@@ -590,7 +590,10 @@ REQUIRED OUTPUT FORMAT (STRICT JSON):
     "swift_code": "",
     "branch": "",
     "bank_address": "",
-    "upi_id": ""
+    "upi_id": "",
+    "local_currency": "",
+    "local_amount": "",
+    "exchange_rate": ""
   }},
   "frequency": "",
   "account_type": "Accounts Payable",
@@ -759,6 +762,17 @@ EXTRACTION INSTRUCTIONS:
      * Any text describing when/how payment should be made
    - Payment Method: Extract payment method if mentioned (Bank Transfer, Credit Card, Cash, Cheque, etc.)
    - UPI ID: Extract UPI ID if present (for Indian payments)
+   - MULTIPLE CURRENCIES: If the invoice shows amounts in MULTIPLE currencies (e.g., USD and AED, or USD and INR):
+     * The PRIMARY currency goes in the main "currency" field (usually the one used for totals)
+     * Extract LOCAL/SECONDARY currency details in payment_details:
+       - local_currency: The local/secondary currency code (e.g., "AED", "INR", "QAR")
+       - local_amount: The total amount in local currency
+       - exchange_rate: The exchange rate if mentioned (e.g., "3.6725" for USD to AED)
+     * Look for patterns like:
+       - "Total (USD): 9,351.00" and "Total (AED): 34,341.55"
+       - "Exchange Rate: 3.6725" or "Exchange Rate Used @ 3.6725"
+       - Columns showing both USD and AED amounts
+       - "Amount in USD" vs "Amount in AED"
 10. For party_1, use vendor name; for party_2, use customer name
 11. For amount field, use the total/grand total/amount due (the final payable amount)
 12. amount_explanation: Provide a brief one-line explanation of how the total amount was derived from the document.
@@ -1050,6 +1064,9 @@ def enhance_data_node(state: ExtractionState) -> ExtractionState:
         
         # Extract and normalize currency
         extracted_data = _extract_currency(extracted_data, state.get("document_text", ""))
+        
+        # Extract local/secondary currency for multi-currency invoices
+        extracted_data = _extract_local_currency(extracted_data, state.get("document_text", ""))
         
         # Calculate per-period amount
         extracted_data = _calculate_period_amount(extracted_data)
@@ -1834,6 +1851,146 @@ def _extract_currency(extracted_data: Dict[str, Any], document_text: str) -> Dic
             extracted_data["currency"] = currency
             
         except (ValueError, AttributeError):
+            pass
+    
+    return extracted_data
+
+
+def _extract_local_currency(extracted_data: Dict[str, Any], document_text: str) -> Dict[str, Any]:
+    """Extract local/secondary currency when multiple currencies are EXPLICITLY present in the document.
+    
+    ONLY extracts when there are clear patterns showing both currencies with amounts like:
+    - Total (USD): 9,351.00 and Total (AED): 34,341.55
+    - Exchange Rate @ 3.6725
+    - Amount in AED: 34,341.55
+    
+    Does NOT extract based on location or mere presence of currency code.
+    """
+    if not document_text:
+        return extracted_data
+    
+    doc_text_upper = document_text.upper()
+    primary_currency = extracted_data.get("currency", "").upper()
+    
+    if not primary_currency:
+        return extracted_data
+    
+    # Common currency pairs (primary -> typical local currencies)
+    local_currency_map = {
+        "USD": ["AED", "QAR", "SAR", "INR", "EUR", "GBP", "KWD", "BHD", "OMR"],
+        "EUR": ["GBP", "CHF", "INR", "USD", "AED"],
+        "GBP": ["EUR", "USD", "INR", "AED"],
+    }
+    
+    # List of possible local currencies to check
+    possible_local = local_currency_map.get(primary_currency, ["AED", "QAR", "SAR", "INR", "EUR", "GBP"])
+    
+    payment_details = extracted_data.get("payment_details", {})
+    if not isinstance(payment_details, dict):
+        payment_details = {}
+    
+    # Skip if local currency already extracted by AI
+    if payment_details.get("local_currency") and payment_details.get("local_amount"):
+        return extracted_data
+    
+    local_currency = ""
+    local_amount = ""
+    exchange_rate = ""
+    
+    # STRICT Pattern matching - only extract when currency code is DIRECTLY with amount
+    for curr in possible_local:
+        if curr == primary_currency:
+            continue
+        
+        # Only match explicit patterns where currency code is adjacent to amount
+        # These patterns require the currency code to be directly associated with an amount
+        strict_patterns = [
+            # "Total (AED): 34,341.55" or "Total AED: 34,341.55"
+            rf'TOTAL\s*\(?{curr}\)?[:\s]+([0-9,]+\.?\d+)',
+            # "TOTAL AED 34,341.55"
+            rf'TOTAL\s+{curr}\s+([0-9,]+\.?\d+)',
+            # "Amount in AED: 34,341.55"
+            rf'AMOUNT\s+IN\s+{curr}[:\s]+([0-9,]+\.?\d+)',
+            # "AED 34,341.55" (currency followed directly by amount)
+            rf'{curr}\s+([0-9,]+\.?\d+)',
+            # "34,341.55 AED" (amount followed by currency)
+            rf'([0-9,]+\.?\d+)\s+{curr}(?:\s|$|[,\.])',
+            # "Total Amount in AED 34,341.55"
+            rf'TOTAL\s+AMOUNT\s+IN\s+{curr}\s+([0-9,]+\.?\d+)',
+            # "Net AED 40,480"
+            rf'NET\s+{curr}\s+([0-9,]+\.?\d+)',
+        ]
+        
+        for pattern in strict_patterns:
+            match = re.search(pattern, doc_text_upper)
+            if match:
+                amt_str = match.group(1).replace(',', '')
+                try:
+                    amt_val = float(amt_str)
+                    # Validate: amount should be reasonable (> 0 and not a postal code/year)
+                    # Postal codes and years are typically 4-6 digits without decimals
+                    if amt_val > 100 and '.' in match.group(1):
+                        # Has decimal - likely a real amount
+                        local_currency = curr
+                        local_amount = amt_str
+                        break
+                    elif amt_val > 1000:
+                        # Large number - check it's not in an address context
+                        # Get surrounding context
+                        match_pos = match.start()
+                        context_start = max(0, match_pos - 50)
+                        context_end = min(len(doc_text_upper), match_pos + 50)
+                        context = doc_text_upper[context_start:context_end]
+                        
+                        # Skip if this looks like an address (postal code, P.O. Box, etc.)
+                        address_indicators = ['P.O', 'PO BOX', 'BOX', 'STREET', 'FLOOR', 'TOWER', 'BUILDING']
+                        if not any(ind in context for ind in address_indicators):
+                            local_currency = curr
+                            local_amount = amt_str
+                            break
+                except ValueError:
+                    continue
+        
+        if local_currency:
+            break
+    
+    # Extract exchange rate only if we found a local currency
+    if local_currency:
+        exchange_patterns = [
+            r'EXCHANGE\s*RATE\s*(?:USED\s*)?[@:]?\s*([0-9]+\.[0-9]+)',
+            r'EX\.?\s*RATE[:\s]*([0-9]+\.[0-9]+)',
+            r'@\s*([0-9]+\.[0-9]+)',
+        ]
+        
+        for pattern in exchange_patterns:
+            match = re.search(pattern, doc_text_upper)
+            if match:
+                rate_val = match.group(1)
+                try:
+                    rate_float = float(rate_val)
+                    # Exchange rates are typically between 0.5 and 20
+                    if 0.5 <= rate_float <= 20:
+                        exchange_rate = rate_val
+                        break
+                except ValueError:
+                    continue
+    
+    # Validate and set the local currency data
+    if local_currency and local_amount:
+        try:
+            local_amt_float = float(local_amount)
+            primary_amount = extracted_data.get("amount", "")
+            if primary_amount:
+                primary_val = float(str(primary_amount).replace(',', ''))
+                # Sanity check: local amount should be proportional to primary
+                # (within reasonable exchange rate bounds: 0.5x to 15x)
+                if local_amt_float > primary_val * 0.5 and local_amt_float < primary_val * 15:
+                    payment_details["local_currency"] = local_currency
+                    payment_details["local_amount"] = local_amount
+                    if exchange_rate:
+                        payment_details["exchange_rate"] = exchange_rate
+                    extracted_data["payment_details"] = payment_details
+        except ValueError:
             pass
     
     return extracted_data

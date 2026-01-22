@@ -209,6 +209,18 @@
                                 <label>Currency</label>
                                 <span id="paymentCurrency" class="info-value">-</span>
                             </div>
+                            <div class="info-item" id="localAmountItem" style="display: none;">
+                                <label>Local Amount</label>
+                                <span id="localAmount" class="info-value">-</span>
+                            </div>
+                            <div class="info-item" id="localCurrencyItem" style="display: none;">
+                                <label>Local Currency</label>
+                                <span id="localCurrency" class="info-value">-</span>
+                            </div>
+                            <div class="info-item" id="exchangeRateItem" style="display: none;">
+                                <label>Exchange Rate</label>
+                                <span id="exchangeRate" class="info-value">-</span>
+                            </div>
                         </div>
                     </div>
 
@@ -423,20 +435,6 @@
                     </div>
                 </div>
 
-                <!-- Matching Status Summary -->
-                <div class="matching-summary-card">
-                    <h3>📈 PO Matching Status</h3>
-                    <div class="matching-progress-container">
-                        <div class="matching-progress-bar">
-                            <div id="matchedProgressFill" class="matching-progress-fill matched" style="width: 0%;"></div>
-                            <div id="unmatchedProgressFill" class="matching-progress-fill unmatched" style="width: 0%;"></div>
-                        </div>
-                        <div class="matching-progress-labels">
-                            <span class="matched-label"><span class="dot matched"></span> Matched: <span id="matchedPercent">0%</span></span>
-                            <span class="unmatched-label"><span class="dot unmatched"></span> Not Matched: <span id="unmatchedPercent">0%</span></span>
-                        </div>
-                    </div>
-                </div>
                 </section>
                 </div>
             </div>
@@ -568,7 +566,7 @@
                 <div class="duplicate-alert-box">
                     <strong>⚠️ Important:</strong> The duplicate invoice was not saved to the database.
                     <br>
-                    Please verify you uploaded the correct document.
+                    Please verify and re-upload the correct document.
                 </div>
             </div>
             
@@ -706,30 +704,11 @@
                     <div style="color: #6b7280; font-size: 0.9em;">
                         <span id="selectedCount">0</span> files selected
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button id="clearAllCacheBtn" class="file-mgr-btn" style="background: #f59e0b;">⚠️ Clear All Cache</button>
-                        <button id="clearEverythingBtn" class="file-mgr-btn" style="background: #dc2626;">🔥 Clear Everything</button>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Confirm Delete Modal -->
-    <div id="confirmDeleteModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 450px; text-align: center;">
-            <div style="padding: 30px;">
-                <div style="font-size: 4em; margin-bottom: 15px;">⚠️</div>
-                <h3 id="confirmDeleteTitle" style="margin-bottom: 10px; color: #dc2626;">Confirm Deletion</h3>
-                <p id="confirmDeleteMessage" style="color: #6b7280; margin-bottom: 20px;"></p>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button id="cancelDeleteBtn" class="file-mgr-btn" style="background: #6b7280; padding: 10px 25px;">Cancel</button>
-                    <button id="confirmDeleteBtn" class="file-mgr-btn" style="background: #dc2626; padding: 10px 25px;">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <style>
         /* Modal Base Styles */
         .modal {
