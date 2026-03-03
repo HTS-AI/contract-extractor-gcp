@@ -1,1 +1,231 @@
-[]
+[
+  {
+    "file_name": "Invoice - INV_KSA_2026_001.pdf",
+    "extracted_data": {
+      "document_type": "INVOICE",
+      "invoice_type": "Tax Invoice",
+      "party_names": {
+        "vendor": "Al Madinah T ech Solutions",
+        "vendor_address": "King F ahd R oad, Al Olaya District, Riyadh 12211, Kingdom of Saudi Arabia",
+        "vendor_tax_ids": {
+          "gstin": "",
+          "pan": "",
+          "vat": "300012345600003",
+          "eori": "",
+          "tax_id": "",
+          "ein": "",
+          "tin": "",
+          "trn": "",
+          "cr_number": "1010567890",
+          "other_id": "",
+          "other_id_label": ""
+        },
+        "customer": "HTS AI T echnologies Saudi Arabia",
+        "customer_address": "Prince Sultan S treet, Al Zahra District, Jeddah 23425, Kingdom of Saudi Arabia",
+        "customer_tax_ids": {
+          "gstin": "",
+          "pan": "",
+          "vat": "310098765400008",
+          "eori": "",
+          "tax_id": "",
+          "ein": "",
+          "tin": "",
+          "trn": "",
+          "cr_number": "4030123456",
+          "other_id": "",
+          "other_id_label": ""
+        },
+        "party_1": "Al Madinah T ech Solutions",
+        "party_2": "HTS AI T echnologies Saudi Arabia",
+        "additional_parties": []
+      },
+      "document_ids": {
+        "invoice_id": "INV/KSA/2026/001",
+        "invoice_number": "INV/KSA/2026/001",
+        "bill_number": "",
+        "po_number": "PO-KSA-2026-001",
+        "order_number": "",
+        "reference_id": "",
+        "document_number": "",
+        "quotation_number": "",
+        "receipt_number": "",
+        "transaction_id": "",
+        "other_ids": []
+      },
+      "dates": {
+        "invoice_date": "2026-04-15",
+        "due_date": "2026-06-14",
+        "supply_date": "",
+        "delivery_date": ""
+      },
+      "start_date": "2026-04-15",
+      "due_date": "2026-06-14",
+      "amounts": {
+        "subtotal": "175000.00",
+        "additional_charges": [],
+        "taxes": [
+          {
+            "label": "VAT @ 15%",
+            "percent": "15%",
+            "amount": "26250.00"
+          }
+        ],
+        "discount": "",
+        "discount_percent": "",
+        "total": "201250.00",
+        "amount_due": "",
+        "amount_paid": "",
+        "balance_due": ""
+      },
+      "amount": "201250.00",
+      "amount_explanation": "Subtotal 175000.00 + VAT @ 15% (26250.00) = Total 201250.00",
+      "currency": "SAR",
+      "line_items": [
+        {
+          "description": "ERP S ystem Implementation - SAP S/4HANA",
+          "hsn_sac_code": "",
+          "quantity": "1",
+          "unit": "",
+          "rate": "85000.00",
+          "amount": "85000.00",
+          "tax_rate": ""
+        },
+        {
+          "description": "ERP Data Migration & Integration Services",
+          "hsn_sac_code": "",
+          "quantity": "1",
+          "unit": "",
+          "rate": "52000.00",
+          "amount": "52000.00",
+          "tax_rate": ""
+        },
+        {
+          "description": "Post-Implementation Support & Training",
+          "hsn_sac_code": "",
+          "quantity": "1",
+          "unit": "",
+          "rate": "38000.00",
+          "amount": "38000.00",
+          "tax_rate": ""
+        }
+      ],
+      "payment_details": {
+        "payment_terms": "Net 60 days",
+        "payment_method": "",
+        "bank_name": "Al Rajhi Bank, Riyadh Main Branch",
+        "account_holder_name": "Al Madinah T ech Solutions",
+        "account_number": "",
+        "account_number_iban": "SA03 8000 0000 6080 1016 7519",
+        "ifsc_code": "",
+        "swift_code": "RJHISARI",
+        "branch": "",
+        "bank_address": "",
+        "upi_id": "",
+        "local_currency": "",
+        "local_amount": "",
+        "exchange_rate": ""
+      },
+      "frequency": "Quarterly",
+      "account_type": "IT & Technical Services",
+      "notes": "",
+      "declaration": "",
+      "terms_and_conditions": "",
+      "remarks": "",
+      "additional_info": "",
+      "rules_and_compliance_violation": "",
+      "risk_score": {
+        "score": 0,
+        "level": "Low",
+        "category": "🟢 Low Risk",
+        "risk_factors": []
+      },
+      "tax_details": {
+        "subtotal": "175000.00",
+        "cgst": "",
+        "sgst": "",
+        "igst": "",
+        "gst": "",
+        "vat": "",
+        "tax_amount": "",
+        "discount": ""
+      },
+      "per_period_amount": "50312.50",
+      "per_month_amount": "16770.83",
+      "period_name": "quarter",
+      "references": {
+        "document_ids_invoice_id": {
+          "page": 1
+        },
+        "document_ids_invoice_number": {
+          "page": 1
+        },
+        "document_ids_po_number": {
+          "page": 1
+        },
+        "party_vendor": {
+          "page": 1
+        },
+        "party_customer": {
+          "page": 1
+        },
+        "party_party_1": {
+          "page": 1
+        },
+        "party_party_2": {
+          "page": 1
+        },
+        "amount": {
+          "page": 1
+        },
+        "frequency": {
+          "page": 1
+        },
+        "currency": {
+          "page": 1
+        },
+        "invoice_type": {
+          "page": 1
+        },
+        "payment_terms": {
+          "page": 1
+        },
+        "start_date": {
+          "page": 1
+        },
+        "due_date": {
+          "page": 1
+        }
+      },
+      "_extraction_metadata": {
+        "agent_version": "langgraph-v1",
+        "extraction_method": "agent_based",
+        "document_type": "INVOICE",
+        "classification_confidence": "HIGH",
+        "status": "completed",
+        "timestamp": "2026-03-02T12:43:42.678117"
+      },
+      "_po_match": {
+        "matched": true,
+        "po_number": "PO-KSA-2026-001",
+        "po_filename": "Purchase Order - PO-KSA-2026-001.pdf",
+        "grn_matched": true,
+        "grn_filename": "Goods Received Note - GRN-KSA-2026-001.pdf",
+        "match_message": "Matched (PO + GRN): PO-KSA-2026-001. Ready for payment."
+      }
+    },
+    "metadata": {
+      "document_type": "INVOICE",
+      "classification_confidence": "HIGH",
+      "classification_reasoning": "The document contains an invoice number, itemized charges, VAT details, and payment due information, indicating it is a billing document for goods/services provided.",
+      "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp095xfo2z.pdf",
+      "file_name": "tmp095xfo2z.pdf",
+      "extraction_method": "langgraph_agent",
+      "document_text": "INVOICEINV/KSA/2026/001\nDate: 15 April 2026\nDue Date: 14 June 2026\nFROM (VENDOR)\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya District\nRiyadh 12211, Kingdom of Saudi Arabia\nVAT TIN: 300012345600003\nCR No: 1010567890TO (CUSTOMER)\nHTS AI T echnologies Saudi Arabia\nPrince Sultan S treet, Al Zahra District\nJeddah 23425, Kingdom of Saudi Arabia\nVAT TIN: 310098765400008\nCR No: 4030123456\nPO Number : PO-KSA-2026-001\nBilling P eriod: Q1 2026 (February – April 2026)\nInvoice Fr equency: Quarterly\nPayment T erms: Net 60 days\nLINE ITEMS\n# DESCRIPTION QTYUNIT PRICE\n(SAR)AMOUNT (SAR)\n1ERP S ystem Implementation - SAP\nS/4HANA1 85,000.00 85,000.00\n2ERP Data Migration & Integration\nServices1 52,000.00 52,000.00\n3Post-Implementation Support &\nTraining1 38,000.00 38,000.00\nSubt otal 175,000.00\nVAT @ 15% 26,250.00\nTotal P ayable 201,250.00\nBANK DETAILS\nBank Name: Al Rajhi Bank, Riyadh Main Branch\nIBAN: SA03 8000 0000 6080 1016 7519\nSWIF T Code: RJHISARI\nAccount T ype: Current Account (SAR)\nInvoice: INV/KSA/2026/001 | Quarterly (Q1 of 4) For Al Madinah T ech Solutions — Authorized Signatory\nTax Invoice — Kingdom of Saudi Arabia (ZA TCA Compliant)",
+      "page_map": {
+        "1": "INVOICEINV/KSA/2026/001\nDate: 15 April 2026\nDue Date: 14 June 2026\nFROM (VENDOR)\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya District\nRiyadh 12211, Kingdom of Saudi Arabia\nVAT TIN: 300012345600003\nCR No: 1010567890TO (CUSTOMER)\nHTS AI T echnologies Saudi Arabia\nPrince Sultan S treet, Al Zahra District\nJeddah 23425, Kingdom of Saudi Arabia\nVAT TIN: 310098765400008\nCR No: 4030123456\nPO Number : PO-KSA-2026-001\nBilling P eriod: Q1 2026 (February – April 2026)\nInvoice Fr equency: Quarterly\nPayment T erms: Net 60 days\nLINE ITEMS\n# DESCRIPTION QTYUNIT PRICE\n(SAR)AMOUNT (SAR)\n1ERP S ystem Implementation - SAP\nS/4HANA1 85,000.00 85,000.00\n2ERP Data Migration & Integration\nServices1 52,000.00 52,000.00\n3Post-Implementation Support &\nTraining1 38,000.00 38,000.00\nSubt otal 175,000.00\nVAT @ 15% 26,250.00\nTotal P ayable 201,250.00\nBANK DETAILS\nBank Name: Al Rajhi Bank, Riyadh Main Branch\nIBAN: SA03 8000 0000 6080 1016 7519\nSWIF T Code: RJHISARI\nAccount T ype: Current Account (SAR)\nInvoice: INV/KSA/2026/001 | Quarterly (Q1 of 4) For Al Madinah T ech Solutions — Authorized Signatory\nTax Invoice — Kingdom of Saudi Arabia (ZA TCA Compliant)"
+      },
+      "status": "completed",
+      "error": null
+    }
+  }
+]
