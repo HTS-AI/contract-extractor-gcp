@@ -10,6 +10,9 @@ RUN npm ci
 
 COPY frontend/ ./
 
+# Create static folder if it does not exist
+RUN mkdir -p static
+
 # Fix vite permission issue
 RUN chmod -R 755 node_modules
 
