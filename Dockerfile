@@ -6,17 +6,16 @@ FROM node:20-slim AS frontend-build
 WORKDIR /frontend
 
 COPY frontend/package*.json ./
-
-# Install dependencies
 RUN npm ci
 
 COPY frontend/ ./
 
-RUN npm run build
+# Use npm exec to avoid permission issue
+RUN npm exec vite build
 
 
 # =========================================
-# Stage 2: Backend + Serve Frontend
+# Stage 2: Backend + Serve Built Frontend
 # =========================================
 FROM python:3.10-slim
 
