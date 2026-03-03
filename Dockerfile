@@ -42,7 +42,9 @@ COPY . .
 RUN rm -rf frontend
 
 # Copy built frontend from stage 1
-COPY --from=frontend-build /frontend/dist ./frontend_build
+#COPY --from=frontend-build /frontend/dist ./frontend_build
+COPY --from=frontend-build /frontend/dist ./static
+
 
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
