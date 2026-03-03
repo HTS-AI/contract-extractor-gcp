@@ -4,6 +4,7 @@ Uses LangChain with OpenAI for intelligent question answering.
 """
 
 import os
+import re
 import json
 from datetime import datetime
 from pathlib import Path
@@ -13,7 +14,6 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from document_parser import DocumentParser
-from cache_manager import get_cache_manager
 
 
 class DocumentChatbot:
@@ -181,26 +181,6 @@ class DocumentChatbot:
             # Save all content to JSON file for validation
             self._save_content_to_json(session_id, file_path, document_text, page_map, chunks, tables, is_scanned, is_scanned and self.use_gcs_vision)
             
-            # Save to cache for future use
-            # Compute hash if not provided
-            if not file_hash:
-                cache_manager = get_cache_manager()
-                file_hash = cache_manager.compute_file_hash(file_path)
-            
-            if file_hash:
-                cache_manager = get_cache_manager()
-                cache_manager.save_chatbot_cache(
-                    file_hash=file_hash,
-                    document_text=document_text,
-                    page_map=page_map,
-                    chunks=chunks,
-                    tables=tables,
-                    is_scanned=is_scanned,
-                    used_ocr=is_scanned and self.use_gcs_vision,
-                    filename=os.path.basename(file_path)
-                )
-                print(f"[CHATBOT] Saved to cache for future use (hash: {file_hash[:16]}...)")
-            
             print(f"[CHATBOT] Session created: {session_id}")
             
             # Create success message
@@ -226,6 +206,197 @@ class DocumentChatbot:
                 "error": f"Error processing document: {str(e)}"
             }
     
+    @staticmethod
+    def _plain_text_answer(text: str) -> str:
+        """Remove markdown bold/italic so the answer is plain, user-friendly text."""
+        if not text or not isinstance(text, str):
+            return text
+        # Remove **bold** then *italic*
+        out = re.sub(r'\*\*([^*]*)\*\*', r'\1', text)
+        out = re.sub(r'\*([^*]*)\*', r'\1', out)
+        return out.strip()
+
+    @staticmethod
+    def _extracted_data_to_searchable_text(extracted_data: Dict[str, Any], doc_type: str, filename: str) -> str:
+        """Build searchable text from extracted_data when document_text is not available."""
+        if not extracted_data:
+            return ""
+        lines = [
+            f"Document type: {extracted_data.get('document_type', doc_type)}",
+            f"Filename: {filename}",
+        ]
+        for key in ("document_ids", "party_names"):
+            val = extracted_data.get(key)
+            if isinstance(val, dict):
+                for k, v in val.items():
+                    if v:
+                        lines.append(f"{k}: {v}")
+        for key in ("amount", "currency", "start_date", "due_date", "contract_type"):
+            val = extracted_data.get(key)
+            if val:
+                lines.append(f"{key}: {val}")
+        line_items = extracted_data.get("line_items", [])
+        if line_items:
+            lines.append("Line items:")
+            for i, item in enumerate(line_items[:50], 1):
+                if isinstance(item, dict):
+                    lines.append(f"  {i}. {item.get('description', '')} Qty: {item.get('quantity', '')} Amount: {item.get('amount', '')}")
+                else:
+                    lines.append(f"  {i}. {item}")
+        po_match = extracted_data.get("_po_match")
+        if isinstance(po_match, dict):
+            matched = po_match.get("matched", False)
+            lines.append(f"PO/GRN Match Status: {'MATCHED (approved for AP)' if matched else 'NOT MATCHED (rejected from AP)'}")
+            if po_match.get("po_number"):
+                lines.append(f"Matched PO Number: {po_match['po_number']}")
+            if po_match.get("grn_filename"):
+                lines.append(f"Matched GRN: {po_match['grn_filename']}")
+            if po_match.get("match_message"):
+                lines.append(f"Match Details: {po_match['match_message']}")
+            if po_match.get("failure_reason"):
+                lines.append(f"Failure Reason: {po_match['failure_reason']}")
+            issues = po_match.get("item_issues", [])
+            if issues:
+                lines.append("Item Issues: " + "; ".join(issues))
+        return "\n".join(lines)
+
+    def create_session_from_all_documents(
+        self,
+        session_id: str,
+        extractions_list: List[Dict[str, Any]],
+        po_list: List[Dict[str, Any]],
+        grn_list: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Create a chat session from all previously uploaded invoices, purchase orders, and GRNs.
+        Combines document text (or extracted_data summary) from each into one searchable corpus.
+        
+        Args:
+            session_id: Unique session identifier
+            extractions_list: List of extraction records (invoices; each with file_name, extracted_data, metadata)
+            po_list: List of PO records (each with full_data: { document_text, extracted_data, filename })
+            grn_list: List of GRN records (each with full_data or same shape as po_list); optional
+            
+        Returns:
+            Session creation status and info
+        """
+        grn_list = grn_list or []
+        try:
+            combined_parts = []
+            doc_count = 0
+            
+            for ext in extractions_list:
+                file_name = ext.get("file_name", "document.pdf")
+                extracted_data = ext.get("extracted_data", {})
+                metadata = ext.get("metadata", {})
+                document_text = (metadata or {}).get("document_text", "")
+                doc_type = (extracted_data or {}).get("document_type", "DOCUMENT")
+                if document_text and document_text.strip():
+                    part = f"\n\n--- {doc_type}: {file_name} ---\n\n{document_text}"
+                else:
+                    part = "\n\n--- {}: {} ---\n\n{}".format(
+                        doc_type,
+                        file_name,
+                        self._extracted_data_to_searchable_text(extracted_data, doc_type, file_name),
+                    )
+                if part.strip():
+                    combined_parts.append(part)
+                    doc_count += 1
+            
+            for po_entry in po_list:
+                full_data = po_entry.get("full_data") if isinstance(po_entry.get("full_data"), dict) else None
+                if not full_data:
+                    continue
+                file_name = full_data.get("filename", po_entry.get("filename", "po.pdf"))
+                extracted_data = full_data.get("extracted_data", {})
+                document_text = full_data.get("document_text", "")
+                doc_type = (extracted_data or {}).get("document_type", "PURCHASE_ORDER")
+                if document_text and document_text.strip():
+                    part = f"\n\n--- {doc_type}: {file_name} ---\n\n{document_text}"
+                else:
+                    part = "\n\n--- {}: {} ---\n\n{}".format(
+                        doc_type,
+                        file_name,
+                        self._extracted_data_to_searchable_text(extracted_data, doc_type, file_name),
+                    )
+                if part.strip():
+                    combined_parts.append(part)
+                    doc_count += 1
+            
+            for grn_entry in grn_list:
+                full_data = grn_entry.get("full_data") if isinstance(grn_entry.get("full_data"), dict) else None
+                if not full_data:
+                    continue
+                file_name = full_data.get("filename", grn_entry.get("filename", "grn.pdf"))
+                extracted_data = full_data.get("extracted_data", {})
+                document_text = full_data.get("document_text", "")
+                doc_type = (extracted_data or {}).get("document_type", "GRN")
+                if document_text and document_text.strip():
+                    part = f"\n\n--- {doc_type}: {file_name} ---\n\n{document_text}"
+                else:
+                    part = "\n\n--- {}: {} ---\n\n{}".format(
+                        doc_type,
+                        file_name,
+                        self._extracted_data_to_searchable_text(extracted_data, doc_type, file_name),
+                    )
+                if part.strip():
+                    combined_parts.append(part)
+                    doc_count += 1
+            
+            if not combined_parts:
+                return {
+                    "success": False,
+                    "error": "No invoices, purchase orders or GRNs found. Upload some documents first.",
+                }
+            
+            combined_text = "".join(combined_parts)
+            print(f"[CHATBOT] Creating session from all documents: {doc_count} documents, {len(combined_text)} chars")
+            
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1500,
+                chunk_overlap=300,
+                length_function=len,
+                separators=["\n\n", "\n", ". ", " ", ""],
+            )
+            chunks = text_splitter.split_text(combined_text)
+            print(f"[CHATBOT] Created {len(chunks)} chunks from all documents")
+            
+            vectorstore = FAISS.from_texts(chunks, self.embeddings)
+            
+            self.sessions[session_id] = {
+                "vectorstore": vectorstore,
+                "chat_history": [],
+                "filename": "All Invoices, POs & GRN",
+                "chunks": len(chunks),
+                "chunk_texts": chunks,
+                "document_text": combined_text,
+                "page_map": {},
+                "tables": [],
+                "document_length": len(combined_text),
+                "is_scanned": False,
+                "used_ocr": False,
+                "from_all_documents": True,
+                "document_count": doc_count,
+            }
+            
+            return {
+                "success": True,
+                "session_id": session_id,
+                "filename": "All Invoices, POs & GRN",
+                "chunks": len(chunks),
+                "document_length": len(combined_text),
+                "document_count": doc_count,
+                "message": f"Loaded {doc_count} document(s) (invoices, purchase orders and GRNs). Ask me anything about them. Payment is processed only when PO, GRN and Invoice match.",
+            }
+        except Exception as e:
+            print(f"[CHATBOT] Error creating session from all documents: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": str(e),
+            }
+
     def create_session_from_text(self, session_id: str, document_text: str, filename: str = "document.pdf", extracted_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Create a new chat session from already-parsed document text.
@@ -443,6 +614,16 @@ IMPORTANT INSTRUCTIONS:
 - Consider the conversation history for context
 - If you find partial information, provide what you found and indicate if there might be more
 - Only say "I cannot find that information in the document" if you've thoroughly searched ALL chunks, tables, and found nothing
+- When the context includes invoices, purchase orders (POs) and GRNs (Goods Received Notes): link them by PO number or vendor. For an invoice use PO number to find the matching PO and GRN; for a PO use it to find related invoices and GRNs. Payment is processed only when PO, GRN and Invoice all match for the same PO number. Answer about all three when asked about "invoices and their POs" or "PO and its invoices" or "ready for payment".
+
+RESPONSE FORMAT - STRICT (plain text only):
+- Do NOT use markdown: no asterisks (**), no bold, no "1. **Title**" style. Output plain text only.
+- Do NOT write like "1. **Invoice from X** - ..." or "**two invoices**". Write like: "Invoice from X: ..." and "There are two invoices."
+- Use short lines. For lists, use line breaks and simple labels, e.g.:
+  "Invoice from Zenith Precision Engineering Ltd. Invoice number EXP-2025-0092. Date 15-Jan-2025. Due date 14-Feb-2025.
+  Invoice from Chromatic Digital Solutions. Invoice number CDS/25-26/0442. PO Ref PO-NEX-2026-11.
+  In summary, there are two invoices and one PO reference." 
+- Be conversational. No numbering like "1." "2." unless the user asked for a numbered list. No ** around words.
 
 Be accurate, detailed, and comprehensive. Double-check your answer before responding."""
             
@@ -461,6 +642,7 @@ ANSWER:"""
             ])
             
             answer = response.content
+            answer = self._plain_text_answer(answer)
             
             # Store in conversation history
             chat_history.append((question, answer))
@@ -595,6 +777,16 @@ IMPORTANT INSTRUCTIONS:
 - Use the extracted structured data and tables as a reference, but also search the full document text for complete details
 - If you find partial information, provide what you found and indicate if there might be more
 - Only say "I cannot find that information in the document" if you've thoroughly searched ALL chunks, tables, and found nothing
+- When the context includes invoices, POs and GRNs: link them by PO number or vendor. Payment is processed only when PO, GRN and Invoice all match. Answer about invoices, POs and GRNs when asked about "ready for payment" or "invoices and their POs" or vice versa.
+
+RESPONSE FORMAT - STRICT (plain text only):
+- Do NOT use markdown: no asterisks (**), no bold, no "1. **Title**" style. Output plain text only.
+- Do NOT write like "1. **Invoice from X** - ..." or "**two invoices**". Write like: "Invoice from X: ..." and "There are two invoices."
+- Use short lines. For lists, use line breaks and simple labels, e.g.:
+  "Invoice from Zenith Precision Engineering Ltd. Invoice number EXP-2025-0092. Date 15-Jan-2025. Due date 14-Feb-2025.
+  Invoice from Chromatic Digital Solutions. Invoice number CDS/25-26/0442. PO Ref PO-NEX-2026-11.
+  In summary, there are two invoices and one PO reference." 
+- Be conversational. No numbering like "1." "2." unless the user asked for a numbered list. No ** around words.
 
 Be accurate, detailed, and comprehensive. Double-check your answer before responding."""
             
@@ -612,6 +804,7 @@ ANSWER:"""
             ])
             
             answer = response.content
+            answer = self._plain_text_answer(answer)
             
             # Extract excerpts
             excerpts = []
@@ -795,21 +988,6 @@ ANSWER:"""
             }
             
             print(f"[CHATBOT] Session created from extraction cache: {session_id}")
-            
-            # Save to chatbot cache for future instant loads
-            if file_hash:
-                cache_manager = get_cache_manager()
-                cache_manager.save_chatbot_cache(
-                    file_hash=file_hash,
-                    document_text=document_text,
-                    page_map=page_map,
-                    chunks=chunks,
-                    tables=tables,
-                    is_scanned=False,  # Unknown from extraction cache
-                    used_ocr=False,     # Unknown from extraction cache
-                    filename=filename
-                )
-                print(f"[CHATBOT] Saved to chatbot cache for future instant loads (hash: {file_hash[:16]}...)")
             
             message = f"Document loaded from extraction cache! Ask me anything about '{filename}'. (Reused parsed text - faster processing!)"
             
