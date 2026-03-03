@@ -1,15 +1,20 @@
 # =========================================
 # Stage 1: Build Frontend (Vite)
 # =========================================
-FROM node:20-alpine AS frontend-build
+FROM node:20-slim AS frontend-build
 
 WORKDIR /frontend
 
-# Install dependencies first (better Docker caching)
+# Copy only package files first (better layer caching)
 COPY frontend/package*.json ./
+
+# Install dependencies
 RUN npm ci
 
-# Copy frontend source
+# Fix permission issue for vite binary
+RUN chmod -R 755 node_modules/.bin
+
+# Copy frontend source code
 COPY frontend/ ./
 
 # Build production files (outputs to dist/)
@@ -23,7 +28,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install minimal required system dependencies
+# Install minimal system dependencies (only if required)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
@@ -38,12 +43,12 @@ COPY backend/ ./backend/
 # Copy built frontend from Stage 1
 COPY --from=frontend-build /frontend/dist ./frontend_build
 
-# Cloud Run requires app to listen on $PORT
+# Cloud Run requires listening on $PORT
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 
 EXPOSE 8080
 
-# Start FastAPI
+# Start FastAPI using uvicorn
 WORKDIR /app/backend
 CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT}"]
