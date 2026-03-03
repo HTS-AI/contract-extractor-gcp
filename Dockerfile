@@ -1,22 +1,40 @@
-FROM python:3.11-slim
+# Multi-stage build for Cash Flow Prediction App
 
-# Set working directory
+# Stage 1: Build Frontend
+FROM node:18-alpine AS frontend-build
+WORKDIR /frontend
+COPY frontend/package.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Production Backend + Serve Frontend
+FROM python:3.10-slim
+
 WORKDIR /app
 
-# Copy requirements first (for better caching)
-COPY requirements.txt .
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy full project
-COPY . .
+# Copy backend code
+COPY backend/ ./backend/
 
-# Set default environment variables (can be overridden by Kubernetes)
-ENV OPENAI_API_KEY=""
+# Copy built frontend (Create React App outputs to 'build', not 'dist')
+COPY --from=frontend-build /frontend/build ./frontend_build
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
 
 # Expose port
 EXPOSE 8080
 
-# Start FastAPI using uvicorn
+# Start the application
+WORKDIR /app/backend
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]

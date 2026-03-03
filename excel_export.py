@@ -204,19 +204,19 @@ class ExcelExporter:
             
             doc_type = extracted_data.get("document_type", "").upper()
             
-            # ============== PO MATCHING CHECK FOR INVOICES ==============
-            # For invoices, only save to Excel if a PO was matched
+            # ============== THREE-WAY MATCHING CHECK FOR INVOICES ==============
+            # For invoices, only save to Excel when PO + GRN + Invoice all match
             if doc_type == "INVOICE":
                 po_match = extracted_data.get("_po_match", {})
                 if not po_match or not po_match.get("matched"):
-                    print(f"[EXCEL] BLOCKED: Invoice without matching PO - not saving to Excel")
+                    print(f"[EXCEL] BLOCKED: Invoice without three-way match (PO + GRN) - not saving to Excel")
                     print(f"[EXCEL]   Document: {file_name}")
-                    print(f"[EXCEL]   Reason: No matching Purchase Order found")
+                    print(f"[EXCEL]   Reason: PO and GRN must both match for payment")
                     return False
                 else:
                     po_number = po_match.get("po_number", "N/A")
-                    print(f"[EXCEL] Invoice has matching PO: {po_number}")
-            # ============== END PO MATCHING CHECK ==============
+                    print(f"[EXCEL] Invoice has three-way match (PO + GRN): {po_number}")
+            # ============== END THREE-WAY MATCHING CHECK ==============
             
             # Format document IDs into a single string
             document_ids_str = self._format_document_ids(extracted_data.get("document_ids", {}))
@@ -237,10 +237,13 @@ class ExcelExporter:
                 if po_match.get("matched"):
                     po_number = po_match.get("po_number", "")
                     po_filename = po_match.get("po_filename", "")
+                    grn_filename = po_match.get("grn_filename", "")
                     if po_number:
                         matched_po_str = f"PO: {po_number}"
                         if po_filename:
                             matched_po_str += f" ({po_filename})"
+                        if grn_filename:
+                            matched_po_str += f" | GRN: {grn_filename}"
                     
                     # Generate Unique ID combining Invoice Number and PO Number
                     # Format: INV{last_part_of_invoice}-PO{last_part_of_po}

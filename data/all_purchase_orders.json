@@ -1,0 +1,863 @@
+[
+  {
+    "file_hash": "de61734539045309529a55f6b081ec74798cd58477589d03aa125afe831dd8a4",
+    "filename": "doc2_po.pdf",
+    "po_number": "PO-NEX-2026-11",
+    "vendor": "Chromatic Digital Solutions Pvt. Ltd.",
+    "customer": "Nexus Healthcare Systems",
+    "item_descriptions": [
+      "Enterprise ERP License - Annual Subscription (Jan 26-Dec 26)",
+      "Implementation Support - Consulting Hours",
+      "Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM)"
+    ],
+    "total_amount": "815527.50",
+    "indexed_at": "2026-03-02T11:04:47.326277",
+    "full_data": {
+      "file_hash": "de61734539045309529a55f6b081ec74798cd58477589d03aa125afe831dd8a4",
+      "filename": "doc2_po.pdf",
+      "document_type": "PURCHASE_ORDER",
+      "cached_at": "2026-03-02T11:04:47.326277",
+      "extracted_data": {
+        "document_type": "PURCHASE_ORDER",
+        "po_type": "",
+        "party_names": {
+          "vendor": "Chromatic Digital Solutions Pvt. Ltd.",
+          "vendor_address": "HITEC City, Hyderabad, Telangana - 500081",
+          "vendor_tax_ids": {
+            "gstin": "36AAFCC1234A1Z5",
+            "pan": "AAFCC1234A",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "customer": "Nexus Healthcare Systems",
+          "customer_address": "Plot No 44, Jubilee Hills, Hyderabad, Telangana - 500033",
+          "customer_tax_ids": {
+            "gstin": "36BBPQ9876K1Z2",
+            "pan": "",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "party_1": "Nexus Healthcare Systems",
+          "party_2": "Chromatic Digital Solutions Pvt. Ltd.",
+          "additional_parties": []
+        },
+        "document_ids": {
+          "po_number": "PO-NEX-2026-11",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "contract_id": "",
+          "project_id": "",
+          "other_ids": []
+        },
+        "dates": {
+          "po_date": "2026-01-12",
+          "delivery_date": "",
+          "due_date": "",
+          "valid_until": "",
+          "ship_date": ""
+        },
+        "start_date": "2026-01-12",
+        "due_date": "",
+        "amounts": {
+          "subtotal": "691125.00",
+          "additional_charges": [
+            {
+              "label": "CGST (9%)",
+              "amount": "62201.25"
+            },
+            {
+              "label": "SGST (9%)",
+              "amount": "62201.25"
+            }
+          ],
+          "taxes": [],
+          "discount": "",
+          "discount_percent": "",
+          "total": "815527.50",
+          "advance_payment": "",
+          "balance_due": ""
+        },
+        "amount": "815527.50",
+        "amount_explanation": "Total includes taxable value and applicable taxes.",
+        "currency": "INR",
+        "line_items": [
+          {
+            "item_number": "1",
+            "description": "Enterprise ERP License - Annual Subscription (Jan 26-Dec 26)",
+            "sku": "",
+            "hsn_sac_code": "997331",
+            "quantity": "1",
+            "unit": "",
+            "rate": "150000.00",
+            "amount": "150000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "2",
+            "description": "Implementation Support - Consulting Hours",
+            "sku": "",
+            "hsn_sac_code": "998313",
+            "quantity": "150",
+            "unit": "",
+            "rate": "850.00",
+            "amount": "121125.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "3",
+            "description": "Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM)",
+            "sku": "",
+            "hsn_sac_code": "8471",
+            "quantity": "2",
+            "unit": "",
+            "rate": "210000.00",
+            "amount": "420000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          }
+        ],
+        "tax_details": {
+          "gst": "",
+          "cgst": "62201.25",
+          "sgst": "62201.25",
+          "igst": "",
+          "vat": "",
+          "other_taxes": []
+        },
+        "shipping_details": {
+          "ship_to_address": "Plot No 44, Jubilee Hills, Hyderabad, Telangana - 500033",
+          "ship_to_contact": "Procurement Department",
+          "shipping_method": "",
+          "shipping_terms": "",
+          "incoterms": ""
+        },
+        "payment_details": {
+          "payment_terms": "Net 30 Days",
+          "payment_method": "",
+          "bank_name": "ICICI Bank Ltd",
+          "account_number": "004505009988",
+          "ifsc_code": "ICIC0000045",
+          "swift_code": "",
+          "iban": ""
+        },
+        "frequency": "",
+        "account_type": "Accounts Payable",
+        "notes": "Please reference PO-NEX-2026-11 on all shipping labels and invoices.",
+        "terms_and_conditions": "",
+        "special_instructions": "",
+        "approval_status": "",
+        "authorized_signatory": "Authorized Signatory",
+        "rules_and_compliance_violation": "",
+        "risk_score": null
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp3873p63c.pdf",
+        "file_name": "tmp3873p63c.pdf",
+        "document_text": "Nexus Healthcare Systems\nPlot No 44, Jubilee Hills\nHyderabad, Telangana - 500033\nGSTIN:  36BBPQ9876K1Z2PURCHASE ORDER\nPO Number:  PO-NEX-2026-11\nDate:  12-Jan-2026\nPayment T erms:  Net 30 Days\nVENDOR\nChromatic Digital Solutions Pvt. Ltd.\nHITEC City, Hyderabad\nTelangana - 500081\nGSTIN: 36AAFCC1234A1Z5\nPAN: AAFCC1234ASHIP TO\nNexus Healthcare Systems\nPlot No 44, Jubilee Hills\nHyderabad, Telangana - 500033\nAttn: Procurement Department\n# Item Description HSN/SAC Qty Rate (INR) Total (INR)\n1 Enterprise ERP License - Annual Subscription (Jan 26-Dec 26) 997331 1 1,50,000.00 1,50,000.00\n2 Implementation Support - Consulting Hours 998313 150 850.00 1,21,125.00\n3 Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM) 8471 2 2,10,000.00 4,20,000.00\nTotal Taxable Value: 6,91,125.00\nAdd: CGST (9%): 62,201.25\nAdd: SGST (9%): 62,201.25\nGrand Total (INR): ₹8,15,527.50\nAmount in W ords:  Indian Rupees Eight Lakh Fifteen Thousand Five Hundred Twenty-Seven and Fifty Paise Only .\nBanking Instructions for Payment:\nBank: ICICI Bank Ltd | A/c No: 004505009988 | IFSC: ICIC0000045\nBranch: Gachibowli, Hyderabad\nNotes:\n1. Please reference PO-NEX-2026-11 on all shipping labels and invoices.\n2. Subject to Hyderabad Jurisdiction.\nAuthorized Signatory\nNexus Healthcare Systems",
+        "page_map": {
+          "1": "Nexus Healthcare Systems\nPlot No 44, Jubilee Hills\nHyderabad, Telangana - 500033\nGSTIN:  36BBPQ9876K1Z2PURCHASE ORDER\nPO Number:  PO-NEX-2026-11\nDate:  12-Jan-2026\nPayment T erms:  Net 30 Days\nVENDOR\nChromatic Digital Solutions Pvt. Ltd.\nHITEC City, Hyderabad\nTelangana - 500081\nGSTIN: 36AAFCC1234A1Z5\nPAN: AAFCC1234ASHIP TO\nNexus Healthcare Systems\nPlot No 44, Jubilee Hills\nHyderabad, Telangana - 500033\nAttn: Procurement Department\n# Item Description HSN/SAC Qty Rate (INR) Total (INR)\n1 Enterprise ERP License - Annual Subscription (Jan 26-Dec 26) 997331 1 1,50,000.00 1,50,000.00\n2 Implementation Support - Consulting Hours 998313 150 850.00 1,21,125.00\n3 Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM) 8471 2 2,10,000.00 4,20,000.00\nTotal Taxable Value: 6,91,125.00\nAdd: CGST (9%): 62,201.25\nAdd: SGST (9%): 62,201.25\nGrand Total (INR): ₹8,15,527.50\nAmount in W ords:  Indian Rupees Eight Lakh Fifteen Thousand Five Hundred Twenty-Seven and Fifty Paise Only .\nBanking Instructions for Payment:\nBank: ICICI Bank Ltd | A/c No: 004505009988 | IFSC: ICIC0000045\nBranch: Gachibowli, Hyderabad\nNotes:\n1. Please reference PO-NEX-2026-11 on all shipping labels and invoices.\n2. Subject to Hyderabad Jurisdiction.\nAuthorized Signatory\nNexus Healthcare Systems"
+        },
+        "total_pages": 1,
+        "total_characters": 1267,
+        "extraction_method": "vision_api",
+        "gcs_uri": "gs://data-pdf-extractor/cache/purchase_orders/doc2_po.pdf"
+      },
+      "document_text": "Nexus Healthcare Systems\nPlot No 44, Jubilee Hills\nHyderabad, Telangana - 500033\nGSTIN:  36BBPQ9876K1Z2PURCHASE ORDER\nPO Number:  PO-NEX-2026-11\nDate:  12-Jan-2026\nPayment T erms:  Net 30 Days\nVENDOR\nChromatic Digital Solutions Pvt. Ltd.\nHITEC City, Hyderabad\nTelangana - 500081\nGSTIN: 36AAFCC1234A1Z5\nPAN: AAFCC1234ASHIP TO\nNexus Healthcare Systems\nPlot No 44, Jubilee Hills\nHyderabad, Telangana - 500033\nAttn: Procurement Department\n# Item Description HSN/SAC Qty Rate (INR) Total (INR)\n1 Enterprise ERP License - Annual Subscription (Jan 26-Dec 26) 997331 1 1,50,000.00 1,50,000.00\n2 Implementation Support - Consulting Hours 998313 150 850.00 1,21,125.00\n3 Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM) 8471 2 2,10,000.00 4,20,000.00\nTotal Taxable Value: 6,91,125.00\nAdd: CGST (9%): 62,201.25\nAdd: SGST (9%): 62,201.25\nGrand Total (INR): ₹8,15,527.50\nAmount in W ords:  Indian Rupees Eight Lakh Fifteen Thousand Five Hundred Twenty-Seven and Fifty Paise Only .\nBanking Instructions for Payment:\nBank: ICICI Bank Ltd | A/c No: 004505009988 | IFSC: ICIC0000045\nBranch: Gachibowli, Hyderabad\nNotes:\n1. Please reference PO-NEX-2026-11 on all shipping labels and invoices.\n2. Subject to Hyderabad Jurisdiction.\nAuthorized Signatory\nNexus Healthcare Systems"
+    }
+  },
+  {
+    "file_hash": "932522763729f650626fa076b721aca5e568879e327c4143a750aed442abbbb0",
+    "filename": "Purchase Order - PO-MNTH-2026-001.pdf",
+    "po_number": "PO-MNTH-2026-001",
+    "vendor": "TechServe Solutions Pvt Ltd",
+    "customer": "HTS AI Technologies Ltd",
+    "item_descriptions": [
+      "Software Development Services - Senior Developer",
+      "QA Testing & Automation Services",
+      "DevOps & Cloud Infrastructure Support"
+    ],
+    "total_amount": "24,00,000.00",
+    "indexed_at": "2026-02-27T18:21:21.006534",
+    "full_data": {
+      "file_hash": "932522763729f650626fa076b721aca5e568879e327c4143a750aed442abbbb0",
+      "filename": "Purchase Order - PO-MNTH-2026-001.pdf",
+      "document_type": "PURCHASE_ORDER",
+      "cached_at": "2026-02-27T18:21:21.006534",
+      "extracted_data": {
+        "document_type": "PURCHASE_ORDER",
+        "po_type": "Contract PO",
+        "party_names": {
+          "vendor": "TechServe Solutions Pvt Ltd",
+          "vendor_address": "42, Whitefield Main Road, Bangalore, Karnataka 560066",
+          "vendor_tax_ids": {
+            "gstin": "29AABCT1234F1ZP",
+            "pan": "AABCT1234F",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "customer": "HTS AI Technologies Ltd",
+          "customer_address": "Tower B, Floor 5, Cyber City, Gurugram, Haryana 122002",
+          "customer_tax_ids": {
+            "gstin": "06AAHCH5678K1Z8",
+            "pan": "AAHCH5678K",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "party_1": "HTS AI Technologies Ltd",
+          "party_2": "TechServe Solutions Pvt Ltd",
+          "additional_parties": []
+        },
+        "document_ids": {
+          "po_number": "PO-MNTH-2026-001",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "contract_id": "",
+          "project_id": "",
+          "other_ids": []
+        },
+        "dates": {
+          "po_date": "2026-01-01",
+          "delivery_date": "",
+          "due_date": "",
+          "valid_until": "",
+          "ship_date": ""
+        },
+        "start_date": "2026-01-01",
+        "due_date": "",
+        "amounts": {
+          "subtotal": "24,00,000.00",
+          "additional_charges": [],
+          "taxes": [],
+          "discount": "",
+          "discount_percent": "",
+          "total": "24,00,000.00",
+          "advance_payment": "",
+          "balance_due": ""
+        },
+        "amount": "24,00,000.00",
+        "amount_explanation": "Total contract value over 12 months.",
+        "currency": "INR",
+        "line_items": [
+          {
+            "item_number": "1",
+            "description": "Software Development Services - Senior Developer",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "2",
+            "unit": "MONTH",
+            "rate": "60,000.00",
+            "amount": "1,20,000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "2",
+            "description": "QA Testing & Automation Services",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "1",
+            "unit": "MONTH",
+            "rate": "45,000.00",
+            "amount": "45,000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "3",
+            "description": "DevOps & Cloud Infrastructure Support",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "1",
+            "unit": "MONTH",
+            "rate": "35,000.00",
+            "amount": "35,000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          }
+        ],
+        "tax_details": {
+          "gst": "",
+          "cgst": "",
+          "sgst": "",
+          "igst": "",
+          "vat": "",
+          "other_taxes": []
+        },
+        "shipping_details": {
+          "ship_to_address": "",
+          "ship_to_contact": "",
+          "shipping_method": "",
+          "shipping_terms": "",
+          "incoterms": ""
+        },
+        "payment_details": {
+          "payment_terms": "Net 30 days from invoice date",
+          "payment_method": "",
+          "bank_name": "",
+          "account_number": "",
+          "ifsc_code": "",
+          "swift_code": "",
+          "iban": ""
+        },
+        "frequency": "Monthly",
+        "account_type": "Accounts Payable",
+        "notes": "",
+        "terms_and_conditions": "Vendor shall submit monthly invoices by the 5th of each month for the preceding month's services. Each invoice must reference this PO number.",
+        "special_instructions": "",
+        "approval_status": "",
+        "authorized_signatory": "Rajesh Kumar, Procurement Head",
+        "rules_and_compliance_violation": "",
+        "risk_score": null
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmptp5ih5js.pdf",
+        "file_name": "tmptp5ih5js.pdf",
+        "document_text": "PURCHASE ORDERMONTHLY CONTRACT\nVENDOR / SUPPLIER\nTechSer ve Solutions Pvt L td\n42, Whitefield Main R oad\nBangalore, Karnataka 560066\nGSTIN: 29AABCT1234F1ZP\nPAN: AABCT1234FCUSTOMER / BILL TO\nHTS AI T echnologies L td\nTower B, Floor 5, Cyber City\nGurugram, Haryana 122002\nGSTIN: 06AAHCH5678K1Z8\nPAN: AAHCH5678K\nPO Dat e: 01 January 2026\nContract P eriod: 01 January 2026 – 31 December 2026\nInvoice Fr equency: Monthly\nPayment T erms: Net 30 days from invoice date\nCurrency: INR\nLINE ITEMS\n# DESCRIPTION QTY/MONTHUNIT\nPRICE (₹)MONTHLY\nTOTAL (₹)ANNUAL\nTOTAL (₹)\n1Software\nDevelopment\nServices - Senior\nDeveloper2 60,000.00 1,20,000.00 14,40,000.00\n2QA Testing &\nAutomation\nServices1 45,000.00 45,000.00 5,40,000.00\n3DevOps & Cloud\nInfrastructure\nSupport1 35,000.00 35,000.00 4,20,000.00\n2,00,000.00 24,00,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit monthly invoices by the 5th of each month for the preceding month's services.\n2. Each invoice must reference this PO number (PO-MNTH-2026-001).\n3. Services are subject to monthly delivery confirmation via GRN.\n4. Total contract value shall not exceed ₹24,00,000.00 over 12 months.\n5. GST as applicable will be charged additionally.\nGenerated: 01-Jan-2026 Authorized Signatory: Rajesh Kumar, Procurement Head\nPO Number: PO-MNTH-2026-001",
+        "page_map": {
+          "1": "PURCHASE ORDERMONTHLY CONTRACT\nVENDOR / SUPPLIER\nTechSer ve Solutions Pvt L td\n42, Whitefield Main R oad\nBangalore, Karnataka 560066\nGSTIN: 29AABCT1234F1ZP\nPAN: AABCT1234FCUSTOMER / BILL TO\nHTS AI T echnologies L td\nTower B, Floor 5, Cyber City\nGurugram, Haryana 122002\nGSTIN: 06AAHCH5678K1Z8\nPAN: AAHCH5678K\nPO Dat e: 01 January 2026\nContract P eriod: 01 January 2026 – 31 December 2026\nInvoice Fr equency: Monthly\nPayment T erms: Net 30 days from invoice date\nCurrency: INR\nLINE ITEMS\n# DESCRIPTION QTY/MONTHUNIT\nPRICE (₹)MONTHLY\nTOTAL (₹)ANNUAL\nTOTAL (₹)\n1Software\nDevelopment\nServices - Senior\nDeveloper2 60,000.00 1,20,000.00 14,40,000.00\n2QA Testing &\nAutomation\nServices1 45,000.00 45,000.00 5,40,000.00\n3DevOps & Cloud\nInfrastructure\nSupport1 35,000.00 35,000.00 4,20,000.00\n2,00,000.00 24,00,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit monthly invoices by the 5th of each month for the preceding month's services.\n2. Each invoice must reference this PO number (PO-MNTH-2026-001).\n3. Services are subject to monthly delivery confirmation via GRN.\n4. Total contract value shall not exceed ₹24,00,000.00 over 12 months.\n5. GST as applicable will be charged additionally.\nGenerated: 01-Jan-2026 Authorized Signatory: Rajesh Kumar, Procurement Head\nPO Number: PO-MNTH-2026-001"
+        },
+        "total_pages": 1,
+        "total_characters": 1285,
+        "extraction_method": "vision_api",
+        "gcs_uri": "gs://data-pdf-extractor/cache/purchase_orders/Purchase Order - PO-MNTH-2026-001.pdf"
+      },
+      "document_text": "PURCHASE ORDERMONTHLY CONTRACT\nVENDOR / SUPPLIER\nTechSer ve Solutions Pvt L td\n42, Whitefield Main R oad\nBangalore, Karnataka 560066\nGSTIN: 29AABCT1234F1ZP\nPAN: AABCT1234FCUSTOMER / BILL TO\nHTS AI T echnologies L td\nTower B, Floor 5, Cyber City\nGurugram, Haryana 122002\nGSTIN: 06AAHCH5678K1Z8\nPAN: AAHCH5678K\nPO Dat e: 01 January 2026\nContract P eriod: 01 January 2026 – 31 December 2026\nInvoice Fr equency: Monthly\nPayment T erms: Net 30 days from invoice date\nCurrency: INR\nLINE ITEMS\n# DESCRIPTION QTY/MONTHUNIT\nPRICE (₹)MONTHLY\nTOTAL (₹)ANNUAL\nTOTAL (₹)\n1Software\nDevelopment\nServices - Senior\nDeveloper2 60,000.00 1,20,000.00 14,40,000.00\n2QA Testing &\nAutomation\nServices1 45,000.00 45,000.00 5,40,000.00\n3DevOps & Cloud\nInfrastructure\nSupport1 35,000.00 35,000.00 4,20,000.00\n2,00,000.00 24,00,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit monthly invoices by the 5th of each month for the preceding month's services.\n2. Each invoice must reference this PO number (PO-MNTH-2026-001).\n3. Services are subject to monthly delivery confirmation via GRN.\n4. Total contract value shall not exceed ₹24,00,000.00 over 12 months.\n5. GST as applicable will be charged additionally.\nGenerated: 01-Jan-2026 Authorized Signatory: Rajesh Kumar, Procurement Head\nPO Number: PO-MNTH-2026-001"
+    }
+  },
+  {
+    "file_hash": "68d209b42ec67a47ff468bced5ea7e4e00cdf1794ca16aae9b48f257ac3f7544",
+    "filename": "Purchase Order - PO-QRTR-2026-001.pdf",
+    "po_number": "PO-QR TR-2026-001",
+    "vendor": "CloudNet Infrastructure Ltd",
+    "customer": "HTS AI Technologies Ltd",
+    "item_descriptions": [
+      "Cloud Hosting - Production Servers (AWS)",
+      "Managed Database Service (PostgreSQL + Redis)",
+      "24x7 Infrastructure Monitoring & Support"
+    ],
+    "total_amount": "590000.00",
+    "indexed_at": "2026-02-27T18:22:15.571009",
+    "full_data": {
+      "file_hash": "68d209b42ec67a47ff468bced5ea7e4e00cdf1794ca16aae9b48f257ac3f7544",
+      "filename": "Purchase Order - PO-QRTR-2026-001.pdf",
+      "document_type": "PURCHASE_ORDER",
+      "cached_at": "2026-02-27T18:22:15.571009",
+      "extracted_data": {
+        "document_type": "PURCHASE_ORDER",
+        "po_type": "Contract PO",
+        "party_names": {
+          "vendor": "CloudNet Infrastructure Ltd",
+          "vendor_address": "14, HITEC City, Madhapur, Hyderabad, Telangana 500081",
+          "vendor_tax_ids": {
+            "gstin": "36AABCC9876D1Z5",
+            "pan": "AABCC9876D",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "customer": "HTS AI Technologies Ltd",
+          "customer_address": "Tower B, Floor 5, Cyber City, Gurugram, Haryana 122002",
+          "customer_tax_ids": {
+            "gstin": "06AAHCH5678K1Z8",
+            "pan": "AAHCH5678K",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "party_1": "HTS AI Technologies Ltd",
+          "party_2": "CloudNet Infrastructure Ltd",
+          "additional_parties": []
+        },
+        "document_ids": {
+          "po_number": "PO-QR TR-2026-001",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "contract_id": "",
+          "project_id": "",
+          "other_ids": []
+        },
+        "dates": {
+          "po_date": "2026-01-01",
+          "delivery_date": "",
+          "due_date": "",
+          "valid_until": "",
+          "ship_date": ""
+        },
+        "start_date": "2026-01-01",
+        "due_date": "2026-02-15",
+        "amounts": {
+          "subtotal": "500000.00",
+          "additional_charges": [],
+          "taxes": [
+            {
+              "label": "GST",
+              "percent": "18",
+              "amount": "90000.00"
+            }
+          ],
+          "discount": "",
+          "discount_percent": "",
+          "total": "590000.00",
+          "advance_payment": "",
+          "balance_due": ""
+        },
+        "amount": "590000.00",
+        "amount_explanation": "Total derived from line items plus GST.",
+        "currency": "INR",
+        "line_items": [
+          {
+            "item_number": "1",
+            "description": "Cloud Hosting - Production Servers (AWS)",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "3",
+            "unit": "Quarterly",
+            "rate": "100000.00",
+            "amount": "300000.00",
+            "tax_rate": "18",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "2",
+            "description": "Managed Database Service (PostgreSQL + Redis)",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "1",
+            "unit": "Quarterly",
+            "rate": "120000.00",
+            "amount": "120000.00",
+            "tax_rate": "18",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "3",
+            "description": "24x7 Infrastructure Monitoring & Support",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "1",
+            "unit": "Quarterly",
+            "rate": "80000.00",
+            "amount": "80000.00",
+            "tax_rate": "18",
+            "delivery_date": ""
+          }
+        ],
+        "tax_details": {
+          "gst": "90000.00",
+          "cgst": "",
+          "sgst": "",
+          "igst": "",
+          "vat": "",
+          "other_taxes": []
+        },
+        "shipping_details": {
+          "ship_to_address": "",
+          "ship_to_contact": "",
+          "shipping_method": "",
+          "shipping_terms": "",
+          "incoterms": ""
+        },
+        "payment_details": {
+          "payment_terms": "Net 45 days from invoice date",
+          "payment_method": "",
+          "bank_name": "",
+          "account_number": "",
+          "ifsc_code": "",
+          "swift_code": "",
+          "iban": ""
+        },
+        "frequency": "Quarterly",
+        "account_type": "Accounts Payable",
+        "notes": "",
+        "terms_and_conditions": "Vendor shall submit quarterly invoices within 10 days of each quarter's end. Each invoice must reference this PO number.",
+        "special_instructions": "",
+        "approval_status": "",
+        "authorized_signatory": "Priya Sharma, VP Engineering",
+        "rules_and_compliance_violation": "",
+        "risk_score": null
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpkq8hs5fp.pdf",
+        "file_name": "tmpkq8hs5fp.pdf",
+        "document_text": "PURCHASE ORDERQUARTERLY CONTRACT\nVENDOR / SUPPLIER\nCloudNet Infrastr uctur e Ltd\n14, HITEC City, Madhapur\nHyderabad, T elangana 500081\nGSTIN: 36AABC C9876D1Z5\nPAN: AABC C9876DCUSTOMER / BILL TO\nHTS AI T echnologies L td\nTower B, Floor 5, Cyber City\nGurugram, Haryana 122002\nGSTIN: 06AAHCH5678K1Z8\nPAN: AAHCH5678K\nPO Dat e: 01 January 2026\nContract P eriod: 01 January 2026 – 31 December 2026\nInvoice Fr equency: Quarterly\nPayment T erms: Net 45 days from invoice date\nCurrency: INR\nLINE ITEMS\n# DESCRIPTION QTY/QUARTERUNIT PRICE\n(₹)QUARTERLY\nTOTAL (₹)ANNUAL\nTOTAL (₹)\n1Cloud Hosting -\nProduction\nServers (A WS)3 1,00,000.00 3,00,000.00 12,00,000.00\n2Managed\nDatabase Service\n(PostgreSQL +\nRedis)1 1,20,000.00 1,20,000.00 4,80,000.00\n324x7\nInfrastructure\nMonitoring &\nSupport1 80,000.00 80,000.00 3,20,000.00\n5,00,000.00 20,00,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit quarterly invoices within 10 days of each quarter's end.\n2. Each invoice must reference this PO number (PO-QR TR-2026-001).\n3. Quarterly uptime report and GRN required before invoice processing.\n4. Total contract value shall not exceed ₹20,00,000.00 over 4 quarters.\n5. GST at 18% will be charged additionally on all line items.\nGenerated: 01-Jan-2026 Authorized Signatory: Priya Sharma, VP Engineering\nPO Number: PO-QR TR-2026-001",
+        "page_map": {
+          "1": "PURCHASE ORDERQUARTERLY CONTRACT\nVENDOR / SUPPLIER\nCloudNet Infrastr uctur e Ltd\n14, HITEC City, Madhapur\nHyderabad, T elangana 500081\nGSTIN: 36AABC C9876D1Z5\nPAN: AABC C9876DCUSTOMER / BILL TO\nHTS AI T echnologies L td\nTower B, Floor 5, Cyber City\nGurugram, Haryana 122002\nGSTIN: 06AAHCH5678K1Z8\nPAN: AAHCH5678K\nPO Dat e: 01 January 2026\nContract P eriod: 01 January 2026 – 31 December 2026\nInvoice Fr equency: Quarterly\nPayment T erms: Net 45 days from invoice date\nCurrency: INR\nLINE ITEMS\n# DESCRIPTION QTY/QUARTERUNIT PRICE\n(₹)QUARTERLY\nTOTAL (₹)ANNUAL\nTOTAL (₹)\n1Cloud Hosting -\nProduction\nServers (A WS)3 1,00,000.00 3,00,000.00 12,00,000.00\n2Managed\nDatabase Service\n(PostgreSQL +\nRedis)1 1,20,000.00 1,20,000.00 4,80,000.00\n324x7\nInfrastructure\nMonitoring &\nSupport1 80,000.00 80,000.00 3,20,000.00\n5,00,000.00 20,00,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit quarterly invoices within 10 days of each quarter's end.\n2. Each invoice must reference this PO number (PO-QR TR-2026-001).\n3. Quarterly uptime report and GRN required before invoice processing.\n4. Total contract value shall not exceed ₹20,00,000.00 over 4 quarters.\n5. GST at 18% will be charged additionally on all line items.\nGenerated: 01-Jan-2026 Authorized Signatory: Priya Sharma, VP Engineering\nPO Number: PO-QR TR-2026-001"
+        },
+        "total_pages": 1,
+        "total_characters": 1306,
+        "extraction_method": "vision_api",
+        "gcs_uri": "gs://data-pdf-extractor/cache/purchase_orders/Purchase Order - PO-QRTR-2026-001.pdf"
+      },
+      "document_text": "PURCHASE ORDERQUARTERLY CONTRACT\nVENDOR / SUPPLIER\nCloudNet Infrastr uctur e Ltd\n14, HITEC City, Madhapur\nHyderabad, T elangana 500081\nGSTIN: 36AABC C9876D1Z5\nPAN: AABC C9876DCUSTOMER / BILL TO\nHTS AI T echnologies L td\nTower B, Floor 5, Cyber City\nGurugram, Haryana 122002\nGSTIN: 06AAHCH5678K1Z8\nPAN: AAHCH5678K\nPO Dat e: 01 January 2026\nContract P eriod: 01 January 2026 – 31 December 2026\nInvoice Fr equency: Quarterly\nPayment T erms: Net 45 days from invoice date\nCurrency: INR\nLINE ITEMS\n# DESCRIPTION QTY/QUARTERUNIT PRICE\n(₹)QUARTERLY\nTOTAL (₹)ANNUAL\nTOTAL (₹)\n1Cloud Hosting -\nProduction\nServers (A WS)3 1,00,000.00 3,00,000.00 12,00,000.00\n2Managed\nDatabase Service\n(PostgreSQL +\nRedis)1 1,20,000.00 1,20,000.00 4,80,000.00\n324x7\nInfrastructure\nMonitoring &\nSupport1 80,000.00 80,000.00 3,20,000.00\n5,00,000.00 20,00,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit quarterly invoices within 10 days of each quarter's end.\n2. Each invoice must reference this PO number (PO-QR TR-2026-001).\n3. Quarterly uptime report and GRN required before invoice processing.\n4. Total contract value shall not exceed ₹20,00,000.00 over 4 quarters.\n5. GST at 18% will be charged additionally on all line items.\nGenerated: 01-Jan-2026 Authorized Signatory: Priya Sharma, VP Engineering\nPO Number: PO-QR TR-2026-001"
+    }
+  },
+  {
+    "file_hash": "c267dd1668ed4c6718d6bb1496a2ee985e7fb8a055423ae00d1983a32d65803f",
+    "filename": "doc3_po.pdf",
+    "po_number": "PO-GLO-2026-8841",
+    "vendor": "Global T ech Manufacturing Ltd.",
+    "customer": "EuroT ech Solutions GmbH",
+    "item_descriptions": [
+      "Industrial Sensor Module V4",
+      "High-Speed Fiber Optic Cable (50m)",
+      "Interface Controller Cards"
+    ],
+    "total_amount": "9,550.00",
+    "indexed_at": "2026-03-02T11:10:43.734324",
+    "full_data": {
+      "file_hash": "c267dd1668ed4c6718d6bb1496a2ee985e7fb8a055423ae00d1983a32d65803f",
+      "filename": "doc3_po.pdf",
+      "document_type": "PURCHASE_ORDER",
+      "cached_at": "2026-03-02T11:10:43.734324",
+      "extracted_data": {
+        "document_type": "PURCHASE_ORDER",
+        "po_type": "",
+        "party_names": {
+          "vendor": "Global T ech Manufacturing Ltd.",
+          "vendor_address": "Commercial Park W est, London, SW1A  1AA, United Kingdom",
+          "vendor_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "customer": "EuroT ech Solutions GmbH",
+          "customer_address": "Berliner Strasse 102, 10115 Berlin, Germany",
+          "customer_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": ""
+          },
+          "party_1": "EuroT ech Solutions GmbH",
+          "party_2": "Global T ech Manufacturing Ltd.",
+          "additional_parties": []
+        },
+        "document_ids": {
+          "po_number": "PO-GLO-2026-8841",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "contract_id": "",
+          "project_id": "",
+          "other_ids": []
+        },
+        "dates": {
+          "po_date": "2026-01-12",
+          "delivery_date": "",
+          "due_date": "",
+          "valid_until": "",
+          "ship_date": ""
+        },
+        "start_date": "2026-01-12",
+        "due_date": "",
+        "amounts": {
+          "subtotal": "9,100.00",
+          "additional_charges": [
+            {
+              "label": "Shipping & Insurance",
+              "amount": "450.00"
+            }
+          ],
+          "taxes": [],
+          "discount": "",
+          "discount_percent": "",
+          "total": "9,550.00",
+          "advance_payment": "",
+          "balance_due": ""
+        },
+        "amount": "9,550.00",
+        "amount_explanation": "Subtotal plus shipping and insurance.",
+        "currency": "EUR",
+        "line_items": [
+          {
+            "item_number": "",
+            "description": "Industrial Sensor Module V4",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "15.00",
+            "unit": "",
+            "rate": "420.00",
+            "amount": "6,300.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "",
+            "description": "High-Speed Fiber Optic Cable (50m)",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "10.00",
+            "unit": "",
+            "rate": "125.00",
+            "amount": "1,250.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "",
+            "description": "Interface Controller Cards",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "5.00",
+            "unit": "",
+            "rate": "310.00",
+            "amount": "1,550.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          }
+        ],
+        "tax_details": {
+          "gst": "",
+          "cgst": "",
+          "sgst": "",
+          "igst": "",
+          "vat": "",
+          "other_taxes": []
+        },
+        "shipping_details": {
+          "ship_to_address": "Commercial Park W est, London, SW1A  1AA, United Kingdom",
+          "ship_to_contact": "",
+          "shipping_method": "",
+          "shipping_terms": "",
+          "incoterms": "EXW (Ex W orks)"
+        },
+        "payment_details": {
+          "payment_terms": "",
+          "payment_method": "",
+          "bank_name": "HSBC Frankfurt",
+          "account_number": "",
+          "ifsc_code": "",
+          "swift_code": "CHASDEFF",
+          "iban": "DE88 1002 0003 4455 6677"
+        },
+        "frequency": "",
+        "account_type": "Accounts Payable",
+        "notes": "",
+        "terms_and_conditions": "",
+        "special_instructions": "",
+        "approval_status": "",
+        "authorized_signatory": "EuroT ech Solutions GmbH",
+        "rules_and_compliance_violation": "",
+        "risk_score": null
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpy8jga8mx.pdf",
+        "file_name": "tmpy8jga8mx.pdf",
+        "document_text": "PURCHASE ORDER\nEuroT ech Solutions GmbH\nBerliner Strasse 102\n10115 Berlin, GermanyPO Number:  PO-GLO-2026-8841\nDate:  12 Jan 2026\nIncoterms:  EXW (Ex W orks)\nVENDOR\nGlobal T ech Manufacturing Ltd.\nCommercial Park W est\nLondon, SW1A  1AA\nUnited Kingdom\nContact: sales@globaltech.comSHIP TO / PICKUP FROM\nGlobal T ech Manufacturing Ltd.\n(Pickup)\nCommercial Park W est\nLondon, SW1A  1AA\nUnited Kingdom\nRef Logistics: 48.0 KG | 80x60x40cm\nDescription Qty Unit Price (EUR) Total (EUR)\nIndustrial Sensor Module V4 15.00 420.00 6,300.00\nHigh-Speed Fiber Optic Cable (50m) 10.00 125.00 1,250.00\nInterface Controller Cards 5.00 310.00 1,550.00\nSubtotal: 9,100.00\nShipping &\nInsurance:450.00\nTotal Order\nValue:€9,550.00\nAmount in W ords:  Nine Thousand Five Hundred Fifty Euros Only .\nPayment Instructions:\nBank: HSBC Frankfurt | BIC: CHASDEFF | IBAN: DE88 1002 0003 4455 6677\nCompliance & Logistics:\n* Incoterms are EXW as per agreement[cite: 62].\n* Net Weight: 42.5 KG | Gross Weight: 48.0 KG[cite: 63, 64].\n* All items exported from the United Kingdom must comply with Export Administration Regulations[cite:\n78].\n__________________________\nAuthorized Signature\nEuroT ech Solutions GmbH",
+        "page_map": {
+          "1": "PURCHASE ORDER\nEuroT ech Solutions GmbH\nBerliner Strasse 102\n10115 Berlin, GermanyPO Number:  PO-GLO-2026-8841\nDate:  12 Jan 2026\nIncoterms:  EXW (Ex W orks)\nVENDOR\nGlobal T ech Manufacturing Ltd.\nCommercial Park W est\nLondon, SW1A  1AA\nUnited Kingdom\nContact: sales@globaltech.comSHIP TO / PICKUP FROM\nGlobal T ech Manufacturing Ltd.\n(Pickup)\nCommercial Park W est\nLondon, SW1A  1AA\nUnited Kingdom\nRef Logistics: 48.0 KG | 80x60x40cm\nDescription Qty Unit Price (EUR) Total (EUR)\nIndustrial Sensor Module V4 15.00 420.00 6,300.00\nHigh-Speed Fiber Optic Cable (50m) 10.00 125.00 1,250.00\nInterface Controller Cards 5.00 310.00 1,550.00\nSubtotal: 9,100.00\nShipping &\nInsurance:450.00\nTotal Order\nValue:€9,550.00\nAmount in W ords:  Nine Thousand Five Hundred Fifty Euros Only .\nPayment Instructions:\nBank: HSBC Frankfurt | BIC: CHASDEFF | IBAN: DE88 1002 0003 4455 6677\nCompliance & Logistics:\n* Incoterms are EXW as per agreement[cite: 62].\n* Net Weight: 42.5 KG | Gross Weight: 48.0 KG[cite: 63, 64].\n* All items exported from the United Kingdom must comply with Export Administration Regulations[cite:\n78].\n__________________________\nAuthorized Signature\nEuroT ech Solutions GmbH"
+        },
+        "total_pages": 1,
+        "total_characters": 1179,
+        "extraction_method": "vision_api",
+        "gcs_uri": "gs://data-pdf-extractor/cache/purchase_orders/doc3_po.pdf"
+      },
+      "document_text": "PURCHASE ORDER\nEuroT ech Solutions GmbH\nBerliner Strasse 102\n10115 Berlin, GermanyPO Number:  PO-GLO-2026-8841\nDate:  12 Jan 2026\nIncoterms:  EXW (Ex W orks)\nVENDOR\nGlobal T ech Manufacturing Ltd.\nCommercial Park W est\nLondon, SW1A  1AA\nUnited Kingdom\nContact: sales@globaltech.comSHIP TO / PICKUP FROM\nGlobal T ech Manufacturing Ltd.\n(Pickup)\nCommercial Park W est\nLondon, SW1A  1AA\nUnited Kingdom\nRef Logistics: 48.0 KG | 80x60x40cm\nDescription Qty Unit Price (EUR) Total (EUR)\nIndustrial Sensor Module V4 15.00 420.00 6,300.00\nHigh-Speed Fiber Optic Cable (50m) 10.00 125.00 1,250.00\nInterface Controller Cards 5.00 310.00 1,550.00\nSubtotal: 9,100.00\nShipping &\nInsurance:450.00\nTotal Order\nValue:€9,550.00\nAmount in W ords:  Nine Thousand Five Hundred Fifty Euros Only .\nPayment Instructions:\nBank: HSBC Frankfurt | BIC: CHASDEFF | IBAN: DE88 1002 0003 4455 6677\nCompliance & Logistics:\n* Incoterms are EXW as per agreement[cite: 62].\n* Net Weight: 42.5 KG | Gross Weight: 48.0 KG[cite: 63, 64].\n* All items exported from the United Kingdom must comply with Export Administration Regulations[cite:\n78].\n__________________________\nAuthorized Signature\nEuroT ech Solutions GmbH"
+    }
+  },
+  {
+    "file_hash": "a14fe369bbb3b12e896423080b7bba566c4836aa79716fba87ee4edc3aa74777",
+    "filename": "Purchase Order - PO-KSA-2026-001.pdf",
+    "po_number": "PO-KSA-2026-001",
+    "vendor": "Al Madinah T ech Solutions",
+    "customer": "HTS AI T echnologies Saudi Arabia",
+    "item_descriptions": [
+      "ERP S ystem Implementation - SAP S/4HANA",
+      "ERP Data Migration & Integration Services",
+      "Post-Implementation Support & Training"
+    ],
+    "total_amount": "201,250.00",
+    "indexed_at": "2026-03-02T12:00:11.681752",
+    "full_data": {
+      "file_hash": "a14fe369bbb3b12e896423080b7bba566c4836aa79716fba87ee4edc3aa74777",
+      "filename": "Purchase Order - PO-KSA-2026-001.pdf",
+      "document_type": "PURCHASE_ORDER",
+      "cached_at": "2026-03-02T12:00:11.681752",
+      "extracted_data": {
+        "document_type": "PURCHASE_ORDER",
+        "po_type": "Contract PO",
+        "party_names": {
+          "vendor": "Al Madinah T ech Solutions",
+          "vendor_address": "King F ahd R oad, Al Olaya District, Riyadh 12211, Kingdom of Saudi Arabia",
+          "vendor_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "1010567890"
+          },
+          "customer": "HTS AI T echnologies Saudi Arabia",
+          "customer_address": "Prince Sultan S treet, Al Zahra District, Jeddah 23425, Kingdom of Saudi Arabia",
+          "customer_tax_ids": {
+            "gstin": "",
+            "pan": "",
+            "vat": "",
+            "tax_id": "",
+            "tin": "",
+            "trn": "",
+            "cr_number": "4030123456"
+          },
+          "party_1": "HTS AI T echnologies Saudi Arabia",
+          "party_2": "Al Madinah T ech Solutions",
+          "additional_parties": []
+        },
+        "document_ids": {
+          "po_number": "PO-KSA-2026-001",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "",
+          "quotation_number": "",
+          "contract_id": "",
+          "project_id": "",
+          "other_ids": []
+        },
+        "dates": {
+          "po_date": "2026-01-05",
+          "delivery_date": "",
+          "due_date": "",
+          "valid_until": "",
+          "ship_date": ""
+        },
+        "start_date": "2026-01-05",
+        "due_date": "",
+        "amounts": {
+          "subtotal": "175,000.00",
+          "additional_charges": [],
+          "taxes": [
+            {
+              "label": "VAT",
+              "percent": "15",
+              "amount": "26,250.00"
+            }
+          ],
+          "discount": "",
+          "discount_percent": "",
+          "total": "201,250.00",
+          "advance_payment": "",
+          "balance_due": ""
+        },
+        "amount": "201,250.00",
+        "amount_explanation": "Total amount includes subtotal and VAT.",
+        "currency": "SAR",
+        "line_items": [
+          {
+            "item_number": "1",
+            "description": "ERP S ystem Implementation - SAP S/4HANA",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "1",
+            "unit": "",
+            "rate": "85,000.00",
+            "amount": "85,000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "2",
+            "description": "ERP Data Migration & Integration Services",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "1",
+            "unit": "",
+            "rate": "52,000.00",
+            "amount": "52,000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          },
+          {
+            "item_number": "3",
+            "description": "Post-Implementation Support & Training",
+            "sku": "",
+            "hsn_sac_code": "",
+            "quantity": "1",
+            "unit": "",
+            "rate": "38,000.00",
+            "amount": "38,000.00",
+            "tax_rate": "",
+            "delivery_date": ""
+          }
+        ],
+        "tax_details": {
+          "gst": "",
+          "cgst": "",
+          "sgst": "",
+          "igst": "",
+          "vat": "26,250.00",
+          "other_taxes": []
+        },
+        "shipping_details": {
+          "ship_to_address": "",
+          "ship_to_contact": "",
+          "shipping_method": "",
+          "shipping_terms": "",
+          "incoterms": ""
+        },
+        "payment_details": {
+          "payment_terms": "Net 60 days from invoice date",
+          "payment_method": "",
+          "bank_name": "",
+          "account_number": "",
+          "ifsc_code": "",
+          "swift_code": "",
+          "iban": ""
+        },
+        "frequency": "Quarterly",
+        "account_type": "Accounts Payable",
+        "notes": "",
+        "terms_and_conditions": "1. Vendor shall submit quarterly invoices within 15 days of the quarter end. 2. Each invoice must reference this PO number (PO-KSA-2026-001). 3. Services are subject to quarterly delivery confirmation via GRN. 4. Total contract value shall not exceed SAR 700,000.00 (excl. VAT) over 12 months. 5. VAT at 15% as per ZATCA regulations will be charged additionally on all invoices. 6. All invoices must comply with ZATCA e-invoicing (FATOORA) requirements. 7. Governed by the laws of the Kingdom of Saudi Arabia.",
+        "special_instructions": "",
+        "approval_status": "",
+        "authorized_signatory": "Abdullah Al Rashid, Procurement Manager",
+        "rules_and_compliance_violation": "",
+        "risk_score": null
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmp86cxxk7r.pdf",
+        "file_name": "tmp86cxxk7r.pdf",
+        "document_text": "PURCHASE ORDERANNUAL CONTRACT\nVENDOR / SUPPLIER\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya District\nRiyadh 12211, Kingdom of Saudi Arabia\nVAT TIN: 300012345600003\nCR No: 1010567890CUSTOMER / BILL TO\nHTS AI T echnologies Saudi Arabia\nPrince Sultan S treet, Al Zahra District\nJeddah 23425, Kingdom of Saudi Arabia\nVAT TIN: 310098765400008\nCR No: 4030123456\nPO Dat e: 05 January 2026\nContract P eriod: 01 February 2026 – 31 January 2027\nInvoice Fr equency: Quarterly\nPayment T erms: Net 60 days from invoice date\nCurrency: SAR (Saudi Riyal)\nLINE ITEMS\n# DESCRIPTION QTYUNIT PRICE\n(SAR)AMOUNT\n(SAR)\n1ERP S ystem Implementation - SAP\nS/4HANA1 85,000.00 85,000.00\n2ERP Data Migration & Integration\nServices1 52,000.00 52,000.00\n3Post-Implementation Support &\nTraining1 38,000.00 38,000.00\nTotal (ex cl. VAT) 175,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit quarterly invoices within 15 days of the quarter end.\n2. Each invoice must reference this PO number (PO-KSA-2026-001).\n3. Services are subject to quarterly delivery confirmation via GRN.\n4. Total contract value shall not exceed SAR 700,000.00 (excl. V AT) over 12 months.\n5. VAT at 15% as per ZA TCA regulations will be charged additionally on all invoices.\n6. All invoices must comply with ZA TCA e-invoicing (F ATOORA) requirements.\n7. Governed by the laws of the Kingdom of Saudi Arabia.\nGenerated: 05-Jan-2026 Authorized Signatory: Abdullah Al Rashid, Procurement Manager\nPO Number: PO-KSA-2026-001",
+        "page_map": {
+          "1": "PURCHASE ORDERANNUAL CONTRACT\nVENDOR / SUPPLIER\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya District\nRiyadh 12211, Kingdom of Saudi Arabia\nVAT TIN: 300012345600003\nCR No: 1010567890CUSTOMER / BILL TO\nHTS AI T echnologies Saudi Arabia\nPrince Sultan S treet, Al Zahra District\nJeddah 23425, Kingdom of Saudi Arabia\nVAT TIN: 310098765400008\nCR No: 4030123456\nPO Dat e: 05 January 2026\nContract P eriod: 01 February 2026 – 31 January 2027\nInvoice Fr equency: Quarterly\nPayment T erms: Net 60 days from invoice date\nCurrency: SAR (Saudi Riyal)\nLINE ITEMS\n# DESCRIPTION QTYUNIT PRICE\n(SAR)AMOUNT\n(SAR)\n1ERP S ystem Implementation - SAP\nS/4HANA1 85,000.00 85,000.00\n2ERP Data Migration & Integration\nServices1 52,000.00 52,000.00\n3Post-Implementation Support &\nTraining1 38,000.00 38,000.00\nTotal (ex cl. VAT) 175,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit quarterly invoices within 15 days of the quarter end.\n2. Each invoice must reference this PO number (PO-KSA-2026-001).\n3. Services are subject to quarterly delivery confirmation via GRN.\n4. Total contract value shall not exceed SAR 700,000.00 (excl. V AT) over 12 months.\n5. VAT at 15% as per ZA TCA regulations will be charged additionally on all invoices.\n6. All invoices must comply with ZA TCA e-invoicing (F ATOORA) requirements.\n7. Governed by the laws of the Kingdom of Saudi Arabia.\nGenerated: 05-Jan-2026 Authorized Signatory: Abdullah Al Rashid, Procurement Manager\nPO Number: PO-KSA-2026-001"
+        },
+        "total_pages": 1,
+        "total_characters": 1468,
+        "extraction_method": "vision_api",
+        "gcs_uri": "gs://data-pdf-extractor/cache/purchase_orders/Purchase Order - PO-KSA-2026-001.pdf"
+      },
+      "document_text": "PURCHASE ORDERANNUAL CONTRACT\nVENDOR / SUPPLIER\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya District\nRiyadh 12211, Kingdom of Saudi Arabia\nVAT TIN: 300012345600003\nCR No: 1010567890CUSTOMER / BILL TO\nHTS AI T echnologies Saudi Arabia\nPrince Sultan S treet, Al Zahra District\nJeddah 23425, Kingdom of Saudi Arabia\nVAT TIN: 310098765400008\nCR No: 4030123456\nPO Dat e: 05 January 2026\nContract P eriod: 01 February 2026 – 31 January 2027\nInvoice Fr equency: Quarterly\nPayment T erms: Net 60 days from invoice date\nCurrency: SAR (Saudi Riyal)\nLINE ITEMS\n# DESCRIPTION QTYUNIT PRICE\n(SAR)AMOUNT\n(SAR)\n1ERP S ystem Implementation - SAP\nS/4HANA1 85,000.00 85,000.00\n2ERP Data Migration & Integration\nServices1 52,000.00 52,000.00\n3Post-Implementation Support &\nTraining1 38,000.00 38,000.00\nTotal (ex cl. VAT) 175,000.00\nTERMS & CONDITIONS\n1. Vendor shall submit quarterly invoices within 15 days of the quarter end.\n2. Each invoice must reference this PO number (PO-KSA-2026-001).\n3. Services are subject to quarterly delivery confirmation via GRN.\n4. Total contract value shall not exceed SAR 700,000.00 (excl. V AT) over 12 months.\n5. VAT at 15% as per ZA TCA regulations will be charged additionally on all invoices.\n6. All invoices must comply with ZA TCA e-invoicing (F ATOORA) requirements.\n7. Governed by the laws of the Kingdom of Saudi Arabia.\nGenerated: 05-Jan-2026 Authorized Signatory: Abdullah Al Rashid, Procurement Manager\nPO Number: PO-KSA-2026-001"
+    }
+  }
+]

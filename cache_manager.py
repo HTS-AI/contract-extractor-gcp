@@ -11,7 +11,7 @@ import os
 import json
 import hashlib
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 from datetime import datetime
 
 # GCS support flag
@@ -48,14 +48,20 @@ class CacheManager:
         self.extraction_cache_dir = cache_base_dir / "extraction_cache"
         self.chatbot_cache_dir = cache_base_dir / "chatbot_cache"
         self.po_cache_dir = cache_base_dir / "po_cache"  # Separate PO cache
+        self.grn_cache_dir = cache_base_dir / "grn_cache"  # GRN index for three-way match
         
         # Create local cache directories (used as fallback and for temp files)
         self.extraction_cache_dir.mkdir(exist_ok=True)
         self.chatbot_cache_dir.mkdir(exist_ok=True)
         self.po_cache_dir.mkdir(exist_ok=True)
+        self.grn_cache_dir.mkdir(exist_ok=True)
         
-        # Check for GCS cache configuration
-        self.gcs_cache_bucket = os.environ.get("GCS_CACHE_BUCKET", "")
+        # Check for GCS cache configuration (memory/past data in GCP)
+        # If GCP credentials are set but GCS_CACHE_BUCKET is not, default to standard bucket so memory uses GCP
+        self.gcs_cache_bucket = os.environ.get("GCS_CACHE_BUCKET", "").strip()
+        if not self.gcs_cache_bucket and GCS_AVAILABLE and os.environ.get("GCP_CREDENTIALS_JSON", "").strip():
+            self.gcs_cache_bucket = "gs://data-pdf-extractor/cache/"
+            print(f"[CACHE] GCS_CACHE_BUCKET not set; defaulting to GCP storage: {self.gcs_cache_bucket}")
         self.use_gcs = bool(self.gcs_cache_bucket and GCS_AVAILABLE)
         
         if self.use_gcs:
@@ -79,6 +85,32 @@ class CacheManager:
                 print(f"[CACHE] Note: GCS not available (gcs_utils import failed)")
             elif not self.gcs_cache_bucket:
                 print(f"[CACHE] Note: Set GCS_CACHE_BUCKET env var to enable GCS persistent cache")
+    
+    def get_gcs_status(self) -> Dict[str, Any]:
+        """
+        Return GCP/GCS connection status for memory persistence.
+        
+        Returns:
+            dict with: gcs_enabled, gcs_bucket, gcp_credentials_configured,
+                       storage_mode ("gcs" | "local"), gcs_connection_ok (if tested)
+        """
+        gcp_creds = os.environ.get("GCP_CREDENTIALS_JSON", "").strip()
+        out = {
+            "gcp_credentials_configured": bool(gcp_creds),
+            "gcs_enabled": self.use_gcs,
+            "gcs_bucket": self.gcs_cache_bucket if self.use_gcs else "",
+            "storage_mode": "gcs" if self.use_gcs else "local",
+            "message": "Memory (extractions, PO index, Excel) is persisted to GCP" if self.use_gcs
+            else "Memory is local only. Set GCP_CREDENTIALS_JSON and GCS_CACHE_BUCKET (or use default) for GCP.",
+        }
+        if self.use_gcs:
+            try:
+                get_gcs_client()
+                out["gcs_connection_ok"] = True
+            except Exception as e:
+                out["gcs_connection_ok"] = False
+                out["gcs_connection_error"] = str(e)
+        return out
     
     def compute_file_hash(self, file_path: str) -> str:
         """
@@ -205,153 +237,26 @@ class CacheManager:
             return None
     
     def load_extraction_cache(self, file_hash: str) -> Optional[Dict[str, Any]]:
-        """
-        Load extraction results from cache.
-        
-        Args:
-            file_hash: SHA256 hash of file content
-            
-        Returns:
-            Cached extraction data or None if not found
-        """
-        # Try GCS first if enabled
-        if self.use_gcs:
-            gcs_path = self._get_gcs_extraction_path(file_hash)
-            gcs_data = self._load_from_gcs(gcs_path)
-            if gcs_data:
-                return gcs_data
-        
-        # Fall back to local cache
-        cache_path = self.get_extraction_cache_path(file_hash)
-        
-        if not cache_path.exists():
-            return None
-        
-        try:
-            with open(cache_path, 'r', encoding='utf-8') as f:
-                cache_data = json.load(f)
-            
-            print(f"[CACHE] Loaded extraction cache (local) for hash: {file_hash[:16]}...")
-            return cache_data
-        except Exception as e:
-            print(f"[CACHE] Error loading extraction cache: {e}")
-            return None
+        """Cache disabled: always returns None (past data is in extractions store only)."""
+        return None
     
-    def save_extraction_cache(self, file_hash: str, extracted_data: Dict[str, Any], 
-                             metadata: Dict[str, Any], document_text: str):
+    def save_extraction_cache(self, file_hash: str, extracted_data: Dict[str, Any],
+                              metadata: Dict[str, Any], document_text: str):
         """
         Save extraction results to cache.
-        
-        Args:
-            file_hash: SHA256 hash of file content
-            extracted_data: Extracted data dictionary
-            metadata: Metadata dictionary
-            document_text: Full document text
+        Cache management disabled: no-op (past data is stored in extractions store only).
         """
-        try:
-            cache_data = {
-                "file_hash": file_hash,
-                "cached_at": datetime.now().isoformat(),
-                "extracted_data": extracted_data,
-                "metadata": metadata,
-                "document_text": document_text
-            }
-            
-            # Save to GCS if enabled
-            if self.use_gcs:
-                gcs_path = self._get_gcs_extraction_path(file_hash)
-                self._save_to_gcs(gcs_path, cache_data)
-            
-            # Also save locally (for faster access and as fallback)
-            cache_path = self.get_extraction_cache_path(file_hash)
-            with open(cache_path, 'w', encoding='utf-8') as f:
-                json.dump(cache_data, f, indent=2, ensure_ascii=False, default=str)
-            
-            print(f"[CACHE] Saved extraction cache for hash: {file_hash[:16]}...")
-        except Exception as e:
-            print(f"[CACHE] Error saving extraction cache: {e}")
-    
+        pass
+
     def load_chatbot_cache(self, file_hash: str) -> Optional[Dict[str, Any]]:
-        """
-        Load chatbot data from cache.
-        
-        Args:
-            file_hash: SHA256 hash of file content
-            
-        Returns:
-            Cached chatbot data or None if not found
-        """
-        # Try GCS first if enabled
-        if self.use_gcs:
-            gcs_path = self._get_gcs_chatbot_path(file_hash)
-            gcs_data = self._load_from_gcs(gcs_path)
-            if gcs_data:
-                return gcs_data
-        
-        # Fall back to local cache
-        cache_path = self.get_chatbot_cache_path(file_hash)
-        
-        if not cache_path.exists():
-            return None
-        
-        try:
-            with open(cache_path, 'r', encoding='utf-8') as f:
-                cache_data = json.load(f)
-            
-            print(f"[CACHE] Loaded chatbot cache (local) for hash: {file_hash[:16]}...")
-            return cache_data
-        except Exception as e:
-            print(f"[CACHE] Error loading chatbot cache: {e}")
-            return None
+        """Cache disabled: always returns None."""
+        return None
     
     def save_chatbot_cache(self, file_hash: str, document_text: str, page_map: Dict[int, str],
                           chunks: list, tables: list, is_scanned: bool, used_ocr: bool,
                           filename: str):
-        """
-        Save chatbot data to cache.
-        
-        Args:
-            file_hash: SHA256 hash of file content
-            document_text: Full document text
-            page_map: Page number to text mapping
-            chunks: List of text chunks
-            tables: List of extracted tables
-            is_scanned: Whether document is scanned
-            used_ocr: Whether OCR was used
-            filename: Original filename
-        """
-        try:
-            cache_data = {
-                "file_hash": file_hash,
-                "filename": filename,
-                "cached_at": datetime.now().isoformat(),
-                "document_text": document_text,
-                "page_map": {str(k): v for k, v in page_map.items()},  # Convert keys to strings
-                "chunks": chunks,
-                "tables": tables,
-                "is_scanned": is_scanned,
-                "used_ocr": used_ocr,
-                "metadata": {
-                    "document_length": len(document_text),
-                    "total_pages": len(page_map),
-                    "total_chunks": len(chunks),
-                    "total_tables": len(tables)
-                }
-            }
-            
-            # Save to GCS if enabled
-            if self.use_gcs:
-                gcs_path = self._get_gcs_chatbot_path(file_hash)
-                self._save_to_gcs(gcs_path, cache_data)
-            
-            # Also save locally (for faster access and as fallback)
-            cache_path = self.get_chatbot_cache_path(file_hash)
-            with open(cache_path, 'w', encoding='utf-8') as f:
-                json.dump(cache_data, f, indent=2, ensure_ascii=False, default=str)
-            
-            print(f"[CACHE] Saved chatbot cache for hash: {file_hash[:16]}...")
-        except Exception as e:
-            print(f"[CACHE] Error saving chatbot cache: {e}")
+        """Cache disabled: no-op."""
+        pass
     
     # ========================================================================
     # PURCHASE ORDER CACHE MANAGEMENT
@@ -359,107 +264,68 @@ class CacheManager:
     
     def load_po_cache(self, file_hash: str) -> Optional[Dict[str, Any]]:
         """
-        Load PO extraction results from cache.
-        
-        Args:
-            file_hash: SHA256 hash of PO file content
-            
-        Returns:
-            Cached PO data or None if not found
+        Get PO data by file hash from the PO index (past data, not cache).
+        Returns full_data stored in index when PO was added.
+        If index entry has no full_data, falls back to legacy po_cache/<file_hash>_po.json file.
         """
-        # Try GCS first if enabled
+        po_index = self._load_po_index()
+        entry = po_index.get(file_hash) if isinstance(po_index, dict) else None
+        if entry and isinstance(entry, dict) and "full_data" in entry:
+            return entry["full_data"]
+        # Fallback: try GCS first (when GCP is used), then legacy local file
         if self.use_gcs:
             gcs_path = self._get_gcs_po_cache_path(file_hash)
             gcs_data = self._load_from_gcs(gcs_path)
-            if gcs_data:
+            if gcs_data and isinstance(gcs_data, dict) and (gcs_data.get("extracted_data") or gcs_data.get("document_text")):
                 return gcs_data
-        
-        # Fall back to local cache
         cache_path = self.get_po_cache_path(file_hash)
-        
-        if not cache_path.exists():
-            return None
-        
-        try:
-            with open(cache_path, 'r', encoding='utf-8') as f:
-                cache_data = json.load(f)
-            
-            print(f"[CACHE] Loaded PO cache (local) for hash: {file_hash[:16]}...")
-            return cache_data
-        except Exception as e:
-            print(f"[CACHE] Error loading PO cache: {e}")
-            return None
-    
-    def save_po_cache(self, file_hash: str, extracted_data: Dict[str, Any], 
+        if cache_path.exists():
+            try:
+                with open(cache_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                # File format is the full record (extracted_data, document_text, metadata, filename)
+                if isinstance(data, dict) and (data.get("extracted_data") or data.get("document_text")):
+                    return data
+            except Exception as e:
+                print(f"[CACHE] Error reading legacy PO cache {file_hash[:16]}: {e}")
+        return None
+
+    def save_po_cache(self, file_hash: str, extracted_data: Dict[str, Any],
                       metadata: Dict[str, Any], document_text: str, filename: str):
         """
-        Save PO extraction results to cache.
-        
-        Args:
-            file_hash: SHA256 hash of PO file content
-            extracted_data: Extracted PO data dictionary
-            metadata: Metadata dictionary
-            document_text: Full document text
-            filename: Original filename
+        Store PO in index only (past data). No per-file cache; full data kept in index.
         """
         try:
-            cache_data = {
+            self._update_po_index(file_hash, extracted_data, metadata, document_text, filename)
+        except Exception as e:
+            print(f"[CACHE] Error saving PO to index: {e}")
+
+    def _update_po_index(self, file_hash: str, extracted_data: Dict[str, Any],
+                         metadata: Dict[str, Any], document_text: str, filename: str):
+        """
+        Update PO index with summary and full_data for lookup (past data storage).
+        """
+        try:
+            po_index = self._load_po_index()
+            doc_ids = extracted_data.get("document_ids", {})
+            party_names = extracted_data.get("party_names", {})
+            po_number = doc_ids.get("po_number", "") or doc_ids.get("order_number", "") or ""
+            vendor = party_names.get("vendor", "") or party_names.get("party_1", "") or ""
+            customer = party_names.get("customer", "") or party_names.get("party_2", "") or ""
+            line_items = extracted_data.get("line_items", [])
+            item_descriptions = [item.get("description", "") for item in line_items if item.get("description")]
+            total_amount = extracted_data.get("amount", "") or extracted_data.get("amounts", {}).get("total", "")
+
+            full_data = {
                 "file_hash": file_hash,
                 "filename": filename,
                 "document_type": "PURCHASE_ORDER",
                 "cached_at": datetime.now().isoformat(),
                 "extracted_data": extracted_data,
-                "metadata": metadata,
-                "document_text": document_text
+                "metadata": metadata or {},
+                "document_text": document_text,
             }
-            
-            # Save to GCS if enabled
-            if self.use_gcs:
-                gcs_path = self._get_gcs_po_cache_path(file_hash)
-                self._save_to_gcs(gcs_path, cache_data)
-            
-            # Also save locally (for faster access and as fallback)
-            cache_path = self.get_po_cache_path(file_hash)
-            with open(cache_path, 'w', encoding='utf-8') as f:
-                json.dump(cache_data, f, indent=2, ensure_ascii=False, default=str)
-            
-            print(f"[CACHE] Saved PO cache for hash: {file_hash[:16]}...")
-            
-            # Update PO index for fast lookup
-            self._update_po_index(file_hash, extracted_data, filename)
-            
-        except Exception as e:
-            print(f"[CACHE] Error saving PO cache: {e}")
-    
-    def _update_po_index(self, file_hash: str, extracted_data: Dict[str, Any], filename: str):
-        """
-        Update PO index for fast lookup by PO number, vendor, customer, etc.
-        
-        Args:
-            file_hash: SHA256 hash of PO file
-            extracted_data: Extracted PO data
-            filename: Original filename
-        """
-        try:
-            # Load existing index
-            po_index = self._load_po_index()
-            
-            # Extract key fields for indexing
-            doc_ids = extracted_data.get("document_ids", {})
-            party_names = extracted_data.get("party_names", {})
-            
-            po_number = doc_ids.get("po_number", "") or doc_ids.get("order_number", "") or ""
-            vendor = party_names.get("vendor", "") or party_names.get("party_1", "") or ""
-            customer = party_names.get("customer", "") or party_names.get("party_2", "") or ""
-            
-            # Get line items for matching
-            line_items = extracted_data.get("line_items", [])
-            item_descriptions = [item.get("description", "") for item in line_items if item.get("description")]
-            
-            # Get amounts
-            total_amount = extracted_data.get("amount", "") or extracted_data.get("amounts", {}).get("total", "")
-            
-            # Add to index
+
             index_entry = {
                 "file_hash": file_hash,
                 "filename": filename,
@@ -468,17 +334,16 @@ class CacheManager:
                 "customer": customer,
                 "item_descriptions": item_descriptions,
                 "total_amount": total_amount,
-                "indexed_at": datetime.now().isoformat()
+                "indexed_at": datetime.now().isoformat(),
+                "full_data": full_data,
             }
-            
-            # Update index (use file_hash as key to avoid duplicates)
             po_index[file_hash] = index_entry
-            
-            # Save index
             self._save_po_index(po_index)
-            
+            # Also store PO blob to GCS so POs are persisted in GCP (not just local index)
+            if self.use_gcs:
+                gcs_path = self._get_gcs_po_cache_path(file_hash)
+                self._save_to_gcs(gcs_path, full_data)
             print(f"[CACHE] Updated PO index: PO#{po_number or 'N/A'}, Vendor: {vendor[:30] if vendor else 'N/A'}...")
-            
         except Exception as e:
             print(f"[CACHE] Error updating PO index: {e}")
     
@@ -518,6 +383,130 @@ class CacheManager:
         except Exception as e:
             print(f"[CACHE] Error saving PO index: {e}")
     
+    # ========================================================================
+    # GRN (Goods Received Note) INDEX - for three-way match PO + GRN + Invoice
+    # ========================================================================
+    
+    def _load_grn_index(self) -> Dict[str, Any]:
+        """Load GRN index from GCS or local."""
+        if self.use_gcs:
+            gcs_path = f"{self.gcs_cache_bucket}grn_cache/grn_index.json"
+            data = self._load_from_gcs(gcs_path)
+            if data and isinstance(data, dict):
+                return data
+        local_path = self.grn_cache_dir / "grn_index.json"
+        if local_path.exists():
+            try:
+                with open(local_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"[CACHE] Error loading GRN index: {e}")
+        return {}
+    
+    def _save_grn_index(self, grn_index: Dict[str, Any]):
+        """Save GRN index to GCS and local."""
+        try:
+            if self.use_gcs:
+                gcs_path = f"{self.gcs_cache_bucket}grn_cache/grn_index.json"
+                self._save_to_gcs(gcs_path, grn_index)
+            local_path = self.grn_cache_dir / "grn_index.json"
+            with open(local_path, "w", encoding="utf-8") as f:
+                json.dump(grn_index, f, indent=2, ensure_ascii=False, default=str)
+        except Exception as e:
+            print(f"[CACHE] Error saving GRN index: {e}")
+    
+    def save_grn(self, file_hash: str, extracted_data: Dict[str, Any],
+                 metadata: Dict[str, Any], document_text: str, filename: str):
+        """Store GRN in index (same pattern as PO)."""
+        try:
+            doc_ids = extracted_data.get("document_ids", {})
+            party_names = extracted_data.get("party_names", {})
+            po_number = doc_ids.get("po_number", "") or doc_ids.get("order_number", "") or ""
+            vendor = party_names.get("vendor", "") or party_names.get("party_1", "") or ""
+            customer = party_names.get("customer", "") or party_names.get("party_2", "") or ""
+            line_items = extracted_data.get("line_items", [])
+            item_descriptions = [item.get("description", "") for item in line_items if item.get("description")]
+            total_amount = extracted_data.get("amount", "") or extracted_data.get("amounts", {}).get("total", "")
+            full_data = {
+                "file_hash": file_hash,
+                "filename": filename,
+                "document_type": "GRN",
+                "cached_at": datetime.now().isoformat(),
+                "extracted_data": extracted_data,
+                "metadata": metadata or {},
+                "document_text": document_text,
+            }
+            index_entry = {
+                "file_hash": file_hash,
+                "filename": filename,
+                "po_number": po_number,
+                "vendor": vendor,
+                "customer": customer,
+                "item_descriptions": item_descriptions,
+                "total_amount": total_amount,
+                "indexed_at": datetime.now().isoformat(),
+                "full_data": full_data,
+            }
+            grn_index = self._load_grn_index()
+            grn_index[file_hash] = index_entry
+            self._save_grn_index(grn_index)
+        except Exception as e:
+            print(f"[CACHE] Error saving GRN: {e}")
+    
+    def get_all_grns(self) -> Dict[str, Any]:
+        """Get all GRNs from index."""
+        return self._load_grn_index()
+    
+    def get_all_grns_full(self) -> List[Dict[str, Any]]:
+        """Get all GRNs with full_data for chatbot/matching."""
+        grn_index = self._load_grn_index()
+        return [
+            {**entry, "full_data": entry.get("full_data")}
+            for entry in (grn_index.values() if isinstance(grn_index, dict) else [])
+            if isinstance(entry, dict) and entry.get("full_data")
+        ]
+    
+    def get_all_grns_json_path(self) -> Path:
+        return self._get_data_dir() / "all_grns.json"
+    
+    def load_all_grns_json(self) -> List[Dict[str, Any]]:
+        path = self.get_all_grns_json_path()
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except Exception as e:
+            print(f"[CACHE] Error loading all_grns.json: {e}")
+            return []
+    
+    def save_all_grns_json(self, grn_list: List[Dict[str, Any]]) -> bool:
+        try:
+            path = self.get_all_grns_json_path()
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(grn_list, f, indent=2, ensure_ascii=False, default=str)
+            if self.use_gcs:
+                self._save_to_gcs(f"{self.gcs_cache_bucket}data/all_grns.json", grn_list)
+            return True
+        except Exception as e:
+            print(f"[CACHE] Error saving all_grns.json: {e}")
+            return False
+    
+    def find_grn_by_po_number(self, po_number: str) -> Optional[Dict[str, Any]]:
+        """Find a GRN by PO number (for three-way match)."""
+        if not po_number or not str(po_number).strip():
+            return None
+        grn_index = self._load_grn_index()
+        normalized = str(po_number).strip().lower()
+        for entry in (grn_index.values() if isinstance(grn_index, dict) else []):
+            if not isinstance(entry, dict):
+                continue
+            entry_po = (entry.get("po_number") or "").strip().lower()
+            if entry_po and (normalized in entry_po or entry_po in normalized):
+                return entry
+        return None
+    
     def get_all_pos(self) -> Dict[str, Any]:
         """
         Get all POs from the index for matching.
@@ -526,6 +515,100 @@ class CacheManager:
             Dictionary with all PO index entries
         """
         return self._load_po_index()
+    
+    def get_all_pos_full(self) -> List[Dict[str, Any]]:
+        """
+        Get all POs with full_data (for chatbot). Uses index + load_po_cache fallback
+        so legacy po_cache/*.json files are included.
+        Returns list of { full_data, file_hash, filename, po_number, ... }.
+        """
+        po_index = self._load_po_index()
+        result = []
+        if not isinstance(po_index, dict):
+            return result
+        for file_hash, entry in po_index.items():
+            full_data = entry.get("full_data") if isinstance(entry, dict) else None
+            if not full_data:
+                full_data = self.load_po_cache(file_hash)
+            if full_data:
+                result.append({**(entry if isinstance(entry, dict) else {}), "full_data": full_data})
+        return result
+    
+    def _get_data_dir(self) -> Path:
+        """Directory for single JSON files (all_invoices.json, all_purchase_orders.json)."""
+        d = self.cache_base_dir / "data"
+        d.mkdir(exist_ok=True)
+        return d
+    
+    def get_all_purchase_orders_json_path(self) -> Path:
+        return self._get_data_dir() / "all_purchase_orders.json"
+    
+    def get_all_invoices_json_path(self) -> Path:
+        return self._get_data_dir() / "all_invoices.json"
+    
+    def load_all_purchase_orders_json(self) -> List[Dict[str, Any]]:
+        """Load the single JSON file of all POs (for chatbot). Returns list of PO records with full_data. Tries GCS first if enabled."""
+        if self.use_gcs:
+            gcs_path = f"{self.gcs_cache_bucket}data/all_purchase_orders.json"
+            data = self._load_from_gcs(gcs_path)
+            if data is not None and isinstance(data, list):
+                return data
+        path = self.get_all_purchase_orders_json_path()
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except Exception as e:
+            print(f"[CACHE] Error loading all_purchase_orders.json: {e}")
+            return []
+    
+    def save_all_purchase_orders_json(self, po_list: List[Dict[str, Any]]) -> bool:
+        """Save all POs to a single JSON file. Call after adding/updating a PO."""
+        try:
+            path = self.get_all_purchase_orders_json_path()
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(po_list, f, indent=2, ensure_ascii=False, default=str)
+            if self.use_gcs:
+                gcs_path = f"{self.gcs_cache_bucket}data/all_purchase_orders.json"
+                self._save_to_gcs(gcs_path, po_list)
+            return True
+        except Exception as e:
+            print(f"[CACHE] Error saving all_purchase_orders.json: {e}")
+            return False
+    
+    def load_all_invoices_json(self) -> List[Dict[str, Any]]:
+        """Load the single JSON file of all invoices/extractions (for chatbot). Tries GCS first if enabled."""
+        if self.use_gcs:
+            gcs_path = f"{self.gcs_cache_bucket}data/all_invoices.json"
+            data = self._load_from_gcs(gcs_path)
+            if data is not None and isinstance(data, list):
+                return data
+        path = self.get_all_invoices_json_path()
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except Exception as e:
+            print(f"[CACHE] Error loading all_invoices.json: {e}")
+            return []
+    
+    def save_all_invoices_json(self, invoices_list: List[Dict[str, Any]]) -> bool:
+        """Save all invoices/extractions to a single JSON file. Call after adding/updating extractions."""
+        try:
+            path = self.get_all_invoices_json_path()
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(invoices_list, f, indent=2, ensure_ascii=False, default=str)
+            if self.use_gcs:
+                gcs_path = f"{self.gcs_cache_bucket}data/all_invoices.json"
+                self._save_to_gcs(gcs_path, invoices_list)
+            return True
+        except Exception as e:
+            print(f"[CACHE] Error saving all_invoices.json: {e}")
+            return False
     
     def find_po_by_number(self, po_number: str) -> Optional[Dict[str, Any]]:
         """
@@ -564,7 +647,7 @@ class CacheManager:
             # Exact match (100 points)
             if entry_po == normalized_po:
                 print(f"[PO_MATCH] ✓ Exact match: '{entry_po}'")
-                full_data = self.load_po_cache(file_hash)
+                full_data = entry.get("full_data") or self.load_po_cache(file_hash)
                 if full_data:
                     return {**entry, "full_data": full_data}
                 return entry
@@ -589,7 +672,7 @@ class CacheManager:
         # Return best partial match if score is high enough
         if best_score >= 85 and best_match:
             print(f"[PO_MATCH] ✓ Best PO number match: '{best_match.get('po_number')}' with score {best_score}")
-            full_data = self.load_po_cache(best_match["file_hash"])
+            full_data = best_match.get("full_data") or self.load_po_cache(best_match["file_hash"])
             if full_data:
                 return {**best_match, "full_data": full_data}
             return best_match
@@ -680,8 +763,7 @@ class CacheManager:
         # 40 points = at least a customer or fuzzy vendor match
         if best_score >= 40 and best_match:
             print(f"[PO_MATCH] ✓ Best match: '{best_match.get('filename')}' with score {best_score}")
-            # Load full PO data
-            full_data = self.load_po_cache(best_match["file_hash"])
+            full_data = best_match.get("full_data") or self.load_po_cache(best_match["file_hash"])
             if full_data:
                 return {**best_match, "full_data": full_data, "match_score": best_score}
             return {**best_match, "match_score": best_score}
@@ -1293,8 +1375,12 @@ class CacheManager:
             except Exception as e:
                 print(f"[CACHE] Error reading file info: {e}")
         
-        # List local PO cache files
+        # List local PO cache files (exclude po_index.json)
         for cache_file in self.po_cache_dir.glob("*.json"):
+            if cache_file.name == "po_index.json":
+                continue
+            if not cache_file.name.endswith("_po.json"):
+                continue
             try:
                 stat = cache_file.stat()
                 filename = "Unknown"
@@ -1596,6 +1682,9 @@ class CacheManager:
             except Exception as e:
                 results["failed"].append(f"gcs: {e}")
         
+        # Always remove from PO index when deleting by file_hash (even if no legacy file existed)
+        self._remove_from_po_index(file_hash)
+        
         return results
     
     def _remove_from_po_index(self, file_hash: str):
@@ -1608,7 +1697,21 @@ class CacheManager:
                 print(f"[CACHE] Removed PO from index: {file_hash[:16]}...")
         except Exception as e:
             print(f"[CACHE] Error removing PO from index: {e}")
-    
+
+    def delete_grn_by_file_hash(self, file_hash: str) -> Tuple[bool, str]:
+        """Remove a GRN from the index by file hash. GRN data is index-only (no per-file blob)."""
+        try:
+            grn_index = self._load_grn_index()
+            if file_hash in grn_index:
+                del grn_index[file_hash]
+                self._save_grn_index(grn_index)
+                print(f"[CACHE] Removed GRN from index: {file_hash[:16]}...")
+                return True, f"GRN removed: {file_hash[:16]}..."
+            return False, f"GRN not found: {file_hash[:16]}..."
+        except Exception as e:
+            print(f"[CACHE] Error removing GRN from index: {e}")
+            return False, str(e)
+
     def delete_extraction_record(self, extraction_id: str) -> Tuple[bool, str]:
         """
         Delete an extraction record (individual file approach + legacy cleanup).

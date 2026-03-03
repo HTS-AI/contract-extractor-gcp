@@ -44,12 +44,6 @@ def main():
     )
     
     parser.add_argument(
-        '--tesseract-cmd',
-        type=str,
-        help='Path to tesseract executable (for OCR on Windows)'
-    )
-    
-    parser.add_argument(
         '--api-key',
         type=str,
         help='OpenAI API key (or set OPENAI_API_KEY environment variable)'

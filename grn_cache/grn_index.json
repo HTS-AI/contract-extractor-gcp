@@ -1,0 +1,382 @@
+{
+  "4cbe76a0ba2e7d287d4d07bbf04dc7638ef908b5d1fea2ed2abafc3d4657ef4d": {
+    "file_hash": "4cbe76a0ba2e7d287d4d07bbf04dc7638ef908b5d1fea2ed2abafc3d4657ef4d",
+    "filename": "doc2_GRN.pdf",
+    "po_number": "PO-NEX-2026-1",
+    "vendor": "Chromatic Digital Solutions Pvt. Ltd.",
+    "customer": "Nexus Healthcare Systems",
+    "item_descriptions": [
+      "Enterprise ERP License - Annual Subscription (Jan 26-Dec 26)",
+      "Implementation Support Consulting Hours",
+      "Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM)"
+    ],
+    "total_amount": "",
+    "indexed_at": "2026-03-02T11:05:11.494757",
+    "full_data": {
+      "file_hash": "4cbe76a0ba2e7d287d4d07bbf04dc7638ef908b5d1fea2ed2abafc3d4657ef4d",
+      "filename": "doc2_GRN.pdf",
+      "document_type": "GRN",
+      "cached_at": "2026-03-02T11:05:11.494757",
+      "extracted_data": {
+        "document_type": "GRN",
+        "document_ids": {
+          "po_number": "PO-NEX-2026-1",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": ""
+        },
+        "party_names": {
+          "vendor": "Chromatic Digital Solutions Pvt. Ltd.",
+          "customer": "Nexus Healthcare Systems",
+          "party_1": "",
+          "party_2": ""
+        },
+        "dates": {
+          "po_date": "2026-01-15",
+          "delivery_date": ""
+        },
+        "amounts": {
+          "subtotal": "",
+          "total": ""
+        },
+        "amount": "",
+        "currency": "",
+        "line_items": [
+          {
+            "description": "Enterprise ERP License - Annual Subscription (Jan 26-Dec 26)",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "Implementation Support Consulting Hours",
+            "quantity": "120",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "Dell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM)",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          }
+        ]
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpuzy77wxi.pdf",
+        "file_name": "tmpuzy77wxi.pdf",
+        "document_text": "GOODS RECEIVED NOTE\nNexus Healthcare Systems\nPlot No 44, Jubilee Hills, Hyderabad\nPO Reference:  PO-NEX-2026-1 1\nVendor:  Chromatic Digital Solutions Pvt. Ltd.\nDate:  15-Jan-2026\nItem Description Received Quantity\nEnterprise ERP  License - Annual Subscription (Jan 26-Dec 26) 1\nImplementation Support Consulting Hours 120\nDell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM) 1",
+        "page_map": {
+          "1": "GOODS RECEIVED NOTE\nNexus Healthcare Systems\nPlot No 44, Jubilee Hills, Hyderabad\nPO Reference:  PO-NEX-2026-1 1\nVendor:  Chromatic Digital Solutions Pvt. Ltd.\nDate:  15-Jan-2026\nItem Description Received Quantity\nEnterprise ERP  License - Annual Subscription (Jan 26-Dec 26) 1\nImplementation Support Consulting Hours 120\nDell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM) 1"
+        },
+        "total_pages": 1,
+        "extraction_method": "grn_extractor"
+      },
+      "document_text": "GOODS RECEIVED NOTE\nNexus Healthcare Systems\nPlot No 44, Jubilee Hills, Hyderabad\nPO Reference:  PO-NEX-2026-1 1\nVendor:  Chromatic Digital Solutions Pvt. Ltd.\nDate:  15-Jan-2026\nItem Description Received Quantity\nEnterprise ERP  License - Annual Subscription (Jan 26-Dec 26) 1\nImplementation Support Consulting Hours 120\nDell PowerEdge R750 Rack Server (2x Intel Xeon, 64GB RAM) 1"
+    }
+  },
+  "986d716ffecbf05ab5a46a89b40d88ae9e18417abe445cc49dd5da0686fca490": {
+    "file_hash": "986d716ffecbf05ab5a46a89b40d88ae9e18417abe445cc49dd5da0686fca490",
+    "filename": "Goods Received Note - GRN-MNTH-2026-001.pdf",
+    "po_number": "PO-MNTH-2026-001",
+    "vendor": "TechServe Solutions Pvt Ltd",
+    "customer": "HTS AI Technologies Ltd",
+    "item_descriptions": [
+      "Software Development Services - Senior Developer",
+      "QA Testing & Automation Services",
+      "DevOps & Cloud Infrastructure Support"
+    ],
+    "total_amount": "",
+    "indexed_at": "2026-02-27T18:20:37.606614",
+    "full_data": {
+      "file_hash": "986d716ffecbf05ab5a46a89b40d88ae9e18417abe445cc49dd5da0686fca490",
+      "filename": "Goods Received Note - GRN-MNTH-2026-001.pdf",
+      "document_type": "GRN",
+      "cached_at": "2026-02-27T18:20:37.606614",
+      "extracted_data": {
+        "document_type": "GRN",
+        "document_ids": {
+          "po_number": "PO-MNTH-2026-001",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "GRN-MNTH-2026-001"
+        },
+        "party_names": {
+          "vendor": "TechServe Solutions Pvt Ltd",
+          "customer": "HTS AI Technologies Ltd",
+          "party_1": "",
+          "party_2": ""
+        },
+        "dates": {
+          "po_date": "",
+          "delivery_date": "31 January 2026"
+        },
+        "amounts": {
+          "subtotal": "",
+          "total": ""
+        },
+        "amount": "",
+        "currency": "",
+        "line_items": [
+          {
+            "description": "Software Development Services - Senior Developer",
+            "quantity": "2",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "QA Testing & Automation Services",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "DevOps & Cloud Infrastructure Support",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          }
+        ]
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpk9o8xerd.pdf",
+        "file_name": "tmpk9o8xerd.pdf",
+        "document_text": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-MNTH-2026-001\nDeliv ery Period: January 2026\nReceiv ed Dat e: 31 January 2026VENDOR\nTechSer ve Solutions Pvt L td\n42, Whitefield Main R oad\nBangalore, Karnataka 560066RECEIVED BY\nHTS AI T echnologies L td\nGurugram, Haryana\nVerified by: Amit P atel\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 Software Development Services - Senior Developer 2 2✓ Full\n2 QA Testing & Automation Services 1 1✓ Full\n3 DevOps & Cloud Infrastructure Support 1 1✓ Full\nRemarks:  All services for January 2026 delivered satisfactorily. SL A met: 99.5% uptime.\nQuality Check : Passed. Code review completed, test coverage above 85%.\nGRN Date: 31-Jan-2026 Approved by: Amit P atel, Project Manager\nGRN Number: GRN-MNTH-2026-001",
+        "page_map": {
+          "1": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-MNTH-2026-001\nDeliv ery Period: January 2026\nReceiv ed Dat e: 31 January 2026VENDOR\nTechSer ve Solutions Pvt L td\n42, Whitefield Main R oad\nBangalore, Karnataka 560066RECEIVED BY\nHTS AI T echnologies L td\nGurugram, Haryana\nVerified by: Amit P atel\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 Software Development Services - Senior Developer 2 2✓ Full\n2 QA Testing & Automation Services 1 1✓ Full\n3 DevOps & Cloud Infrastructure Support 1 1✓ Full\nRemarks:  All services for January 2026 delivered satisfactorily. SL A met: 99.5% uptime.\nQuality Check : Passed. Code review completed, test coverage above 85%.\nGRN Date: 31-Jan-2026 Approved by: Amit P atel, Project Manager\nGRN Number: GRN-MNTH-2026-001"
+        },
+        "total_pages": 1,
+        "extraction_method": "grn_extractor"
+      },
+      "document_text": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-MNTH-2026-001\nDeliv ery Period: January 2026\nReceiv ed Dat e: 31 January 2026VENDOR\nTechSer ve Solutions Pvt L td\n42, Whitefield Main R oad\nBangalore, Karnataka 560066RECEIVED BY\nHTS AI T echnologies L td\nGurugram, Haryana\nVerified by: Amit P atel\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 Software Development Services - Senior Developer 2 2✓ Full\n2 QA Testing & Automation Services 1 1✓ Full\n3 DevOps & Cloud Infrastructure Support 1 1✓ Full\nRemarks:  All services for January 2026 delivered satisfactorily. SL A met: 99.5% uptime.\nQuality Check : Passed. Code review completed, test coverage above 85%.\nGRN Date: 31-Jan-2026 Approved by: Amit P atel, Project Manager\nGRN Number: GRN-MNTH-2026-001"
+    }
+  },
+  "1d0ef9fb21d51bc15554d423b58d8348600ca837d165192620e40cce43f97b30": {
+    "file_hash": "1d0ef9fb21d51bc15554d423b58d8348600ca837d165192620e40cce43f97b30",
+    "filename": "Goods Received Note - GRN-QRTR-2026-001.pdf",
+    "po_number": "PO-QR TR-2026-001",
+    "vendor": "CloudNet Infrastructure Ltd",
+    "customer": "HTS AI Technologies Ltd",
+    "item_descriptions": [
+      "Cloud Hosting - Production Servers (AWS)",
+      "Managed Database Service (PostgreSQL + Redis)",
+      "24x7 Infrastructure Monitoring & Support"
+    ],
+    "total_amount": "",
+    "indexed_at": "2026-02-27T18:23:21.767842",
+    "full_data": {
+      "file_hash": "1d0ef9fb21d51bc15554d423b58d8348600ca837d165192620e40cce43f97b30",
+      "filename": "Goods Received Note - GRN-QRTR-2026-001.pdf",
+      "document_type": "GRN",
+      "cached_at": "2026-02-27T18:23:21.767842",
+      "extracted_data": {
+        "document_type": "GRN",
+        "document_ids": {
+          "po_number": "PO-QR TR-2026-001",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "GRN-QR TR-2026-001"
+        },
+        "party_names": {
+          "vendor": "CloudNet Infrastructure Ltd",
+          "customer": "HTS AI Technologies Ltd",
+          "party_1": "",
+          "party_2": ""
+        },
+        "dates": {
+          "po_date": "",
+          "delivery_date": "31 March 2026"
+        },
+        "amounts": {
+          "subtotal": "",
+          "total": ""
+        },
+        "amount": "",
+        "currency": "",
+        "line_items": [
+          {
+            "description": "Cloud Hosting - Production Servers (AWS)",
+            "quantity": "3",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "Managed Database Service (PostgreSQL + Redis)",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "24x7 Infrastructure Monitoring & Support",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          }
+        ]
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpxvqrwwax.pdf",
+        "file_name": "tmpxvqrwwax.pdf",
+        "document_text": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-QR TR-2026-001\nDeliv ery Period: Q1 2026 (Jan – Mar)\nReceiv ed Dat e: 31 March 2026VENDOR\nCloudNet Infrastr uctur e Ltd\n14, HITEC City, Madhapur\nHyderabad, T elangana 500081RECEIVED BY\nHTS AI T echnologies L td\nGurugram, Haryana\nVerified by: Neha Gupta\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 Cloud Hosting - Production Servers (A WS) 3 3✓ Full\n2 Managed Database Service (P ostgreSQL + R edis) 1 1✓ Full\n3 24x7 Infrastructure Monitoring & Support 1 1✓ Full\nRemarks:  Q1 2026 cloud services delivered. Uptime: 99.97%. No P1 incidents during the quarter.\nSLA Compliance:  All SL As met. Quarterly uptime report attached separately.\nGRN Date: 31-Mar-2026 Approved by: Neha Gupta, DevOps Lead\nGRN Number: GRN-QR TR-2026-001",
+        "page_map": {
+          "1": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-QR TR-2026-001\nDeliv ery Period: Q1 2026 (Jan – Mar)\nReceiv ed Dat e: 31 March 2026VENDOR\nCloudNet Infrastr uctur e Ltd\n14, HITEC City, Madhapur\nHyderabad, T elangana 500081RECEIVED BY\nHTS AI T echnologies L td\nGurugram, Haryana\nVerified by: Neha Gupta\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 Cloud Hosting - Production Servers (A WS) 3 3✓ Full\n2 Managed Database Service (P ostgreSQL + R edis) 1 1✓ Full\n3 24x7 Infrastructure Monitoring & Support 1 1✓ Full\nRemarks:  Q1 2026 cloud services delivered. Uptime: 99.97%. No P1 incidents during the quarter.\nSLA Compliance:  All SL As met. Quarterly uptime report attached separately.\nGRN Date: 31-Mar-2026 Approved by: Neha Gupta, DevOps Lead\nGRN Number: GRN-QR TR-2026-001"
+        },
+        "total_pages": 1,
+        "extraction_method": "grn_extractor"
+      },
+      "document_text": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-QR TR-2026-001\nDeliv ery Period: Q1 2026 (Jan – Mar)\nReceiv ed Dat e: 31 March 2026VENDOR\nCloudNet Infrastr uctur e Ltd\n14, HITEC City, Madhapur\nHyderabad, T elangana 500081RECEIVED BY\nHTS AI T echnologies L td\nGurugram, Haryana\nVerified by: Neha Gupta\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 Cloud Hosting - Production Servers (A WS) 3 3✓ Full\n2 Managed Database Service (P ostgreSQL + R edis) 1 1✓ Full\n3 24x7 Infrastructure Monitoring & Support 1 1✓ Full\nRemarks:  Q1 2026 cloud services delivered. Uptime: 99.97%. No P1 incidents during the quarter.\nSLA Compliance:  All SL As met. Quarterly uptime report attached separately.\nGRN Date: 31-Mar-2026 Approved by: Neha Gupta, DevOps Lead\nGRN Number: GRN-QR TR-2026-001"
+    }
+  },
+  "07a681d00f9a286bb8733745ff3c23ec289a39a917cb120f0a1237152424f925": {
+    "file_hash": "07a681d00f9a286bb8733745ff3c23ec289a39a917cb120f0a1237152424f925",
+    "filename": "doc3_GRN.pdf",
+    "po_number": "PO-GL O-2026-8841",
+    "vendor": "Global Tech Manufacturing Ltd.",
+    "customer": "EuroTech Solutions GmbH",
+    "item_descriptions": [
+      "Industrial Sensor Module V4",
+      "High-Speed Fiber Optic Cable (50m)",
+      "Interface Controller Cards"
+    ],
+    "total_amount": "",
+    "indexed_at": "2026-03-02T11:21:00.742200",
+    "full_data": {
+      "file_hash": "07a681d00f9a286bb8733745ff3c23ec289a39a917cb120f0a1237152424f925",
+      "filename": "doc3_GRN.pdf",
+      "document_type": "GRN",
+      "cached_at": "2026-03-02T11:21:00.742200",
+      "extracted_data": {
+        "document_type": "GRN",
+        "document_ids": {
+          "po_number": "PO-GL O-2026-8841",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": ""
+        },
+        "party_names": {
+          "vendor": "Global Tech Manufacturing Ltd.",
+          "customer": "EuroTech Solutions GmbH",
+          "party_1": "",
+          "party_2": ""
+        },
+        "dates": {
+          "po_date": "",
+          "delivery_date": "18 Jan 2026"
+        },
+        "amounts": {
+          "subtotal": "",
+          "total": ""
+        },
+        "amount": "",
+        "currency": "",
+        "line_items": [
+          {
+            "description": "Industrial Sensor Module V4",
+            "quantity": "10.00",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "High-Speed Fiber Optic Cable (50m)",
+            "quantity": "8.00",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "Interface Controller Cards",
+            "quantity": "4.00",
+            "unit": "",
+            "amount": ""
+          }
+        ]
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmplu006ck5.pdf",
+        "file_name": "tmplu006ck5.pdf",
+        "document_text": "GOODS RECEIVED NO TE\nEuroTech Solutions GmbH\nBerliner S trasse 102, 10115 Berlin, Germany\nPO Number : PO-GL O-2026-8841\nVendor : Global T ech Manufacturing L td.\nReceipt Dat e: 18 Jan 2026\nItem Descr iption Receiv ed Quantity\nIndustrial Sensor Module V4 10.00\nHigh-Speed Fiber Optic Cable (50m) 8.00\nInterface Controller Cards 4.00",
+        "page_map": {
+          "1": "GOODS RECEIVED NO TE\nEuroTech Solutions GmbH\nBerliner S trasse 102, 10115 Berlin, Germany\nPO Number : PO-GL O-2026-8841\nVendor : Global T ech Manufacturing L td.\nReceipt Dat e: 18 Jan 2026\nItem Descr iption Receiv ed Quantity\nIndustrial Sensor Module V4 10.00\nHigh-Speed Fiber Optic Cable (50m) 8.00\nInterface Controller Cards 4.00"
+        },
+        "total_pages": 1,
+        "extraction_method": "grn_extractor"
+      },
+      "document_text": "GOODS RECEIVED NO TE\nEuroTech Solutions GmbH\nBerliner S trasse 102, 10115 Berlin, Germany\nPO Number : PO-GL O-2026-8841\nVendor : Global T ech Manufacturing L td.\nReceipt Dat e: 18 Jan 2026\nItem Descr iption Receiv ed Quantity\nIndustrial Sensor Module V4 10.00\nHigh-Speed Fiber Optic Cable (50m) 8.00\nInterface Controller Cards 4.00"
+    }
+  },
+  "780d0b0bd824299696ae8f768720606737153d134031292954e3418dda778fac": {
+    "file_hash": "780d0b0bd824299696ae8f768720606737153d134031292954e3418dda778fac",
+    "filename": "Goods Received Note - GRN-KSA-2026-001.pdf",
+    "po_number": "PO-KSA-2026-001",
+    "vendor": "Al Madinah Tech Solutions",
+    "customer": "HTS AI Technologies Saudi Arabia",
+    "item_descriptions": [
+      "ERP System Implementation - SAP S/4HANA",
+      "ERP Data Migration & Integration Services",
+      "Post-Implementation Support & Training"
+    ],
+    "total_amount": "",
+    "indexed_at": "2026-03-02T12:00:28.880127",
+    "full_data": {
+      "file_hash": "780d0b0bd824299696ae8f768720606737153d134031292954e3418dda778fac",
+      "filename": "Goods Received Note - GRN-KSA-2026-001.pdf",
+      "document_type": "GRN",
+      "cached_at": "2026-03-02T12:00:28.880127",
+      "extracted_data": {
+        "document_type": "GRN",
+        "document_ids": {
+          "po_number": "PO-KSA-2026-001",
+          "order_number": "",
+          "reference_id": "",
+          "document_number": "GRN-KSA-2026-001"
+        },
+        "party_names": {
+          "vendor": "Al Madinah Tech Solutions",
+          "customer": "HTS AI Technologies Saudi Arabia",
+          "party_1": "",
+          "party_2": ""
+        },
+        "dates": {
+          "po_date": "",
+          "delivery_date": "10 April 2026"
+        },
+        "amounts": {
+          "subtotal": "",
+          "total": ""
+        },
+        "amount": "",
+        "currency": "",
+        "line_items": [
+          {
+            "description": "ERP System Implementation - SAP S/4HANA",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "ERP Data Migration & Integration Services",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          },
+          {
+            "description": "Post-Implementation Support & Training",
+            "quantity": "1",
+            "unit": "",
+            "amount": ""
+          }
+        ]
+      },
+      "metadata": {
+        "file_path": "C:\\Users\\Admin\\AppData\\Local\\Temp\\tmpcf3ybb65.pdf",
+        "file_name": "tmpcf3ybb65.pdf",
+        "document_text": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-KSA-2026-\n001\nDeliv ery Period: Q1 2026 (Feb\n– Apr)\nReceiv ed Dat e: 10 April 2026VENDOR\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya\nDistrict\nRiyadh 12211, KSARECEIVED BY\nHTS AI T echnologies Saudi\nArabia\nJeddah, KSA\nVerified by: F aisal Al Harbi\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 ERP S ystem Implementation - SAP S/4HANA 1 1✓ Full\n2 ERP Data Migration & Integration Services 1 1✓ Full\n3 Post-Implementation Support & T raining 1 1✓ Full\nRemarks:  Q1 2026 ERP implementation milestones achieved. SAP S/4HANA go-live completed. Data migration\nverified with 100% accuracy.\nQuality Check : Passed. User acceptance testing completed successfully. 45 staff members trained across 3\ndepartments.\nGRN Date: 10-Apr-2026 Approved by: F aisal Al Harbi, IT Director\nGRN Number: GRN-KSA-2026-001",
+        "page_map": {
+          "1": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-KSA-2026-\n001\nDeliv ery Period: Q1 2026 (Feb\n– Apr)\nReceiv ed Dat e: 10 April 2026VENDOR\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya\nDistrict\nRiyadh 12211, KSARECEIVED BY\nHTS AI T echnologies Saudi\nArabia\nJeddah, KSA\nVerified by: F aisal Al Harbi\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 ERP S ystem Implementation - SAP S/4HANA 1 1✓ Full\n2 ERP Data Migration & Integration Services 1 1✓ Full\n3 Post-Implementation Support & T raining 1 1✓ Full\nRemarks:  Q1 2026 ERP implementation milestones achieved. SAP S/4HANA go-live completed. Data migration\nverified with 100% accuracy.\nQuality Check : Passed. User acceptance testing completed successfully. 45 staff members trained across 3\ndepartments.\nGRN Date: 10-Apr-2026 Approved by: F aisal Al Harbi, IT Director\nGRN Number: GRN-KSA-2026-001"
+        },
+        "total_pages": 1,
+        "extraction_method": "grn_extractor"
+      },
+      "document_text": "GOODS RECEIVED NOTERECEIVED ✓\nREFERENCE\nPO Number : PO-KSA-2026-\n001\nDeliv ery Period: Q1 2026 (Feb\n– Apr)\nReceiv ed Dat e: 10 April 2026VENDOR\nAl Madinah T ech Solutions\nKing F ahd R oad, Al Olaya\nDistrict\nRiyadh 12211, KSARECEIVED BY\nHTS AI T echnologies Saudi\nArabia\nJeddah, KSA\nVerified by: F aisal Al Harbi\nITEMS / SERVICES RECEIVED\n# DESCRIPTION PO Q TY RECEIVED Q TY STATUS\n1 ERP S ystem Implementation - SAP S/4HANA 1 1✓ Full\n2 ERP Data Migration & Integration Services 1 1✓ Full\n3 Post-Implementation Support & T raining 1 1✓ Full\nRemarks:  Q1 2026 ERP implementation milestones achieved. SAP S/4HANA go-live completed. Data migration\nverified with 100% accuracy.\nQuality Check : Passed. User acceptance testing completed successfully. 45 staff members trained across 3\ndepartments.\nGRN Date: 10-Apr-2026 Approved by: F aisal Al Harbi, IT Director\nGRN Number: GRN-KSA-2026-001"
+    }
+  }
+}
