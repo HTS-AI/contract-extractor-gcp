@@ -1,5 +1,6 @@
 # Stage 1: Build Frontend (Vite)
-FROM node:18-alpine AS frontend-build
+FROM node:22-alpine AS frontend-build
+
 WORKDIR /frontend
 
 COPY frontend/package*.json ./
