@@ -10,8 +10,6 @@ RUN npm ci
 
 COPY frontend/ ./
 
-# Create static folder if it does not exist
-RUN mkdir -p static
 
 # Fix vite permission issue
 RUN chmod -R 755 node_modules
@@ -26,6 +24,8 @@ RUN npm run build
 FROM python:3.10-slim
 
 WORKDIR /app
+# Create static folder if it does not exist
+RUN mkdir -p static
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
