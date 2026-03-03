@@ -6,6 +6,8 @@ FROM node:20-slim AS frontend-build
 WORKDIR /frontend
 
 COPY frontend/package*.json ./
+
+# Install dependencies
 RUN npm ci
 
 COPY frontend/ ./
