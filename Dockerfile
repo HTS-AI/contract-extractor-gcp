@@ -16,16 +16,16 @@ RUN chmod -R 755 node_modules
 
 RUN npm run build
 
-COPY --from=frontend-build /frontend/dist ./static
 
 # ======================================================
 # Stage 2 — Python Backend
 # ======================================================
 FROM python:3.10-slim
 
-WORKDIR /app
 # Create static folder if it does not exist
 RUN mkdir -p static
+COPY --from=frontend-build /frontend/dist ./static
+WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
