@@ -16,7 +16,7 @@ RUN chmod -R 755 node_modules
 
 RUN npm run build
 
-
+COPY --from=frontend-build /frontend/dist ./static
 
 # ======================================================
 # Stage 2 — Python Backend
@@ -43,7 +43,7 @@ RUN rm -rf frontend
 
 # Copy built frontend from stage 1
 # COPY --from=frontend-build /frontend/dist ./frontend_build
-COPY --from=frontend-build /frontend/dist ./static
+# COPY --from=frontend-build /frontend/dist ./static
 
 
 ENV PYTHONUNBUFFERED=1
