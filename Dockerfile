@@ -22,10 +22,10 @@ RUN npm run build
 # ======================================================
 FROM python:3.10-slim
 
+WORKDIR /app
+
 # Create static folder if it does not exist
 RUN mkdir -p static
-COPY --from=frontend-build /frontend/dist ./static
-WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
@@ -43,7 +43,7 @@ RUN rm -rf frontend
 
 # Copy built frontend from stage 1
 # COPY --from=frontend-build /frontend/dist ./frontend_build
-# COPY --from=frontend-build /frontend/dist ./static
+COPY --from=frontend-build /frontend/dist ./static
 
 
 ENV PYTHONUNBUFFERED=1
